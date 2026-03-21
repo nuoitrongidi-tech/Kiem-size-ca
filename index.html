@@ -42,7 +42,7 @@
 
     <main class="max-w-6xl mx-auto p-4 md:mt-6 grid grid-cols-1 lg:grid-cols-12 gap-8">
         
-        <!-- Cột trái: Form nhập liệu -->
+        <!-- Form nhập liệu -->
         <div class="lg:col-span-4 space-y-6">
             <section class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
                 <h2 class="text-[10px] font-black uppercase text-slate-400 mb-4 flex items-center gap-2">
@@ -78,27 +78,25 @@
             </section>
         </div>
 
-        <!-- Cột phải: Thống kê & Lịch sử -->
+        <!-- Thống kê & Lịch sử -->
         <div class="lg:col-span-8 space-y-6">
-            <!-- Dashboard nhanh -->
             <div class="grid grid-cols-3 gap-3">
-                <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
-                    <p class="text-[9px] font-bold text-slate-400 uppercase mb-1 text-center">Số mẫu</p>
-                    <h3 class="text-xl font-black text-slate-900 text-center"><span id="statCount">0</span> <small class="text-[10px] text-slate-400 font-normal">con</small></h3>
+                <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm text-center">
+                    <p class="text-[9px] font-bold text-slate-400 uppercase mb-1">Số mẫu</p>
+                    <h3 class="text-xl font-black text-slate-900"><span id="statCount">0</span> <small class="text-[10px] text-slate-400 font-normal">con</small></h3>
                 </div>
-                <div class="bg-white p-4 rounded-2xl border-2 border-blue-500 shadow-sm">
-                    <p class="text-[9px] font-bold text-blue-500 uppercase mb-1 text-center">Size TB</p>
-                    <h3 class="text-xl font-black text-slate-900 text-center"><span id="statAvg">0</span> <small class="text-[10px] text-slate-400 font-normal">g</small></h3>
+                <div class="bg-white p-4 rounded-2xl border-2 border-blue-500 shadow-sm text-center">
+                    <p class="text-[9px] font-bold text-blue-500 uppercase mb-1">Size TB</p>
+                    <h3 class="text-xl font-black text-slate-900"><span id="statAvg">0</span> <small class="text-[10px] text-slate-400 font-normal">g</small></h3>
                 </div>
-                <div class="bg-emerald-600 p-4 rounded-2xl shadow-sm text-white">
-                    <p class="text-[9px] font-bold text-emerald-100 uppercase mb-1 text-center">Khối lượng</p>
-                    <h3 class="text-xl font-black text-center"><span id="statWeight">0.00</span> <small class="text-[10px] text-emerald-100 font-normal">kg</small></h3>
+                <div class="bg-emerald-600 p-4 rounded-2xl shadow-sm text-white text-center">
+                    <p class="text-[9px] font-bold text-emerald-100 uppercase mb-1">Khối lượng</p>
+                    <h3 class="text-xl font-black"><span id="statWeight">0.00</span> <small class="text-[10px] text-emerald-100 font-normal">kg</small></h3>
                 </div>
             </div>
 
-            <!-- Bảng chi tiết -->
             <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
-                <div class="bg-slate-900 px-4 py-3 text-white flex justify-between items-center">
+                <div class="bg-slate-900 px-4 py-3 text-white">
                     <h2 class="text-[10px] font-black uppercase tracking-widest">Phân tích dải size thực tế</h2>
                 </div>
                 <table class="w-full text-xs">
@@ -110,17 +108,14 @@
                             <th class="p-3 text-right">Tỷ lệ</th>
                         </tr>
                     </thead>
-                    <tbody id="analysisTable" class="divide-y divide-slate-100">
-                        <!-- JS renders here -->
-                    </tbody>
+                    <tbody id="analysisTable" class="divide-y divide-slate-100"></tbody>
                 </table>
             </div>
 
-            <!-- Lịch sử Cloud -->
             <section class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
                 <div class="p-3 bg-slate-50 border-b flex items-center justify-between">
                     <h2 class="text-[10px] font-black uppercase text-slate-500 flex items-center gap-2">
-                        <i class="fas fa-history text-[10px]"></i> Lịch sử kiểm size gần đây
+                        <i class="fas fa-history text-[10px]"></i> Lịch sử hệ thống chung
                     </h2>
                     <i class="fas fa-database text-slate-300 text-[10px]"></i>
                 </div>
@@ -131,186 +126,53 @@
                                 <th class="p-3 text-left">Ngày</th>
                                 <th class="p-3 text-left">Ao / Chủ</th>
                                 <th class="p-3 text-center text-blue-500">Size TB</th>
-                                <th class="p-3 text-right">Thao tác</th>
+                                <th class="p-3 text-right">Tải lại</th>
                             </tr>
                         </thead>
-                        <tbody id="historyTable" class="divide-y divide-slate-50">
-                            <!-- JS renders here -->
-                        </tbody>
+                        <tbody id="historyTable" class="divide-y divide-slate-50"></tbody>
                     </table>
                 </div>
             </section>
         </div>
     </main>
 
-    <!-- Firebase SDKs -->
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, doc, setDoc, onSnapshot, deleteDoc, Timestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, Timestamp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
-        // State Management
+        // --- CẤU HÌNH FIREBASE CỦA BẠN ---
+        const firebaseConfig = {
+  apiKey: "AIzaSyCE1E5ecJPD3jp8kRIC1ltLLLn57oR4Jfw",
+  authDomain: "kiem-size-ca.firebaseapp.com",
+  projectId: "kiem-size-ca",
+  storageBucket: "kiem-size-ca.firebasestorage.app",
+  messagingSenderId: "1043010017102",
+  appId: "1:1043010017102:web:beb30307c37225d5a4f01f",
+  measurementId: "G-SBTDHD5DNE"
+};
+
+        // Khởi tạo Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // Biến trạng thái cục bộ
         let samples = [];
         let thresholds = [300, 400, 600, 800, 1000, 1300, 1600];
-        let currentUser = null;
-        let db = null;
-        let auth = null;
-        let appId = 'fish-size-app';
+        let historyData = [];
 
-        // Initialize Firebase safely
-        const startFirebase = async () => {
-            try {
-                if (typeof __firebase_config !== 'undefined') {
-                    const firebaseConfig = JSON.parse(__firebase_config);
-                    const app = initializeApp(firebaseConfig);
-                    auth = getAuth(app);
-                    db = getFirestore(app);
-                    appId = typeof __app_id !== 'undefined' ? __app_id : 'fish-size-app';
-
-                    // Auth Setup
-                    if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                        await signInWithCustomToken(auth, __initial_auth_token);
-                    } else {
-                        await signInAnonymously(auth);
-                    }
-
-                    onAuthStateChanged(auth, (user) => {
-                        currentUser = user;
-                        if (user) initFirestoreSync();
-                    });
-                }
-            } catch (err) {
-                console.warn("Firebase not configured or fails. Running in local-only mode.");
-            }
-        };
-
-        // Firestore Sync
-        const initFirestoreSync = () => {
-            if (!currentUser || !db) return;
-            const q = collection(db, 'artifacts', appId, 'users', currentUser.uid, 'reports');
-            onSnapshot(q, (snapshot) => {
-                const history = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                renderHistory(history.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0)));
-            }, (error) => {
-                console.error("Firestore Error:", error);
-            });
-        };
-
-        // UI Core Logic (Expose to window for onclick)
-        window.addSample = () => {
-            const input = document.getElementById('weightInput');
-            const val = parseFloat(input.value);
-            if (!isNaN(val) && val > 0) {
-                if (samples.length >= 500) {
-                    alert("Giới hạn 500 mẫu mỗi lần kiểm.");
-                    return;
-                }
-                samples.push(val);
-                input.value = '';
-                input.focus();
-                updateUI();
-            }
-        };
-
-        window.removeSample = (index) => {
-            samples.splice(index, 1);
-            updateUI();
-        };
-
-        window.clearAllSamples = () => {
-            if (confirm("Xóa toàn bộ dữ liệu mẫu hiện tại?")) {
-                samples = [];
-                updateUI();
-            }
-        };
-
-        const updateUI = () => {
-            renderSampleList();
-            renderStats();
-            renderAnalysis();
-        };
-
-        const renderSampleList = () => {
-            const list = document.getElementById('sampleList');
-            const clearBtn = document.getElementById('clearAllSection');
-            
-            if (samples.length === 0) {
-                list.innerHTML = '<div class="h-full flex items-center justify-center text-slate-300 italic text-[10px]">Chưa có mẫu nào</div>';
-                clearBtn.classList.add('hidden');
-                return;
-            }
-
-            clearBtn.classList.remove('hidden');
-            list.innerHTML = [...samples].reverse().map((s, i) => `
-                <div class="flex justify-between items-center px-3 py-2 bg-white rounded-lg shadow-sm border border-slate-100">
-                    <span class="text-[9px] font-bold text-slate-300">#${samples.length - i}</span>
-                    <span class="font-black text-slate-700 text-sm">${s}g</span>
-                    <button onclick="removeSample(${samples.length - 1 - i})" class="text-red-300 hover:text-red-500 transition-all">
-                        <i class="fas fa-trash text-[12px]"></i>
-                    </button>
-                </div>
-            `).join('');
-        };
-
-        const renderStats = () => {
-            const total = samples.length;
-            const weightSum = samples.reduce((a, b) => a + b, 0);
-            const avg = total > 0 ? Math.round(weightSum / total) : 0;
-            const kg = (weightSum / 1000).toFixed(2);
-
-            document.getElementById('statCount').innerText = total;
-            document.getElementById('statAvg').innerText = avg;
-            document.getElementById('statWeight').innerText = kg;
-        };
-
-        const renderAnalysis = () => {
-            const tbody = document.getElementById('analysisTable');
-            if (samples.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="4" class="p-10 text-center text-slate-300 italic">Chưa có dữ liệu phân tích</td></tr>';
-                return;
-            }
-
-            const sortedT = [...thresholds].sort((a, b) => a - b);
-            let bins = [{ label: `Dưới ${sortedT[0]}g`, min: 0, max: sortedT[0], count: 0, weight: 0 }];
-            for (let i = 0; i < sortedT.length - 1; i++) {
-                bins.push({ label: `${sortedT[i]} - ${sortedT[i+1]}g`, min: sortedT[i], max: sortedT[i+1], count: 0, weight: 0 });
-            }
-            bins.push({ label: `Trên ${sortedT[sortedT.length-1]}g (UP)`, min: sortedT[sortedT.length-1], max: Infinity, count: 0, weight: 0 });
-
-            samples.forEach(s => {
-                for (let bin of bins) {
-                    if (s >= bin.min && s < bin.max) {
-                        bin.count++;
-                        bin.weight += s;
-                        break;
-                    }
-                }
-            });
-
-            tbody.innerHTML = bins.map(bin => {
-                const percent = samples.length > 0 ? ((bin.count / samples.length) * 100).toFixed(1) : '0.0';
-                return `
-                    <tr class="hover:bg-blue-50/50 transition-colors">
-                        <td class="p-3 font-bold text-slate-600">${bin.label}</td>
-                        <td class="p-3 text-center font-black text-blue-600">${bin.count}</td>
-                        <td class="p-3 text-center text-slate-400 font-medium">${bin.weight.toLocaleString()}g</td>
-                        <td class="p-3 text-right font-black text-slate-900">${percent}%</td>
-                    </tr>
-                `;
-            }).join('');
-        };
-
+        // HÀM HIỂN THỊ LỊCH SỬ (Đã được đưa vào scope module)
         const renderHistory = (history) => {
+            historyData = history; // Lưu trữ để dùng cho việc load report
             const tbody = document.getElementById('historyTable');
             if (history.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="4" class="p-10 text-center text-slate-300 italic">Không có dữ liệu lưu trữ</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="4" class="p-10 text-center text-slate-300 italic">Chưa có báo cáo nào trên hệ thống</td></tr>';
                 return;
             }
 
             tbody.innerHTML = history.map(item => `
                 <tr class="hover:bg-slate-50 transition-all">
                     <td class="p-3 text-slate-500 font-medium text-[10px]">
-                        ${item.createdAt?.toDate().toLocaleDateString('vi-VN')}
+                        ${item.createdAt?.toDate ? item.createdAt.toDate().toLocaleDateString('vi-VN') : 'Mới'}
                     </td>
                     <td class="p-3">
                         <div class="font-bold text-slate-800 leading-none mb-1 text-xs">${item.ownerName || '---'}</div>
@@ -318,133 +180,148 @@
                     </td>
                     <td class="p-3 text-center font-black text-blue-600">${item.avgWeight}g</td>
                     <td class="p-3 text-right">
-                        <div class="flex justify-end gap-1">
-                            <button class="p-1.5 text-blue-600 hover:bg-blue-100 rounded-md load-btn" data-id="${item.id}">
-                                <i class="fas fa-external-link-alt text-[10px]"></i>
-                            </button>
-                            <button onclick="deleteReport('${item.id}')" class="p-1.5 text-red-300 hover:text-red-500 hover:bg-red-50 rounded-md">
-                                <i class="fas fa-trash-alt text-[10px]"></i>
-                            </button>
-                        </div>
+                        <button onclick="window.loadLocalReport('${item.id}')" class="p-1.5 text-blue-600 hover:bg-blue-100 rounded-md">
+                            <i class="fas fa-download text-[10px]"></i>
+                        </button>
                     </td>
                 </tr>
             `).join('');
-
-            document.querySelectorAll('.load-btn').forEach(btn => {
-                btn.onclick = () => {
-                    const id = btn.getAttribute('data-id');
-                    const data = history.find(h => h.id === id);
-                    if (data) {
-                        document.getElementById('ownerName').value = data.ownerName || '';
-                        document.getElementById('pondCode').value = data.pondCode || '';
-                        document.getElementById('address').value = data.address || '';
-                        document.getElementById('expectedYield').value = data.expectedYield || '';
-                        samples = [...data.samples];
-                        updateUI();
-                        window.scrollTo({ top: 0, behavior: 'smooth' });
-                    }
-                };
-            });
         };
 
-        window.deleteReport = async (id) => {
-            if (!currentUser || !db || !confirm("Xóa báo cáo này vĩnh viễn?")) return;
-            await deleteDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'reports', id));
-        };
+        // Đồng bộ dữ liệu Cloud tự động
+        const q = query(collection(db, "reports"), orderBy("createdAt", "desc"));
+        onSnapshot(q, (snapshot) => {
+            const history = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            renderHistory(history);
+        }, (err) => console.error("Snapshot error:", err));
 
+        // Hàm lưu Cloud công khai
         window.handleSaveCloud = async () => {
-            if (!db || !currentUser) {
-                alert("Cloud chưa được cấu hình. Vui lòng sử dụng trên môi trường có Firebase.");
-                return;
-            }
-            if (samples.length === 0) {
-                alert("Hãy nhập dữ liệu mẫu trước!");
-                return;
-            }
-            
+            if (samples.length === 0) return alert("Hãy nhập dữ liệu trước!");
             const btn = document.getElementById('btnSaveCloud');
             btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> <span>ĐANG LƯU...</span>';
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> LƯU...';
 
             try {
-                const reportId = `REP-${Date.now()}`;
-                const weightSum = samples.reduce((a, b) => a + b, 0);
-                const avg = Math.round(weightSum / samples.length);
-                
-                await setDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'reports', reportId), {
+                await addDoc(collection(db, "reports"), {
                     ownerName: document.getElementById('ownerName').value,
-                    address: document.getElementById('address').value,
                     pondCode: document.getElementById('pondCode').value,
+                    address: document.getElementById('address').value,
                     expectedYield: document.getElementById('expectedYield').value,
-                    samples,
-                    thresholds,
-                    totalCount: samples.length,
-                    avgWeight: avg,
-                    totalWeightKg: (weightSum / 1000).toFixed(2),
+                    samples: samples,
+                    avgWeight: Math.round(samples.reduce((a,b)=>a+b,0)/samples.length),
                     createdAt: Timestamp.now()
                 });
-                alert("Lưu Cloud thành công!");
+                alert("Đã gửi báo cáo lên hệ thống chung thành công!");
             } catch (e) {
-                console.error("Save error:", e);
-                alert("Lỗi khi lưu dữ liệu lên Cloud.");
+                alert("Lỗi lưu trữ: " + e.message);
             } finally {
                 btn.disabled = false;
-                btn.innerHTML = '<i class="fas fa-cloud-upload-alt"></i> <span>LƯU CLOUD</span>';
+                btn.innerHTML = '<i class="fas fa-cloud-upload-alt"></i> LƯU CLOUD';
             }
+        };
+
+        // Logic UI phụ trợ
+        window.addSample = () => {
+            const input = document.getElementById('weightInput');
+            const val = parseFloat(input.value);
+            if (!isNaN(val) && val > 0) {
+                samples.push(val);
+                input.value = '';
+                input.focus();
+                updateUI();
+            }
+        };
+
+        window.removeSample = (idx) => {
+            samples.splice(idx, 1);
+            updateUI();
+        };
+
+        window.clearAllSamples = () => {
+            if(confirm("Xóa sạch danh sách hiện tại?")) {
+                samples = [];
+                updateUI();
+            }
+        };
+
+        window.loadLocalReport = (id) => {
+            const data = historyData.find(h => h.id === id);
+            if (data) {
+                document.getElementById('ownerName').value = data.ownerName || '';
+                document.getElementById('pondCode').value = data.pondCode || '';
+                document.getElementById('address').value = data.address || '';
+                document.getElementById('expectedYield').value = data.expectedYield || '';
+                samples = [...data.samples];
+                updateUI();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        };
+
+        const updateUI = () => {
+            const list = document.getElementById('sampleList');
+            if (samples.length === 0) {
+                list.innerHTML = '<div class="h-full flex items-center justify-center text-slate-300 italic text-[10px]">Chưa có mẫu nào</div>';
+                document.getElementById('clearAllSection').classList.add('hidden');
+            } else {
+                document.getElementById('clearAllSection').classList.remove('hidden');
+                list.innerHTML = [...samples].reverse().map((s, i) => `
+                    <div class="flex justify-between items-center px-3 py-2 bg-white rounded-lg shadow-sm border border-slate-100">
+                        <span class="text-[9px] font-bold text-slate-300">#${samples.length - i}</span>
+                        <span class="font-black text-slate-700 text-sm">${s}g</span>
+                        <button onclick="removeSample(${samples.length - 1 - i})" class="text-red-300 hover:text-red-500"><i class="fas fa-trash text-[10px]"></i></button>
+                    </div>
+                `).join('');
+            }
+
+            const total = samples.length;
+            const weightSum = samples.reduce((a, b) => a + b, 0);
+            document.getElementById('statCount').innerText = total;
+            document.getElementById('statAvg').innerText = total > 0 ? Math.round(weightSum / total) : 0;
+            document.getElementById('statWeight').innerText = (weightSum / 1000).toFixed(2);
+
+            renderAnalysis();
+        };
+
+        const renderAnalysis = () => {
+            const tbody = document.getElementById('analysisTable');
+            if (samples.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" class="p-10 text-center text-slate-300 italic text-xs">Chưa có dữ liệu</td></tr>';
+                return;
+            }
+            const sortedT = [...thresholds].sort((a,b)=>a-b);
+            let bins = [{ label: `Dưới ${sortedT[0]}g`, min: 0, max: sortedT[0], count: 0, weight: 0 }];
+            for (let i = 0; i < sortedT.length - 1; i++) {
+                bins.push({ label: `${sortedT[i]} - ${sortedT[i+1]}g`, min: sortedT[i], max: sortedT[i+1], count: 0, weight: 0 });
+            }
+            bins.push({ label: `Trên ${sortedT[sortedT.length-1]}g`, min: sortedT[sortedT.length-1], max: Infinity, count: 0, weight: 0 });
+            
+            samples.forEach(s => {
+                for (let bin of bins) { if (s >= bin.min && s < bin.max) { bin.count++; bin.weight += s; break; } }
+            });
+
+            tbody.innerHTML = bins.map(bin => `
+                <tr class="hover:bg-blue-50/50">
+                    <td class="p-3 font-bold text-slate-600">${bin.label}</td>
+                    <td class="p-3 text-center font-black text-blue-600">${bin.count}</td>
+                    <td class="p-3 text-center text-slate-400 font-medium">${bin.weight.toLocaleString()}g</td>
+                    <td class="p-3 text-right font-black text-slate-900">${samples.length > 0 ? ((bin.count/samples.length)*100).toFixed(1) : 0}%</td>
+                </tr>
+            `).join('');
         };
 
         window.exportToExcel = () => {
             if (samples.length === 0) return;
             const pond = document.getElementById('pondCode').value || 'Report';
-            
-            const sortedT = [...thresholds].sort((a, b) => a - b);
-            let bins = [{ label: `Dưới ${sortedT[0]}g`, min: 0, max: sortedT[0], count: 0, weight: 0 }];
-            for (let i = 0; i < sortedT.length - 1; i++) {
-                bins.push({ label: `${sortedT[i]} - ${sortedT[i+1]}g`, min: sortedT[i], max: sortedT[i+1], count: 0, weight: 0 });
-            }
-            bins.push({ label: `Trên ${sortedT[sortedT.length-1]}g (UP)`, min: sortedT[sortedT.length-1], max: Infinity, count: 0, weight: 0 });
-            samples.forEach(s => {
-                for (let bin of bins) {
-                    if (s >= bin.min && s < bin.max) { bin.count++; bin.weight += s; break; }
-                }
-            });
-
-            const reportData = [
-                ["BÁO CÁO PHÂN TÍCH SIZE CÁ"],
-                ["Ngày xuất:", new Date().toLocaleString('vi-VN')],
-                [],
-                ["THÔNG TIN KHÁCH HÀNG"],
-                ["Chủ ao:", document.getElementById('ownerName').value],
-                ["Mã ao:", pond],
-                ["Khu vực:", document.getElementById('address').value],
-                [],
-                ["KẾT QUẢ TỔNG HỢP"],
-                ["Số lượng mẫu:", samples.length + " con"],
-                ["Trọng lượng TB:", Math.round(samples.reduce((a,b)=>a+b,0)/samples.length) + " g"],
-                [],
-                ["CHI TIẾT PHÂN LOẠI"],
-                ["Dải Size", "Số lượng", "Khối lượng (g)", "Tỷ lệ (%)"]
-            ];
-
-            bins.forEach(b => {
-                const percent = ((b.count / samples.length) * 100).toFixed(1) + "%";
-                reportData.push([b.label, b.count, b.weight, percent]);
-            });
-
+            const data = [["BÁO CÁO SIZE CÁ"], ["Ngày:", new Date().toLocaleString()], ["Ao:", pond], ["Mẫu:", samples.length + " con"], ["Size TB:", Math.round(samples.reduce((a,b)=>a+b,0)/samples.length) + "g"], [], ["Chi tiết mẫu (g):"], ...samples.map(s => [s])];
             const wb = XLSX.utils.book_new();
-            const ws = XLSX.utils.aoa_to_sheet(reportData);
+            const ws = XLSX.utils.aoa_to_sheet(data);
             XLSX.utils.book_append_sheet(wb, ws, "Báo cáo");
-            XLSX.writeFile(wb, `Size_Ca_${pond}.xlsx`);
+            XLSX.writeFile(wb, `BaoCao_Size_${pond}.xlsx`);
         };
 
-        // Enter key support
-        document.getElementById('weightInput').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') window.addSample();
-        });
-
-        // Start initialization
-        startFirebase();
-
+        document.getElementById('weightInput').addEventListener('keypress', (e) => { if (e.key === 'Enter') window.addSample(); });
+        updateUI(); // Khởi tạo UI trống
     </script>
 </body>
 </html>
