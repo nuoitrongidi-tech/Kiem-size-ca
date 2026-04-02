@@ -17,14 +17,21 @@
         .input-focus { @apply focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all; }
         .animate-in { animation: fadeIn 0.2s ease-out; }
         @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        .modal-overlay { background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(8px); }
         
-        .modal-overlay { background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(4px); }
+        /* Print optimization style */
+        @media print {
+            .no-print { display: none; }
+            .print-only { display: block; }
+            body { background: white; }
+            .modal-content { box-shadow: none; border: none; }
+        }
     </style>
 </head>
 <body class="bg-slate-50 min-h-screen pb-10">
 
-    <!-- Header Chuyên Nghiệp -->
-    <header class="bg-slate-900 text-white sticky top-0 z-40 shadow-2xl border-b border-slate-800">
+    <!-- Header -->
+    <header class="bg-slate-900 text-white sticky top-0 z-40 shadow-2xl border-b border-slate-800 no-print">
         <div class="max-w-[1440px] mx-auto px-4 py-3 flex flex-col md:flex-row justify-between items-center gap-4">
             <div class="flex items-center gap-4">
                 <div class="bg-gradient-to-br from-blue-500 to-indigo-700 p-2.5 rounded-xl shadow-lg border border-blue-400/20">
@@ -32,7 +39,7 @@
                 </div>
                 <div>
                     <h1 class="text-lg font-black uppercase tracking-tight leading-none">Fish QC Dashboard</h1>
-                    <p class="text-[10px] text-blue-400 font-bold uppercase tracking-widest mt-1">Kiểm soát Chất lượng & Size Cá v2.6</p>
+                    <p class="text-[10px] text-blue-400 font-bold uppercase tracking-widest mt-1">Kiểm soát Chất lượng & Size Cá v3.0</p>
                 </div>
             </div>
             <div class="flex gap-2 w-full md:w-auto">
@@ -46,12 +53,10 @@
         </div>
     </header>
 
-    <main class="max-w-[1440px] mx-auto p-4 md:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
-        
-        <!-- CỘT NHẬP LIỆU (CHIẾM 1/3) -->
+    <main class="max-w-[1440px] mx-auto p-4 md:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 no-print">
+        <!-- CỘT NHẬP LIỆU -->
         <div class="lg:col-span-4 space-y-6">
-            
-            <!-- Phần 1: Định danh -->
+            <!-- Thông tin kiểm tra -->
             <section class="bg-white p-5 rounded-3xl shadow-sm border border-slate-200">
                 <h2 class="text-[11px] font-black uppercase text-slate-400 mb-4 flex items-center gap-2">
                     <i class="fas fa-id-card text-blue-500"></i> Thông tin kiểm tra
@@ -69,14 +74,15 @@
                         <input id="pondCode" type="text" placeholder="Mã ao" class="p-3 bg-slate-50 border border-slate-100 rounded-xl font-bold text-sm input-focus uppercase">
                         <input id="address" type="text" placeholder="Khu vực" class="p-3 bg-slate-50 border border-slate-100 rounded-xl font-bold text-sm input-focus">
                     </div>
+                    <div class="relative group">
+                        <i class="fas fa-weight-hanging absolute left-3 top-3.5 text-slate-400 text-xs"></i>
+                        <input id="pondYield" type="number" step="0.1" placeholder="Sản lượng cá trong ao (tấn)..." class="w-full pl-10 p-3 bg-slate-50 border border-slate-100 rounded-xl font-bold text-sm input-focus">
+                    </div>
                 </div>
             </section>
 
-            <!-- Phần 2: Cân Size -->
+            <!-- Nhập trọng lượng -->
             <section class="bg-white p-5 rounded-3xl shadow-sm border border-slate-200 relative overflow-hidden">
-                <div class="absolute top-0 right-0 p-3">
-                    <span class="text-[10px] font-black text-blue-100 uppercase opacity-20">Weighing</span>
-                </div>
                 <h2 class="text-[11px] font-black uppercase text-slate-400 mb-4 flex items-center gap-2">
                     <i class="fas fa-balance-scale text-blue-500"></i> Nhập trọng lượng (g)
                 </h2>
@@ -88,185 +94,151 @@
                     <button onclick="addSample()" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-2xl font-black transition-all active:scale-95 shadow-xl flex items-center justify-center gap-3">
                         <i class="fas fa-plus"></i> THÊM MẪU
                     </button>
-                    
-                    <div id="sampleList" class="max-h-56 overflow-y-auto bg-slate-50 rounded-2xl p-2 space-y-2 border shadow-inner custom-scroll">
+                    <div id="sampleList" class="max-h-48 overflow-y-auto bg-slate-50 rounded-2xl p-2 space-y-2 border shadow-inner custom-scroll">
                         <div class="py-12 text-center text-slate-300 italic text-[10px] uppercase font-bold tracking-widest">Chưa có dữ liệu mẫu</div>
                     </div>
-                    <button onclick="clearAllSamples()" class="w-full text-[9px] font-black text-red-300 uppercase tracking-widest hover:text-red-500 transition-colors">Xóa sạch mẫu</button>
                 </div>
             </section>
 
-            <!-- Phần 3: Đánh giá cảm quan Fillet -->
-            <section class="bg-white p-5 rounded-3xl shadow-sm border border-slate-200 bg-gradient-to-b from-white to-slate-50">
+            <!-- Cảm quan Fillet -->
+            <section class="bg-white p-5 rounded-3xl shadow-sm border border-slate-200">
                 <h2 class="text-[11px] font-black uppercase text-slate-400 mb-5 flex items-center gap-2">
                     <i class="fas fa-vial text-blue-500"></i> Đánh giá cảm quan Fillet
                 </h2>
-                
-                <div class="grid grid-cols-2 gap-3 mb-6">
+                <div class="grid grid-cols-2 gap-3 mb-4">
                     <div class="bg-white p-3 rounded-2xl border border-slate-100 shadow-sm">
                         <label class="block text-[9px] font-black text-slate-400 uppercase mb-1">Định mức Fillet</label>
-                        <div class="flex items-center gap-1">
-                            <input id="filletRatio" type="number" step="0.01" placeholder="0.0" class="w-full bg-transparent text-lg font-black text-slate-800 outline-none">
-                            <!-- Đã loại bỏ dấu % tại đây -->
-                        </div>
+                        <input id="filletRatio" type="number" step="0.01" placeholder="0.0" class="w-full bg-transparent text-lg font-black text-slate-800 outline-none">
                     </div>
-                    <div class="bg-white p-3 rounded-2xl border border-slate-100 shadow-sm flex flex-col justify-center">
-                        <label class="block text-[9px] font-black text-slate-400 uppercase mb-1 text-center">Tổng miếng</label>
-                        <div id="totalFilletPieces" class="text-xl font-black text-blue-600 text-center">0</div>
+                    <div class="bg-white p-3 rounded-2xl border border-slate-100 shadow-sm text-center">
+                        <label class="block text-[9px] font-black text-slate-400 uppercase mb-1">Tổng miếng</label>
+                        <div id="totalFilletPieces" class="text-xl font-black text-blue-600">0</div>
                     </div>
                 </div>
-
-                <div class="space-y-3">
-                    <p class="text-[10px] font-black text-slate-500 uppercase tracking-tighter mb-2">Số miếng theo màu sắc:</p>
-                    <div class="grid grid-cols-2 gap-2">
-                        <div class="flex flex-col bg-white p-3 rounded-2xl border border-slate-100 shadow-sm">
-                            <span class="text-[10px] font-bold text-slate-400 uppercase mb-1 flex items-center gap-2">
-                                <div class="w-2 h-2 rounded-full bg-white border border-slate-300"></div> Trắng
-                            </span>
-                            <input type="number" data-color="white" onchange="updateFilletStats()" class="fillet-input w-full bg-slate-50 p-2 rounded-xl text-center font-black text-lg" value="0">
-                        </div>
-                        <div class="flex flex-col bg-white p-3 rounded-2xl border border-slate-100 shadow-sm">
-                            <span class="text-[10px] font-bold text-slate-400 uppercase mb-1 flex items-center gap-2">
-                                <div class="w-2 h-2 rounded-full bg-pink-100 border border-pink-200"></div> Hồng Trắng
-                            </span>
-                            <input type="number" data-color="whitePink" onchange="updateFilletStats()" class="fillet-input w-full bg-slate-50 p-2 rounded-xl text-center font-black text-lg" value="0">
-                        </div>
-                        <div class="flex flex-col bg-white p-3 rounded-2xl border border-slate-100 shadow-sm">
-                            <span class="text-[10px] font-bold text-slate-400 uppercase mb-1 flex items-center gap-2">
-                                <div class="w-2 h-2 rounded-full bg-red-400"></div> Hồng
-                            </span>
-                            <input type="number" data-color="pink" onchange="updateFilletStats()" class="fillet-input w-full bg-slate-50 p-2 rounded-xl text-center font-black text-lg" value="0">
-                        </div>
-                        <div class="flex flex-col bg-white p-3 rounded-2xl border border-slate-100 shadow-sm">
-                            <span class="text-[10px] font-bold text-slate-400 uppercase mb-1 flex items-center gap-2">
-                                <div class="w-2 h-2 rounded-full bg-yellow-400"></div> Vàng
-                            </span>
-                            <input type="number" data-color="yellow" onchange="updateFilletStats()" class="fillet-input w-full bg-slate-50 p-2 rounded-xl text-center font-black text-lg" value="0">
-                        </div>
+                <div class="grid grid-cols-2 gap-2 mb-4">
+                    <div class="bg-white p-3 rounded-2xl border border-slate-100 shadow-sm">
+                        <span class="text-[10px] font-bold text-slate-400 uppercase mb-1 block">Trắng</span>
+                        <input type="number" data-color="white" onchange="updateFilletStats()" class="fillet-input w-full bg-slate-50 p-2 rounded-xl text-center font-black" value="0">
                     </div>
-
-                    <div class="mt-4">
-                        <label class="block text-[10px] font-black text-slate-400 uppercase mb-2">Ghi chú chất lượng</label>
-                        <textarea id="qualityNote" rows="3" placeholder="Ghi chú về ngoại quan, bệnh lý..." class="w-full p-4 bg-white border border-slate-100 shadow-sm rounded-2xl text-sm font-medium input-focus resize-none"></textarea>
+                    <div class="bg-white p-3 rounded-2xl border border-slate-100 shadow-sm">
+                        <span class="text-[10px] font-bold text-slate-400 uppercase mb-1 block">Hồng Trắng</span>
+                        <input type="number" data-color="whitePink" onchange="updateFilletStats()" class="fillet-input w-full bg-slate-50 p-2 rounded-xl text-center font-black" value="0">
                     </div>
+                    <div class="bg-white p-3 rounded-2xl border border-slate-100 shadow-sm">
+                        <span class="text-[10px] font-bold text-slate-400 uppercase mb-1 block">Hồng</span>
+                        <input type="number" data-color="pink" onchange="updateFilletStats()" class="fillet-input w-full bg-slate-50 p-2 rounded-xl text-center font-black" value="0">
+                    </div>
+                    <div class="bg-white p-3 rounded-2xl border border-slate-100 shadow-sm">
+                        <span class="text-[10px] font-bold text-slate-400 uppercase mb-1 block">Vàng</span>
+                        <input type="number" data-color="yellow" onchange="updateFilletStats()" class="fillet-input w-full bg-slate-50 p-2 rounded-xl text-center font-black" value="0">
+                    </div>
+                </div>
+                <div class="relative group">
+                    <textarea id="filletNote" rows="2" placeholder="Ghi chú cảm quan (vd: thịt chắc, mỡ dày...)" class="w-full p-3 bg-slate-50 border border-slate-100 rounded-xl font-medium text-xs input-focus resize-none"></textarea>
                 </div>
             </section>
         </div>
 
-        <!-- CỘT PHÂN TÍCH & LỊCH SỬ (CHIẾM 2/3) -->
+        <!-- CỘT HIỂN THỊ DỮ LIỆU -->
         <div class="lg:col-span-8 space-y-6">
-            
-            <!-- Dashboard Stats -->
+            <!-- Stats -->
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div class="bg-white p-5 rounded-3xl border border-slate-200 shadow-sm">
-                    <p class="text-[10px] font-black text-slate-400 uppercase mb-2">Tổng số mẫu</p>
-                    <div class="flex items-end gap-1">
-                        <h3 id="statCount" class="text-3xl font-black text-slate-900 leading-none">0</h3>
-                        <span class="text-[10px] font-bold text-slate-400 uppercase pb-1">Con</span>
-                    </div>
+                    <p class="text-[10px] font-black text-slate-400 uppercase mb-2">Tổng mẫu</p>
+                    <h3 id="statCount" class="text-3xl font-black text-slate-900">0</h3>
                 </div>
                 <div class="bg-indigo-600 p-5 rounded-3xl shadow-xl text-white">
-                    <p class="text-[10px] font-black text-indigo-100 uppercase mb-2">Size Trung Bình</p>
-                    <div class="flex items-end gap-1">
-                        <h3 id="statAvg" class="text-3xl font-black leading-none text-white">0</h3>
-                        <span class="text-[10px] font-bold text-indigo-200 uppercase pb-1">Gram</span>
-                    </div>
+                    <p class="text-[10px] font-black text-indigo-100 uppercase mb-2">Size TB</p>
+                    <h3 id="statAvg" class="text-3xl font-black">0</h3>
                 </div>
                 <div class="bg-white p-5 rounded-3xl border border-slate-200 shadow-sm">
-                    <p class="text-[10px] font-black text-slate-400 uppercase mb-2">Khối lượng cân</p>
-                    <div class="flex items-end gap-1">
-                        <h3 id="statWeight" class="text-3xl font-black text-slate-900 leading-none">0.0</h3>
-                        <span class="text-[10px] font-bold text-slate-400 uppercase pb-1">Kg</span>
-                    </div>
+                    <p class="text-[10px] font-black text-slate-400 uppercase mb-2">Tổng Kg Mẫu</p>
+                    <h3 id="statWeight" class="text-3xl font-black text-slate-900">0.0</h3>
                 </div>
-                <div class="bg-white p-5 rounded-3xl border border-slate-200 shadow-sm flex flex-col justify-between">
+                <div class="bg-white p-5 rounded-3xl border border-slate-200 shadow-sm">
                     <p class="text-[10px] font-black text-slate-400 uppercase mb-2">Màu chủ đạo</p>
-                    <div class="flex items-center gap-3">
-                        <div id="statColor" class="w-6 h-6 rounded-full bg-slate-100 border-2 border-slate-200 shadow-inner"></div>
-                        <span id="statColorLabel" class="text-[10px] font-black text-slate-500 uppercase tracking-widest">---</span>
+                    <div class="flex items-center gap-2">
+                        <div id="statColor" class="w-6 h-6 rounded-full bg-slate-100"></div>
+                        <span id="statColorLabel" class="text-[10px] font-black uppercase text-slate-500">---</span>
                     </div>
                 </div>
             </div>
 
-            <!-- Phân tích dải size thực tế -->
+            <!-- Bảng Phân Tích -->
             <div class="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-sm">
-                <div class="bg-slate-900 px-6 py-4 text-white flex justify-between items-center">
-                    <h2 class="text-xs font-black uppercase tracking-widest">Dải trọng lượng cá thực tế</h2>
-                    <i class="fas fa-chart-bar text-blue-500"></i>
+                <div class="bg-slate-900 px-6 py-4 text-white">
+                    <h2 class="text-xs font-black uppercase tracking-widest">Phân bổ trọng lượng nhanh</h2>
                 </div>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-sm">
-                        <thead class="bg-slate-50 border-b">
-                            <tr class="text-[10px] font-black text-slate-400 uppercase">
-                                <th class="p-4 text-left">Dải Trọng Lượng</th>
-                                <th class="p-4 text-center">Số lượng</th>
-                                <th class="p-4 text-center">Tổng (g)</th>
-                                <th class="p-4 text-right">Tỷ lệ (%)</th>
-                            </tr>
-                        </thead>
-                        <tbody id="analysisTable" class="divide-y divide-slate-100">
-                            <tr><td colspan="4" class="p-20 text-center text-slate-300 italic font-medium">Đang chờ dữ liệu nhập từ bảng cân...</td></tr>
-                        </tbody>
-                    </table>
-                </div>
+                <table class="w-full text-sm">
+                    <thead class="bg-slate-50 border-b">
+                        <tr class="text-[10px] font-black text-slate-400 uppercase">
+                            <th class="p-4 text-left">Dải Trọng Lượng</th>
+                            <th class="p-4 text-center">Số lượng</th>
+                            <th class="p-4 text-right">Tỷ lệ (%)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="analysisTable" class="divide-y divide-slate-100">
+                        <tr><td colspan="3" class="p-10 text-center text-slate-300 italic">Chưa có dữ liệu...</td></tr>
+                    </tbody>
+                </table>
             </div>
 
-            <!-- Lịch sử đồng bộ hệ thống -->
+            <!-- Đồng bộ Cloud -->
             <section class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
-                <div class="p-5 bg-slate-50 border-b flex items-center justify-between">
+                <div class="p-5 bg-slate-50 border-b">
                     <h2 class="text-[11px] font-black uppercase text-slate-500 flex items-center gap-2">
-                        <i class="fas fa-database text-blue-500"></i> Dữ liệu đồng bộ Cloud
+                        <i class="fas fa-database text-blue-500"></i> Lịch sử báo cáo Cloud
                     </h2>
                 </div>
-                <div class="max-h-[500px] overflow-y-auto custom-scroll">
-                    <div id="historyList" class="divide-y divide-slate-50">
-                        <div class="p-20 text-center text-slate-300 italic text-xs">Đang tải cơ sở dữ liệu...</div>
-                    </div>
+                <div id="historyList" class="divide-y divide-slate-50 max-h-[500px] overflow-y-auto custom-scroll">
+                    <div class="p-20 text-center text-slate-300 italic text-xs">Đang tải dữ liệu...</div>
                 </div>
             </section>
         </div>
     </main>
 
-    <!-- MODAL CHI TIẾT BÁO CÁO -->
+    <!-- Modal Chi Tiết Báo Cáo (RE-DESIGNED) -->
     <div id="reportModal" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-4">
-        <div class="modal-overlay absolute inset-0" onclick="closeModal()"></div>
-        <div class="bg-white w-full max-w-4xl max-h-[90vh] rounded-[2.5rem] shadow-2xl relative z-10 overflow-hidden flex flex-col animate-in">
-            <!-- Modal Header -->
-            <div class="bg-slate-900 p-6 flex justify-between items-center text-white">
-                <div class="flex items-center gap-4">
-                    <div class="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center">
-                        <i class="fas fa-clipboard-list text-xl"></i>
+        <div class="modal-overlay absolute inset-0 no-print" onclick="closeModal()"></div>
+        <div class="bg-white w-full max-w-5xl max-h-[95vh] rounded-[2rem] shadow-2xl relative z-10 overflow-hidden flex flex-col animate-in border border-slate-200">
+            <!-- Header Modal -->
+            <div class="bg-white border-b p-6 flex justify-between items-center no-print">
+                <div class="flex items-center gap-3">
+                    <div class="bg-blue-600 text-white w-10 h-10 rounded-xl flex items-center justify-center shadow-lg">
+                        <i class="fas fa-file-invoice"></i>
                     </div>
-                    <div>
-                        <h3 id="modalTitle" class="text-xl font-black uppercase">CHI TIẾT BÁO CÁO</h3>
-                        <p id="modalSubtitle" class="text-[10px] text-blue-400 font-bold uppercase tracking-widest mt-1">Dữ liệu lưu trữ đám mây</p>
-                    </div>
+                    <h3 class="text-lg font-black uppercase text-slate-800 tracking-tight">Chi Tiết Phiếu Kiểm Tra</h3>
                 </div>
-                <button onclick="closeModal()" class="w-10 h-10 rounded-full hover:bg-slate-800 flex items-center justify-center transition-colors">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            
-            <!-- Modal Body -->
-            <div id="modalContent" class="flex-1 overflow-y-auto custom-scroll p-6 md:p-8 space-y-8">
-                <!-- Data will be injected here -->
+                <div class="flex gap-2">
+                    <button onclick="window.print()" class="w-10 h-10 rounded-xl bg-slate-100 text-slate-600 hover:bg-slate-200 flex items-center justify-center transition-all">
+                        <i class="fas fa-print"></i>
+                    </button>
+                    <button onclick="closeModal()" class="w-10 h-10 rounded-xl bg-slate-100 text-slate-600 hover:bg-slate-200 flex items-center justify-center transition-all">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
             </div>
 
-            <!-- Modal Footer -->
-            <div class="p-6 bg-slate-50 border-t flex justify-between items-center">
-                <button onclick="loadReportFromModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-2xl font-black text-xs uppercase tracking-widest transition-all active:scale-95 shadow-lg">
-                    <i class="fas fa-edit mr-2"></i> Tải vào bảng chỉnh sửa
-                </button>
-                <div class="flex gap-3">
-                    <button onclick="closeModal()" class="px-6 py-3 rounded-2xl font-bold text-xs uppercase tracking-widest text-slate-400 hover:bg-slate-200 transition-all">Đóng</button>
+            <!-- Body Modal -->
+            <div id="modalContent" class="flex-1 overflow-y-auto p-6 md:p-10 space-y-10 custom-scroll">
+                <!-- Nội dung được render từ JS -->
+            </div>
+
+            <!-- Footer Modal -->
+            <div class="p-6 bg-slate-50 border-t flex flex-col md:flex-row gap-4 justify-between no-print">
+                <div class="flex gap-2">
+                    <button onclick="loadReportFromModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-2xl font-black text-xs uppercase shadow-lg shadow-indigo-200 transition-all active:scale-95">
+                        <i class="fas fa-edit mr-2"></i> Chỉnh sửa báo cáo này
+                    </button>
                 </div>
+                <button onclick="closeModal()" class="px-6 py-3 font-bold text-xs uppercase text-slate-400 hover:text-slate-600">Đóng cửa sổ</button>
             </div>
         </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, Timestamp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, deleteDoc, doc, onSnapshot, query, orderBy, Timestamp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
          const firebaseConfig = {
   apiKey: "AIzaSyCE1E5ecJPD3jp8kRIC1ltLLLn57oR4Jfw",
@@ -302,13 +274,6 @@
             updateUI();
         };
 
-        window.clearAllSamples = () => {
-            if(confirm("Xóa sạch danh sách hiện tại?")) {
-                samples = [];
-                updateUI();
-            }
-        };
-
         window.updateFilletStats = () => {
             let total = 0;
             const inputs = document.querySelectorAll('.fillet-input');
@@ -319,7 +284,6 @@
             inputs.forEach(input => {
                 let v = parseInt(input.value) || 0;
                 total += v;
-                
                 if(v > maxVal && v > 0) {
                     maxVal = v;
                     const type = input.getAttribute('data-color');
@@ -331,7 +295,7 @@
             });
 
             document.getElementById('totalFilletPieces').innerText = total;
-            document.getElementById('statColor').className = `w-6 h-6 rounded-full ${dominantColor} border-2 shadow-inner`;
+            document.getElementById('statColor').className = `w-6 h-6 rounded-full ${dominantColor} border-2`;
             document.getElementById('statColorLabel').innerText = dominantLabel;
         };
 
@@ -342,17 +306,11 @@
             } else {
                 list.innerHTML = [...samples].reverse().map((s, i) => `
                     <div class="flex justify-between items-center px-4 py-3 bg-white rounded-2xl shadow-sm border border-slate-100 animate-in">
-                        <div class="flex items-center gap-3">
-                            <span class="text-[9px] font-black text-slate-300 w-6 uppercase">#${samples.length - i}</span>
-                            <span class="font-black text-slate-800 text-xl tracking-tight">${s}<small class="text-[10px] text-slate-400 ml-1 font-bold">g</small></span>
-                        </div>
-                        <button onclick="removeSample(${samples.length - 1 - i})" class="text-red-200 hover:text-red-500 transition-colors p-2">
-                            <i class="fas fa-times-circle text-xs"></i>
-                        </button>
+                        <span class="font-black text-slate-800 text-lg">${s}g</span>
+                        <button onclick="removeSample(${samples.length - 1 - i})" class="text-red-200 hover:text-red-500"><i class="fas fa-times-circle"></i></button>
                     </div>
                 `).join('');
             }
-
             const total = samples.length;
             const weightSum = samples.reduce((a, b) => a + b, 0);
             document.getElementById('statCount').innerText = total;
@@ -364,166 +322,42 @@
         const renderAnalysis = () => {
             const tbody = document.getElementById('analysisTable');
             if (samples.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="4" class="p-20 text-center text-slate-300 italic font-medium">Đang chờ dữ liệu nhập từ bảng cân...</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="3" class="p-10 text-center text-slate-300 italic">Chưa có dữ liệu...</td></tr>';
                 return;
             }
-            tbody.innerHTML = calculateBins(samples).map(bin => `
-                <tr class="hover:bg-slate-50 transition-colors group">
+            const bins = calculateBins(samples);
+            tbody.innerHTML = bins.map(bin => `
+                <tr class="hover:bg-slate-50 transition-colors">
                     <td class="p-4 font-bold text-slate-600">${bin.label}</td>
-                    <td class="p-4 text-center font-black text-blue-600 text-lg">${bin.count}</td>
-                    <td class="p-4 text-center text-slate-400 font-bold">${bin.weight.toLocaleString()}g</td>
+                    <td class="p-4 text-center font-black text-blue-600">${bin.count}</td>
                     <td class="p-4 text-right">
-                        <span class="bg-slate-100 px-3 py-1 rounded-full font-black text-slate-900">
-                            ${((bin.count/samples.length)*100).toFixed(1)}%
-                        </span>
+                        <span class="bg-slate-100 px-3 py-1 rounded-full font-black text-slate-900">${((bin.count/samples.length)*100).toFixed(1)}%</span>
                     </td>
                 </tr>
             `).join('');
         };
 
-        const calculateBins = (targetSamples) => {
-            const sortedT = [...thresholds].sort((a,b)=>a-b);
-            let bins = [{ label: `Dưới ${sortedT[0]}g`, min: 0, max: sortedT[0], count: 0, weight: 0 }];
-            for (let i = 0; i < sortedT.length - 1; i++) {
-                bins.push({ label: `${sortedT[i]} - ${sortedT[i+1]}g`, min: sortedT[i], max: sortedT[i+1], count: 0, weight: 0 });
+        const calculateBins = (data) => {
+            const sorted = [...thresholds].sort((a,b)=>a-b);
+            let bins = [{ label: `Dưới ${sorted[0]}g`, min: 0, max: sorted[0], count: 0 }];
+            for (let i = 0; i < sorted.length - 1; i++) {
+                bins.push({ label: `${sorted[i]} - ${sorted[i+1]}g`, min: sorted[i], max: sorted[i+1], count: 0 });
             }
-            bins.push({ label: `Trên ${sortedT[sortedT.length-1]}g`, min: sortedT[sortedT.length-1], max: Infinity, count: 0, weight: 0 });
-            targetSamples.forEach(s => {
-                for (let bin of bins) { if (s >= bin.min && s < bin.max) { bin.count++; bin.weight += s; break; } }
+            bins.push({ label: `Trên ${sorted[sorted.length-1]}g`, min: sorted[sorted.length-1], max: Infinity, count: 0 });
+            data.forEach(s => {
+                for (let bin of bins) { if (s >= bin.min && s < bin.max) { bin.count++; break; } }
             });
             return bins;
         };
 
-        // UI Modal Functions
-        window.openReportDetails = (id) => {
-            const data = cloudData.find(d => d.id === id);
-            if(!data) return;
-            currentModalReportId = id;
-            
-            const modal = document.getElementById('reportModal');
-            const content = document.getElementById('modalContent');
-            const dateStr = data.createdAt?.toDate().toLocaleString('vi-VN');
-            
-            // Tính toán nhanh dữ liệu
-            const bins = calculateBins(data.samples);
-            const totalS = data.samples.length;
-            const fillet = data.filletColors || { white: 0, whitePink: 0, pink: 0, yellow: 0 };
-            const totalF = Object.values(fillet).reduce((a,b)=>a+b,0);
-
-            content.innerHTML = `
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <!-- Cột 1: Thông tin ao & Thống kê -->
-                    <div class="space-y-6">
-                        <div class="bg-slate-50 p-6 rounded-3xl border border-slate-100">
-                            <h4 class="text-[10px] font-black text-slate-400 uppercase mb-4 tracking-widest">Định danh lô hàng</h4>
-                            <div class="grid grid-cols-2 gap-4">
-                                <div><p class="text-[9px] font-bold text-slate-400 uppercase">Chủ ao</p><p class="font-black text-slate-800">${data.ownerName || 'N/A'}</p></div>
-                                <div><p class="text-[9px] font-bold text-slate-400 uppercase">Mã ao</p><p class="font-black text-indigo-600">${data.pondCode || 'N/A'}</p></div>
-                                <div class="col-span-2"><p class="text-[9px] font-bold text-slate-400 uppercase">Khu vực</p><p class="font-black text-slate-800">${data.address || 'N/A'}</p></div>
-                                <div><p class="text-[9px] font-bold text-slate-400 uppercase">Nhân viên</p><p class="font-black text-slate-800">${data.staffName || 'N/A'}</p></div>
-                                <div><p class="text-[9px] font-bold text-slate-400 uppercase">Ngày kiểm</p><p class="font-bold text-slate-500 text-[11px]">${dateStr}</p></div>
-                            </div>
-                        </div>
-
-                        <div class="grid grid-cols-3 gap-3">
-                            <div class="bg-blue-50 p-4 rounded-2xl text-center">
-                                <p class="text-[8px] font-black text-blue-400 uppercase mb-1">Mẫu</p>
-                                <p class="text-xl font-black text-blue-700">${totalS}</p>
-                            </div>
-                            <div class="bg-emerald-50 p-4 rounded-2xl text-center">
-                                <p class="text-[8px] font-black text-emerald-400 uppercase mb-1">Size TB</p>
-                                <p class="text-xl font-black text-emerald-700">${data.avgWeight}g</p>
-                            </div>
-                            <div class="bg-indigo-50 p-4 rounded-2xl text-center">
-                                <p class="text-[8px] font-black text-indigo-400 uppercase mb-1">Định mức</p>
-                                <p class="text-xl font-black text-indigo-700">${data.filletRatio || 0}</p>
-                            </div>
-                        </div>
-
-                        <div class="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
-                            <h4 class="text-[10px] font-black text-slate-400 uppercase mb-4 tracking-widest">Cảm quan màu sắc</h4>
-                            <div class="space-y-3">
-                                ${renderColorBar("Trắng", fillet.white, totalF, "bg-slate-200")}
-                                ${renderColorBar("Hồng Trắng", fillet.whitePink, totalF, "bg-pink-100")}
-                                ${renderColorBar("Hồng", fillet.pink, totalF, "bg-red-400")}
-                                ${renderColorBar("Vàng", fillet.yellow, totalF, "bg-yellow-400")}
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Cột 2: Bảng Size & Ghi chú -->
-                    <div class="space-y-6">
-                        <div class="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
-                             <h4 class="text-[10px] font-black text-slate-400 uppercase p-4 bg-slate-50 tracking-widest">Phân bổ dải size</h4>
-                             <table class="w-full text-[11px]">
-                                <thead class="bg-slate-50 text-slate-400">
-                                    <tr>
-                                        <th class="p-2 text-left px-4">Dải</th>
-                                        <th class="p-2 text-center">Số lượng</th>
-                                        <th class="p-2 text-right px-4">Tỷ lệ</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="divide-y divide-slate-50">
-                                    ${bins.map(b => `
-                                        <tr>
-                                            <td class="p-2 px-4 font-bold text-slate-600">${b.label}</td>
-                                            <td class="p-2 text-center font-black">${b.count}</td>
-                                            <td class="p-2 text-right px-4 font-black text-blue-600">${totalS > 0 ? ((b.count/totalS)*100).toFixed(1) : 0}%</td>
-                                        </tr>
-                                    `).join('')}
-                                </tbody>
-                             </table>
-                        </div>
-
-                        <div class="bg-amber-50 p-6 rounded-3xl border border-amber-100">
-                            <h4 class="text-[10px] font-black text-amber-600 uppercase mb-2 tracking-widest"><i class="fas fa-comment-alt mr-2"></i>Ghi chú chất lượng</h4>
-                            <p class="text-sm text-amber-900 font-medium leading-relaxed italic">
-                                "${data.qualityNote || 'Không có ghi chú bổ sung cho lô cá này.'}"
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            `;
-
-            modal.classList.remove('hidden');
-        };
-
-        const renderColorBar = (label, value, total, colorClass) => {
-            const pct = total > 0 ? (value / total * 100).toFixed(1) : 0;
-            return `
-                <div class="space-y-1">
-                    <div class="flex justify-between text-[10px] font-bold uppercase">
-                        <span class="text-slate-500">${label}</span>
-                        <span class="text-slate-900">${value} miếng (${pct}%)</span>
-                    </div>
-                    <div class="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
-                        <div class="${colorClass} h-full" style="width: ${pct}%"></div>
-                    </div>
-                </div>
-            `;
-        };
-
-        window.closeModal = () => {
-            document.getElementById('reportModal').classList.add('hidden');
-            currentModalReportId = null;
-        };
-
-        window.loadReportFromModal = () => {
-            if (currentModalReportId) {
-                window.loadReport(currentModalReportId);
-                closeModal();
-            }
-        };
-
-        // Logic lưu trữ & đồng bộ
         window.handleSaveCloud = async () => {
             const staff = document.getElementById('staffName').value.trim();
-            if (!staff) return alert("Vui lòng nhập tên Nhân viên lấy mẫu!");
-            if (samples.length === 0) return alert("Hãy nhập ít nhất một mẫu cân.");
+            if (!staff) return alert("Vui lòng nhập tên nhân viên!");
+            if (samples.length === 0) return alert("Không có mẫu cân!");
 
             const btn = document.getElementById('btnSaveCloud');
             btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ĐANG GỬI...';
+            btn.innerHTML = 'ĐANG LƯU...';
 
             const filletData = {};
             document.querySelectorAll('.fillet-input').forEach(input => {
@@ -536,116 +370,277 @@
                     ownerName: document.getElementById('ownerName').value,
                     pondCode: document.getElementById('pondCode').value,
                     address: document.getElementById('address').value,
+                    pondYield: document.getElementById('pondYield').value,
                     filletRatio: document.getElementById('filletRatio').value,
                     filletColors: filletData,
-                    qualityNote: document.getElementById('qualityNote').value,
+                    filletNote: document.getElementById('filletNote').value,
                     samples: samples,
                     avgWeight: Math.round(samples.reduce((a,b)=>a+b,0)/samples.length),
                     createdAt: Timestamp.now()
                 });
-                alert("Đã lưu báo cáo thành công!");
+                alert("Lưu dữ liệu thành công!");
+                samples = [];
+                document.getElementById('filletNote').value = '';
+                updateUI();
             } catch (e) {
-                alert("Lỗi khi kết nối hệ thống: " + e.message);
+                alert("Lỗi: " + e.message);
             } finally {
                 btn.disabled = false;
                 btn.innerHTML = '<i class="fas fa-cloud-upload-alt"></i> LƯU HỆ THỐNG';
             }
         };
 
-        window.loadReport = (id) => {
-            const data = cloudData.find(d => d.id === id);
-            if(!data) return;
-            
-            document.getElementById('staffName').value = data.staffName || '';
-            document.getElementById('ownerName').value = data.ownerName || '';
-            document.getElementById('pondCode').value = data.pondCode || '';
-            document.getElementById('address').value = data.address || '';
-            document.getElementById('filletRatio').value = data.filletRatio || '';
-            document.getElementById('qualityNote').value = data.qualityNote || '';
-            
-            if(data.filletColors) {
-                document.querySelectorAll('.fillet-input').forEach(input => {
-                    const color = input.getAttribute('data-color');
-                    input.value = data.filletColors[color] || 0;
-                });
-            }
-            
-            samples = [...data.samples];
-            updateUI();
-            updateFilletStats();
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        };
-
-        window.exportToExcel = () => {
-            if (samples.length === 0) return alert("Không có dữ liệu cân cá.");
-            const pond = document.getElementById('pondCode').value || 'Báo cáo';
-            const wb = XLSX.utils.book_new();
-            const summary = [
-                ["BÁO CÁO KIỂM SOÁT SIZE & CHẤT LƯỢNG CÁ FILLET"],
-                ["Thời gian:", new Date().toLocaleString('vi-VN')],
-                ["Nhân viên:", document.getElementById('staffName').value],
-                ["Chủ ao:", document.getElementById('ownerName').value],
-                ["Mã ao:", pond],
-                [],
-                ["THỐNG KÊ KỸ THUẬT"],
-                ["Tổng số mẫu:", samples.length + " con"],
-                ["Trọng lượng TB:", Math.round(samples.reduce((a,b)=>a+b,0)/samples.length) + " g"],
-                ["Định mức Fillet:", document.getElementById('filletRatio').value],
-                [],
-                ["CHI TIẾT MÀU SẮC"],
-                ["Màu Trắng:", document.querySelector('[data-color="white"]').value],
-                ["Hồng Trắng:", document.querySelector('[data-color="whitePink"]').value],
-                ["Màu Hồng:", document.querySelector('[data-color="pink"]').value],
-                ["Màu Vàng:", document.querySelector('[data-color="yellow"]').value],
-                ["Ghi chú:", document.getElementById('qualityNote').value],
-                [],
-                ["DỮ LIỆU CÂN CHI TIẾT (g)"],
-                ...samples.map((s, i) => [`Mẫu #${i+1}`, s])
-            ];
-            const ws = XLSX.utils.aoa_to_sheet(summary);
-            XLSX.utils.book_append_sheet(wb, ws, "QC_Result");
-            XLSX.writeFile(wb, `QC_Report_${pond}.xlsx`);
-        };
-
         const q = query(collection(db, "reports"), orderBy("createdAt", "desc"));
         onSnapshot(q, (snapshot) => {
             cloudData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
             const list = document.getElementById('historyList');
-            
             if (cloudData.length === 0) {
-                list.innerHTML = '<div class="p-20 text-center text-slate-300 italic text-xs">Cơ sở dữ liệu trống.</div>';
+                list.innerHTML = '<div class="p-10 text-center text-slate-300">Hệ thống chưa có dữ liệu Cloud.</div>';
                 return;
             }
-
             list.innerHTML = cloudData.map(item => `
                 <div class="p-5 hover:bg-slate-50 transition-all flex justify-between items-center group">
-                    <div class="space-y-1">
+                    <div>
                         <div class="flex items-center gap-2">
-                            <span class="text-[10px] font-black text-indigo-600 uppercase bg-indigo-50 px-2 py-0.5 rounded border border-indigo-100">${item.pondCode || 'QC'}</span>
-                            <span class="text-sm font-black text-slate-800">${item.ownerName || '---'}</span>
+                            <span class="text-[10px] font-black text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-100">${item.pondCode || 'AO'}</span>
+                            <span class="text-sm font-black text-slate-800">${item.ownerName || 'N/A'}</span>
                         </div>
-                        <div class="flex items-center gap-4 text-[10px] text-slate-400 font-bold uppercase tracking-tighter">
-                            <span><i class="far fa-user mr-1"></i>${item.staffName || 'Admin'}</span>
-                            <span><i class="far fa-clock mr-1"></i>${item.createdAt?.toDate().toLocaleString('vi-VN')}</span>
-                        </div>
+                        <div class="text-[10px] text-slate-400 font-bold mt-1 uppercase">SL: ${item.pondYield || '0'} Tấn - ${item.createdAt?.toDate().toLocaleString('vi-VN')}</div>
                     </div>
-                    <div class="flex items-center gap-6">
-                        <div class="text-right">
-                            <div class="text-xl font-black text-slate-900 tracking-tight">${item.avgWeight}<small class="text-[10px] ml-0.5">g</small></div>
-                            <div class="text-[8px] font-black text-slate-300 uppercase tracking-widest">Trung bình</div>
+                    <div class="flex items-center gap-3">
+                        <div class="text-right mr-2">
+                            <div class="text-xl font-black text-slate-900">${item.avgWeight}g</div>
+                            <div class="text-[8px] font-black text-slate-300 uppercase">Size TB</div>
                         </div>
-                        <button onclick="openReportDetails('${item.id}')" class="w-10 h-10 flex items-center justify-center bg-white border border-slate-200 rounded-2xl text-blue-500 hover:bg-blue-600 hover:text-white hover:border-blue-600 transition-all shadow-sm">
-                            <i class="fas fa-eye text-xs"></i>
-                        </button>
+                        <div class="flex gap-2">
+                            <button onclick="openReportDetails('${item.id}')" class="w-10 h-10 flex items-center justify-center bg-white border rounded-2xl text-blue-500 hover:bg-blue-500 hover:text-white transition-all">
+                                <i class="fas fa-eye text-xs"></i>
+                            </button>
+                            <button onclick="deleteCloudReport('${item.id}', '${item.pondCode}')" class="w-10 h-10 flex items-center justify-center bg-white border rounded-2xl text-red-500 hover:bg-red-500 hover:text-white transition-all">
+                                <i class="fas fa-trash-alt text-xs"></i>
+                            </button>
+                        </div>
                     </div>
                 </div>
             `).join('');
-        });
+        }, (err) => console.error(err));
 
-        document.getElementById('weightInput').addEventListener('keypress', (e) => { 
-            if (e.key === 'Enter') window.addSample(); 
-        });
+        window.deleteCloudReport = async (id, pondCode) => {
+            if (confirm(`Xóa dữ liệu ao [${pondCode}]?`)) {
+                await deleteDoc(doc(db, "reports", id));
+            }
+        };
 
+        window.openReportDetails = (id) => {
+            const data = cloudData.find(d => d.id === id);
+            if(!data) return;
+            currentModalReportId = id;
+            const content = document.getElementById('modalContent');
+            const totalS = data.samples.length;
+            const weightTotal = data.samples.reduce((a,b)=>a+b,0);
+            const bins = calculateBins(data.samples);
+
+            content.innerHTML = `
+                <!-- BÁO CÁO HEADER CHUYÊN NGHIỆP -->
+                <div class="flex flex-col md:flex-row justify-between items-start border-b-4 border-slate-900 pb-8 gap-6">
+                    <div class="space-y-1">
+                        <h2 class="text-3xl font-black text-slate-900 tracking-tighter uppercase">PHIẾU KẾT QUẢ KIỂM TRA</h2>
+                        <p class="text-sm font-bold text-slate-500 uppercase">Mã số hồ sơ: <span class="text-blue-600">${id.substring(0,8).toUpperCase()}</span></p>
+                        <p class="text-sm font-bold text-slate-500">Ngày lấy mẫu: ${data.createdAt?.toDate().toLocaleString('vi-VN')}</p>
+                    </div>
+                    <div class="bg-slate-900 text-white p-6 rounded-3xl flex items-center gap-6 shadow-xl">
+                        <div class="text-center border-r border-slate-700 pr-6">
+                            <p class="text-[10px] font-black text-slate-400 uppercase">Size Trung Bình</p>
+                            <p class="text-4xl font-black text-blue-400">${data.avgWeight}<span class="text-xl">g</span></p>
+                        </div>
+                        <div class="text-center">
+                            <p class="text-[10px] font-black text-slate-400 uppercase">Định Mức Fillet</p>
+                            <p class="text-4xl font-black text-emerald-400">${data.filletRatio || '0.0'}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- GRID THÔNG TIN CƠ BẢN -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="p-6 bg-slate-50 rounded-3xl border border-slate-100">
+                        <p class="text-[10px] font-black text-slate-400 uppercase mb-4">Thông tin khách hàng</p>
+                        <div class="space-y-3">
+                            <div class="flex justify-between border-b pb-2"><span class="text-xs text-slate-500 font-bold">Chủ ao:</span> <span class="text-sm font-black text-slate-800">${data.ownerName || '---'}</span></div>
+                            <div class="flex justify-between border-b pb-2"><span class="text-xs text-slate-500 font-bold">Mã ao:</span> <span class="text-sm font-black text-indigo-600">${data.pondCode || '---'}</span></div>
+                            <div class="flex justify-between border-b pb-2"><span class="text-xs text-slate-500 font-bold">Khu vực:</span> <span class="text-sm font-black text-slate-800">${data.address || '---'}</span></div>
+                        </div>
+                    </div>
+                    <div class="p-6 bg-slate-50 rounded-3xl border border-slate-100">
+                        <p class="text-[10px] font-black text-slate-400 uppercase mb-4">Dữ liệu lấy mẫu</p>
+                        <div class="space-y-3">
+                            <div class="flex justify-between border-b pb-2"><span class="text-xs text-slate-500 font-bold">Sản lượng ao:</span> <span class="text-sm font-black text-slate-800">${data.pondYield || '0'} Tấn</span></div>
+                            <div class="flex justify-between border-b pb-2"><span class="text-xs text-slate-500 font-bold">Tổng mẫu cân:</span> <span class="text-sm font-black text-slate-800">${totalS} con</span></div>
+                            <div class="flex justify-between border-b pb-2"><span class="text-xs text-slate-500 font-bold">Tổng trọng lượng:</span> <span class="text-sm font-black text-slate-800">${(weightTotal/1000).toFixed(2)} Kg</span></div>
+                        </div>
+                    </div>
+                    <div class="p-6 bg-slate-50 rounded-3xl border border-slate-100">
+                        <p class="text-[10px] font-black text-slate-400 uppercase mb-4">Nhân sự thực hiện</p>
+                        <div class="flex items-center gap-4 mt-2">
+                            <div class="w-12 h-12 bg-white rounded-2xl shadow-sm flex items-center justify-center text-slate-400 border border-slate-100">
+                                <i class="fas fa-user-check fa-lg"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm font-black text-slate-800 uppercase">${data.staffName || 'N/A'}</p>
+                                <p class="text-[10px] font-bold text-blue-500 italic">Kỹ thuật viên QC</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CHI TIẾT DẢI SIZE & CẢM QUAN -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <!-- Bảng dải size chuyên nghiệp -->
+                    <div class="space-y-4">
+                        <h4 class="text-xs font-black text-slate-900 uppercase flex items-center gap-2">
+                            <span class="w-2 h-6 bg-blue-600 rounded-full"></span> 
+                            Chi tiết phân bổ dải trọng lượng
+                        </h4>
+                        <div class="overflow-hidden border border-slate-100 rounded-3xl shadow-sm">
+                            <table class="w-full text-sm">
+                                <thead class="bg-slate-900 text-white">
+                                    <tr class="text-[10px] uppercase font-black">
+                                        <th class="p-4 text-left">Dải Size (Gram)</th>
+                                        <th class="p-4 text-center">Số lượng</th>
+                                        <th class="p-4 text-right">Tỷ lệ %</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-50">
+                                    ${bins.map(b => {
+                                        const pct = totalS > 0 ? ((b.count/totalS)*100) : 0;
+                                        return `
+                                        <tr class="hover:bg-slate-50 transition-colors">
+                                            <td class="p-4 font-bold text-slate-700">${b.label}</td>
+                                            <td class="p-4 text-center font-black">${b.count} con</td>
+                                            <td class="p-4 text-right">
+                                                <div class="flex items-center justify-end gap-3">
+                                                    <div class="w-20 bg-slate-100 h-2 rounded-full overflow-hidden hidden md:block">
+                                                        <div class="bg-blue-600 h-full" style="width: ${pct}%"></div>
+                                                    </div>
+                                                    <span class="font-black text-blue-600 w-12">${pct.toFixed(1)}%</span>
+                                                </div>
+                                            </td>
+                                        </tr>`;
+                                    }).join('')}
+                                </tbody>
+                                <tfoot class="bg-slate-50 font-black">
+                                    <tr>
+                                        <td class="p-4 uppercase text-slate-500">Tổng cộng</td>
+                                        <td class="p-4 text-center">${totalS} con</td>
+                                        <td class="p-4 text-right text-indigo-600">100%</td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Cảm quan Fillet -->
+                    <div class="space-y-6">
+                        <div class="space-y-4">
+                            <h4 class="text-xs font-black text-slate-900 uppercase flex items-center gap-2">
+                                <span class="w-2 h-6 bg-emerald-500 rounded-full"></span> 
+                                Đánh giá cảm quan Fillet
+                            </h4>
+                            <div class="grid grid-cols-2 gap-4">
+                                ${renderColorCard("MÀU TRẮNG", data.filletColors?.white, "bg-white border-slate-200")}
+                                ${renderColorCard("HỒNG TRẮNG", data.filletColors?.whitePink, "bg-pink-50 border-pink-100 text-pink-700")}
+                                ${renderColorCard("MÀU HỒNG", data.filletColors?.pink, "bg-red-50 border-red-100 text-red-600")}
+                                ${renderColorCard("MÀU VÀNG", data.filletColors?.yellow, "bg-yellow-50 border-yellow-100 text-yellow-700")}
+                            </div>
+                        </div>
+
+                        <!-- Ghi chú lớn -->
+                        <div class="bg-indigo-50 border-2 border-dashed border-indigo-100 p-6 rounded-3xl">
+                            <p class="text-[10px] font-black text-indigo-400 uppercase mb-3 flex items-center gap-2">
+                                <i class="fas fa-comment-alt"></i> Ghi chú & Nhận xét kỹ thuật
+                            </p>
+                            <p class="text-sm font-medium text-slate-700 italic leading-relaxed">
+                                "${data.filletNote || 'Không có ghi chú cụ thể cho đợt kiểm tra này.'}"
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer ký tên -->
+                <div class="grid grid-cols-2 pt-12 text-center">
+                    <div class="space-y-1">
+                        <p class="text-[10px] font-black text-slate-400 uppercase">Người lập phiếu</p>
+                        <div class="h-16"></div>
+                        <p class="font-black text-slate-800">${data.staffName || '---'}</p>
+                    </div>
+                    <div class="space-y-1">
+                        <p class="text-[10px] font-black text-slate-400 uppercase">Trưởng bộ phận QC</p>
+                        <div class="h-16"></div>
+                        <p class="font-black text-slate-800">................................</p>
+                    </div>
+                </div>
+            `;
+            document.getElementById('reportModal').classList.remove('hidden');
+        };
+
+        const renderColorCard = (label, val, style) => {
+            return `
+                <div class="p-4 rounded-2xl border-2 shadow-sm ${style}">
+                    <p class="text-[9px] font-black uppercase opacity-70 mb-1">${label}</p>
+                    <p class="text-2xl font-black">${val || 0} <span class="text-xs">miếng</span></p>
+                </div>
+            `;
+        };
+
+        window.closeModal = () => document.getElementById('reportModal').classList.add('hidden');
+
+        window.loadReportFromModal = () => {
+            const data = cloudData.find(d => d.id === currentModalReportId);
+            if(data) {
+                document.getElementById('staffName').value = data.staffName || '';
+                document.getElementById('ownerName').value = data.ownerName || '';
+                document.getElementById('pondCode').value = data.pondCode || '';
+                document.getElementById('address').value = data.address || '';
+                document.getElementById('pondYield').value = data.pondYield || '';
+                document.getElementById('filletRatio').value = data.filletRatio || '';
+                document.getElementById('filletNote').value = data.filletNote || '';
+                
+                // Load fillet inputs
+                if(data.filletColors) {
+                    document.querySelector('[data-color="white"]').value = data.filletColors.white || 0;
+                    document.querySelector('[data-color="whitePink"]').value = data.filletColors.whitePink || 0;
+                    document.querySelector('[data-color="pink"]').value = data.filletColors.pink || 0;
+                    document.querySelector('[data-color="yellow"]').value = data.filletColors.yellow || 0;
+                }
+                
+                samples = [...data.samples];
+                updateUI();
+                updateFilletStats();
+                closeModal();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        };
+
+        window.exportToExcel = () => {
+            if (samples.length === 0) return alert("Không có dữ liệu!");
+            const wb = XLSX.utils.book_new();
+            const dataRows = [
+                ["BÁO CÁO KIỂM SIZE CÁ"],
+                ["Nhân viên", document.getElementById('staffName').value],
+                ["Chủ ao", document.getElementById('ownerName').value],
+                ["Mã ao", document.getElementById('pondCode').value],
+                ["Sản lượng (Tấn)", document.getElementById('pondYield').value],
+                ["Size trung bình", document.getElementById('statAvg').innerText + "g"],
+                ["Ghi chú Fillet", document.getElementById('filletNote').value],
+                [],
+                ["STT", "Trọng lượng (g)"]
+            ];
+            samples.forEach((s, idx) => dataRows.push([idx + 1, s]));
+            const ws = XLSX.utils.aoa_to_sheet(dataRows);
+            XLSX.utils.book_append_sheet(wb, ws, "Báo cáo");
+            XLSX.writeFile(wb, `BaoCao_${document.getElementById('pondCode').value || 'QC'}.xlsx`);
+        };
+
+        document.getElementById('weightInput').addEventListener('keypress', (e) => { if (e.key === 'Enter') addSample(); });
         updateUI();
     </script>
 </body>
