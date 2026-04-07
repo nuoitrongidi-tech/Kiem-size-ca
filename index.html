@@ -19,6 +19,9 @@
         @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
         .modal-overlay { background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(8px); }
         
+        .tab-btn.active { @apply bg-slate-900 text-white shadow-lg; }
+        .tab-btn.inactive { @apply bg-slate-100 text-slate-400 hover:bg-slate-200; }
+
         @media print {
             @page {
                 size: A4 portrait;
@@ -104,18 +107,46 @@
 
             <!-- Nhập trọng lượng -->
             <section class="bg-white p-5 rounded-3xl shadow-sm border border-slate-200 relative overflow-hidden">
-                <h2 class="text-[11px] font-black uppercase text-slate-400 mb-4 flex items-center gap-2">
-                    <i class="fas fa-balance-scale text-blue-500"></i> Nhập trọng lượng (g)
-                </h2>
-                <div class="space-y-4">
-                    <div class="relative">
-                        <input id="weightInput" type="number" placeholder="000" class="w-full p-5 bg-slate-900 border-2 border-slate-800 rounded-2xl text-4xl font-black text-center text-blue-400 outline-none focus:border-blue-500 transition-all shadow-inner">
-                        <span class="absolute right-6 top-1/2 -translate-y-1/2 font-black text-slate-700 text-xl">g</span>
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-[11px] font-black uppercase text-slate-400 flex items-center gap-2">
+                        <i class="fas fa-balance-scale text-blue-500"></i> Nhập trọng lượng (g)
+                    </h2>
+                    <div class="flex bg-slate-100 p-1 rounded-lg">
+                        <button id="tabDetail" onclick="switchInputMode('detail')" class="tab-btn active px-3 py-1 rounded-md text-[10px] font-black transition-all">NHẬP TỪNG CON</button>
+                        <button id="tabQuick" onclick="switchInputMode('quick')" class="tab-btn inactive px-3 py-1 rounded-md text-[10px] font-black transition-all ml-1">NHẬP NHANH</button>
                     </div>
-                    <button onclick="addSample()" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-2xl font-black transition-all active:scale-95 shadow-xl flex items-center justify-center gap-3">
-                        <i class="fas fa-plus"></i> THÊM MẪU
-                    </button>
-                    <div id="sampleList" class="max-h-48 overflow-y-auto bg-slate-50 rounded-2xl p-2 space-y-2 border shadow-inner custom-scroll">
+                </div>
+                
+                <div class="space-y-4">
+                    <!-- Chế độ nhập chi tiết -->
+                    <div id="modeDetail" class="space-y-4">
+                        <div class="relative">
+                            <input id="weightInput" type="number" placeholder="000" class="w-full p-5 bg-slate-900 border-2 border-slate-800 rounded-2xl text-4xl font-black text-center text-blue-400 outline-none focus:border-blue-500 transition-all shadow-inner">
+                            <span class="absolute right-6 top-1/2 -translate-y-1/2 font-black text-slate-700 text-xl">g</span>
+                        </div>
+                        <button onclick="addSample()" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-2xl font-black transition-all active:scale-95 shadow-xl flex items-center justify-center gap-3">
+                            <i class="fas fa-plus"></i> THÊM MẪU
+                        </button>
+                    </div>
+
+                    <!-- Chế độ nhập nhanh -->
+                    <div id="modeQuick" class="hidden space-y-3 animate-in">
+                        <div class="grid grid-cols-2 gap-3">
+                            <div class="bg-slate-50 p-3 rounded-2xl border border-slate-100 shadow-inner">
+                                <label class="block text-[9px] font-black text-blue-500 uppercase mb-1">Khối lượng mẫu (g)</label>
+                                <input id="quickTotalWeight" type="number" placeholder="VD: 5000" class="w-full bg-transparent text-lg font-black text-slate-800 outline-none">
+                            </div>
+                            <div class="bg-slate-50 p-3 rounded-2xl border border-slate-100 shadow-inner">
+                                <label class="block text-[9px] font-black text-blue-500 uppercase mb-1">Số mẫu (con)</label>
+                                <input id="quickTotalCount" type="number" placeholder="VD: 10" class="w-full bg-transparent text-lg font-black text-slate-800 outline-none">
+                            </div>
+                        </div>
+                        <button onclick="addQuickSample()" class="w-full bg-slate-800 hover:bg-slate-900 text-white py-4 rounded-2xl font-black transition-all active:scale-95 shadow-lg flex items-center justify-center gap-3">
+                            <i class="fas fa-check-circle"></i> XÁC NHẬN NHẬP NHANH
+                        </button>
+                    </div>
+
+                    <div id="sampleList" class="max-h-48 overflow-y-auto bg-slate-50 rounded-2xl p-2 space-y-2 border shadow-inner custom-scroll mt-4">
                         <div class="py-12 text-center text-slate-300 italic text-[10px] uppercase font-bold tracking-widest">Chưa có dữ liệu mẫu</div>
                     </div>
                 </div>
@@ -270,24 +301,52 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        let samples = [];
+        // Chuyển đổi dữ liệu từ mảng số thành mảng Object để hỗ trợ Nhập nhanh
+        let sampleEntries = [];
         let thresholds = [300, 500, 700, 900, 1100, 1300, 1500];
         let cloudData = [];
         let currentModalReportId = null;
 
+        // Chuyển đổi giao diện nhập liệu
+        window.switchInputMode = (mode) => {
+            document.getElementById('tabDetail').className = mode === 'detail' ? 'tab-btn active px-3 py-1 rounded-md text-[10px] font-black transition-all' : 'tab-btn inactive px-3 py-1 rounded-md text-[10px] font-black transition-all';
+            document.getElementById('tabQuick').className = mode === 'quick' ? 'tab-btn active px-3 py-1 rounded-md text-[10px] font-black transition-all ml-1' : 'tab-btn inactive px-3 py-1 rounded-md text-[10px] font-black transition-all ml-1';
+            
+            document.getElementById('modeDetail').classList.toggle('hidden', mode !== 'detail');
+            document.getElementById('modeQuick').classList.toggle('hidden', mode !== 'quick');
+        };
+
+        // Nhập lẻ từng mẫu
         window.addSample = () => {
             const input = document.getElementById('weightInput');
             const val = parseFloat(input.value);
             if (!isNaN(val) && val > 0) {
-                samples.push(val);
+                sampleEntries.push({ weight: val, count: 1, avgWeight: val, type: 'single' });
                 input.value = '';
                 input.focus();
                 updateUI();
             }
         };
 
-        window.removeSample = (idx) => {
-            samples.splice(idx, 1);
+        // Xác nhận nhập nhanh tổng hợp
+        window.addQuickSample = () => {
+            const totalW = parseFloat(document.getElementById('quickTotalWeight').value);
+            const totalC = parseInt(document.getElementById('quickTotalCount').value);
+
+            if (isNaN(totalW) || isNaN(totalC) || totalW <= 0 || totalC <= 0) {
+                return alert("Vui lòng nhập số liệu khối lượng và số mẫu hợp lệ!");
+            }
+
+            const avg = totalW / totalC;
+            sampleEntries.push({ weight: totalW, count: totalC, avgWeight: avg, type: 'quick' });
+            
+            document.getElementById('quickTotalWeight').value = '';
+            document.getElementById('quickTotalCount').value = '';
+            updateUI();
+        };
+
+        window.removeEntry = (idx) => {
+            sampleEntries.splice(idx, 1);
             updateUI();
         };
 
@@ -323,19 +382,22 @@
 
         window.updateUI = () => {
             const list = document.getElementById('sampleList');
-            if (samples.length === 0) {
+            if (sampleEntries.length === 0) {
                 list.innerHTML = '<div class="py-12 text-center text-slate-300 italic text-[10px] uppercase font-bold tracking-widest">Chưa có dữ liệu mẫu</div>';
             } else {
-                list.innerHTML = [...samples].reverse().map((s, i) => `
+                list.innerHTML = [...sampleEntries].reverse().map((entry, i) => `
                     <div class="flex justify-between items-center px-4 py-3 bg-white rounded-2xl shadow-sm border border-slate-100 animate-in">
-                        <span class="font-black text-slate-800 text-lg">${s}g</span>
-                        <button onclick="removeSample(${samples.length - 1 - i})" class="text-red-200 hover:text-red-500"><i class="fas fa-times-circle"></i></button>
+                        <div>
+                            <span class="font-black text-slate-800 text-lg">${entry.type === 'single' ? entry.weight + 'g' : Math.round(entry.avgWeight) + 'g (TB)'}</span>
+                            ${entry.type === 'quick' ? `<span class="text-[9px] font-bold text-blue-500 ml-2 uppercase">Nhóm: ${entry.count} con / ${(entry.weight/1000).toFixed(2)}kg</span>` : ''}
+                        </div>
+                        <button onclick="removeEntry(${sampleEntries.length - 1 - i})" class="text-red-300 hover:text-red-500"><i class="fas fa-times-circle"></i></button>
                     </div>
                 `).join('');
             }
             
-            const totalCount = samples.length;
-            const weightSum = samples.reduce((a, b) => a + b, 0);
+            const totalCount = sampleEntries.reduce((a, b) => a + b.count, 0);
+            const weightSum = sampleEntries.reduce((a, b) => a + b.weight, 0);
             const foodWeight = parseFloat(document.getElementById('foodWeight').value) || 0;
             
             let avgWithFood = 0;
@@ -346,17 +408,16 @@
             document.getElementById('statCount').innerText = totalCount;
             document.getElementById('statAvg').innerText = avgWithFood > 0 ? avgWithFood : 0;
             document.getElementById('statWeight').innerText = (weightSum / 1000).toFixed(2);
-            renderAnalysis();
+            renderAnalysis(sampleEntries, weightSum);
         };
 
-        const renderAnalysis = () => {
+        const renderAnalysis = (entries, totalWeight) => {
             const tbody = document.getElementById('analysisTable');
-            if (samples.length === 0) {
+            if (entries.length === 0) {
                 tbody.innerHTML = '<tr><td colspan="4" class="p-10 text-center text-slate-300 italic">Chưa có dữ liệu...</td></tr>';
                 return;
             }
-            const bins = calculateBins(samples);
-            const totalWeight = samples.reduce((a, b) => a + b, 0);
+            const bins = calculateBins(entries);
 
             tbody.innerHTML = bins.map(bin => {
                 const weightRatio = totalWeight > 0 ? ((bin.weightSum / totalWeight) * 100) : 0;
@@ -373,7 +434,7 @@
             }).join('');
         };
 
-        const calculateBins = (data) => {
+        const calculateBins = (entries) => {
             const sorted = [...thresholds].sort((a,b)=>a-b);
             let bins = [{ label: `Dưới ${sorted[0]}g`, min: 0, max: sorted[0], count: 0, weightSum: 0 }];
             for (let i = 0; i < sorted.length - 1; i++) {
@@ -381,11 +442,12 @@
             }
             bins.push({ label: `Trên ${sorted[sorted.length-1]}g`, min: sorted[sorted.length-1], max: Infinity, count: 0, weightSum: 0 });
             
-            data.forEach(s => {
+            entries.forEach(entry => {
+                const avg = entry.avgWeight;
                 for (let bin of bins) { 
-                    if (s >= bin.min && s < bin.max) { 
-                        bin.count++; 
-                        bin.weightSum += s;
+                    if (avg >= bin.min && avg < bin.max) { 
+                        bin.count += entry.count; 
+                        bin.weightSum += entry.weight;
                         break; 
                     } 
                 }
@@ -396,7 +458,7 @@
         window.handleSaveCloud = async () => {
             const staff = document.getElementById('staffName').value.trim();
             if (!staff) return alert("Vui lòng nhập tên nhân viên!");
-            if (samples.length === 0) return alert("Không có mẫu cân!");
+            if (sampleEntries.length === 0) return alert("Không có mẫu cân!");
 
             const btn = document.getElementById('btnSaveCloud');
             btn.disabled = true;
@@ -408,8 +470,9 @@
             });
 
             const foodWeight = parseFloat(document.getElementById('foodWeight').value) || 0;
-            const weightTotal = samples.reduce((a,b)=>a+b,0);
-            const avgFinal = Math.round((weightTotal / samples.length) - foodWeight);
+            const weightTotal = sampleEntries.reduce((a,b) => a + b.weight, 0);
+            const countTotal = sampleEntries.reduce((a,b) => a + b.count, 0);
+            const avgFinal = Math.round((weightTotal / countTotal) - foodWeight);
 
             try {
                 await addDoc(collection(db, "reports"), {
@@ -422,12 +485,12 @@
                     filletRatio: document.getElementById('filletRatio').value,
                     filletColors: filletData,
                     filletNote: document.getElementById('filletNote').value,
-                    samples: samples,
+                    entries: sampleEntries,
                     avgWeight: avgFinal,
                     createdAt: Timestamp.now()
                 });
                 alert("Lưu dữ liệu thành công!");
-                samples = [];
+                sampleEntries = [];
                 document.getElementById('foodWeight').value = '';
                 document.getElementById('filletNote').value = '';
                 updateUI();
@@ -478,11 +541,20 @@
             const data = cloudData.find(d => d.id === id);
             if(!data) return;
             currentModalReportId = id;
-            const content = document.getElementById('modalContent');
-            const totalS = data.samples.length;
-            const weightTotal = data.samples.reduce((a,b)=>a+b,0);
-            const bins = calculateBins(data.samples);
+            
+            // Xử lý đảm bảo tương thích với cả form cũ (lưu samples: []) và form mới (lưu entries: [])
+            let finalEntries = [];
+            if (data.entries && Array.isArray(data.entries)) {
+                finalEntries = data.entries;
+            } else if (data.samples && Array.isArray(data.samples)) {
+                finalEntries = data.samples.map(s => ({ weight: s, count: 1, avgWeight: s, type: 'single' }));
+            }
 
+            const totalS = finalEntries.reduce((a, b) => a + b.count, 0);
+            const weightTotal = finalEntries.reduce((a, b) => a + b.weight, 0);
+            const bins = calculateBins(finalEntries);
+
+            const content = document.getElementById('modalContent');
             content.innerHTML = `
                 <!-- BÁO CÁO HEADER -->
                 <div class="flex justify-between items-start border-b-4 border-slate-900 pb-6">
@@ -631,15 +703,24 @@
                     document.querySelector('[data-color="yellow"]').value = data.filletColors.yellow || 0;
                 }
                 
-                samples = [...data.samples];
+                let finalEntries = [];
+                if (data.entries && Array.isArray(data.entries)) {
+                    finalEntries = data.entries;
+                } else if (data.samples && Array.isArray(data.samples)) {
+                    finalEntries = data.samples.map(s => ({ weight: s, count: 1, avgWeight: s, type: 'single' }));
+                }
+
+                sampleEntries = [...finalEntries];
                 updateUI();
                 updateFilletStats();
                 closeModal();
             }
         };
 
-                window.exportToExcel = () => {
-            if (samples.length === 0) return alert("Không có dữ liệu!");
+       
+
+        window.exportToExcel = () => {
+            if (sampleEntries.length === 0) return alert("Không có dữ liệu!");
             const wb = XLSX.utils.book_new();
             const dataRows = [
                 ["BÁO CÁO KIỂM SIZE CÁ"],
@@ -648,9 +729,17 @@
                 ["Lượng mồi khấu trừ (g)", document.getElementById('foodWeight').value],
                 ["Size TB thực tế", document.getElementById('statAvg').innerText + "g"],
                 [],
-                ["STT", "Trọng lượng (g)"]
+                ["STT", "Chế độ nhập", "Số con", "Khối lượng tổng (g)", "Size TB (g)"]
             ];
-            samples.forEach((s, idx) => dataRows.push([idx + 1, s]));
+            sampleEntries.forEach((e, idx) => {
+                dataRows.push([
+                    idx + 1, 
+                    e.type === 'single' ? "Nhập lẻ" : "Nhập nhanh",
+                    e.count,
+                    e.weight,
+                    Math.round(e.avgWeight)
+                ]);
+            });
             const ws = XLSX.utils.aoa_to_sheet(dataRows);
             XLSX.utils.book_append_sheet(wb, ws, "Báo cáo");
             XLSX.writeFile(wb, `BaoCao_${document.getElementById('pondCode').value || 'QC'}.xlsx`);
