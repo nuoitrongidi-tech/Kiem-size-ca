@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hệ thống Quản lý Kiểm Size & Fillet</title>
+    <title>Hệ thống Quản lý Kiểm Size & Fillet Chuyên Nghiệp</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
@@ -94,7 +94,7 @@
                 <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-xl font-black transition-all active:scale-95 shadow-lg mt-2">
                     XÁC NHẬN ĐĂNG NHẬP
                 </button>
-                <p class="text-center text-[10px] text-slate-400 font-medium mt-4"> </p>
+                <p class="text-center text-[10px] text-slate-400 font-medium mt-4"></p>
             </form>
         </div>
     </div>
@@ -105,12 +105,12 @@
         <header class="bg-slate-900 text-white sticky top-0 z-40 shadow-2xl border-b border-slate-800 no-print">
             <div class="max-w-[1440px] mx-auto px-4 py-3 flex flex-col md:flex-row justify-between items-center gap-4">
                 <div class="flex items-center gap-4">
-                    <div class="bg-gradient-to-br from-blue-500 to-indigo-700 p-2.5 rounded-xl shadow-lg border border-blue-400/20">
-                        <i class="fas fa-microscope fa-lg"></i>
+                    <div class="bg-gradient-to-br from-blue-500 to-indigo-700 p-2.5 rounded-xl shadow-lg border border-blue-400/20 w-10 h-10 flex items-center justify-center">
+                        <span class="text-xl leading-none">🐼</span>
                     </div>
                     <div>
                         <h1 class="text-lg font-black uppercase tracking-tight leading-none">Fish quality analysis</h1>
-                        <p class="text-[10px] text-blue-400 font-bold uppercase tracking-widest mt-1">Kiểm soát Chất lượng & Size Cá Panda4.0</p>
+                        <p class="text-[10px] text-blue-400 font-bold uppercase tracking-widest mt-1">Kiểm soát Chất lượng & Size Cá PANDA4.1</p>
                     </div>
                 </div>
                 <div class="flex gap-2 w-full md:w-auto items-center">
@@ -267,8 +267,8 @@
                         <i class="fas fa-utensils absolute -right-2 -bottom-2 text-indigo-500/30 text-5xl"></i>
                     </div>
                     <div class="bg-white p-5 rounded-3xl border border-slate-200 shadow-sm">
-                        <p class="text-[10px] font-black text-slate-400 uppercase mb-2">Tổng Kg Mẫu</p>
-                        <h3 id="statWeight" class="text-3xl font-black text-slate-900">0.0</h3>
+                        <p class="text-[10px] font-black text-slate-400 uppercase mb-2">Tổng Kg Mẫu (Đã trừ mồi)</p>
+                        <h3 id="statWeight" class="text-3xl font-black text-slate-900">0</h3>
                     </div>
                     <div class="bg-white p-5 rounded-3xl border border-slate-200 shadow-sm">
                         <p class="text-[10px] font-black text-slate-400 uppercase mb-2">Màu chủ đạo</p>
@@ -282,7 +282,7 @@
                 <!-- Bảng Phân Tích -->
                 <div class="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-sm">
                     <div class="bg-slate-900 px-6 py-4 text-white flex justify-between items-center">
-                        <h2 class="text-xs font-black uppercase tracking-widest">Phân bổ trọng lượng (Tính theo Tỷ trọng Khối lượng)</h2>
+                        <h2 class="text-xs font-black uppercase tracking-widest">Phân bổ trọng lượng (Tính theo Tỷ trọng Khối lượng sau mồi)</h2>
                     </div>
                     <div class="overflow-x-auto">
                         <table class="w-full text-sm">
@@ -303,10 +303,19 @@
 
                 <!-- Lịch sử -->
                 <section class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
-                    <div class="p-5 bg-slate-50 border-b flex justify-between items-center">
-                        <h2 id="historyTitle" class="text-[11px] font-black uppercase text-slate-500 flex items-center gap-2">
+                    <div class="p-4 bg-slate-50 border-b flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
+                        <h2 id="historyTitle" class="text-[11px] font-black uppercase text-slate-500 flex items-center gap-2 whitespace-nowrap">
                             <i class="fas fa-database text-blue-500"></i> Lịch sử báo cáo Cloud
                         </h2>
+                        <div class="flex flex-col sm:flex-row items-center gap-2 w-full md:w-auto">
+                            <div class="relative w-full sm:w-64">
+                                <i class="fas fa-search absolute left-3 top-2.5 text-slate-400 text-xs"></i>
+                                <input type="text" id="historySearchInput" oninput="window.renderHistoryList()" placeholder="Tìm khách hàng, size, nhân viên..." class="w-full pl-8 p-2 text-xs bg-white border border-slate-200 rounded-lg outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all font-medium text-slate-700 shadow-sm">
+                            </div>
+                            <button onclick="window.openPrintListModal()" class="w-full sm:w-auto px-4 py-2 bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white rounded-lg text-[10px] font-black transition-all shadow-sm whitespace-nowrap flex items-center justify-center gap-2" title="In danh sách lấy mẫu theo ngày">
+                                <i class="fas fa-list"></i> IN DANH SÁCH
+                            </button>
+                        </div>
                     </div>
                     <div id="historyList" class="divide-y divide-slate-100 max-h-[400px] overflow-y-auto custom-scroll">
                         <div class="p-20 text-center text-slate-300 italic text-xs">Đang tải dữ liệu...</div>
@@ -314,6 +323,30 @@
                 </section>
             </div>
         </main>
+    </div>
+
+    <!-- Modal Chọn Ngày In Danh Sách -->
+    <div id="printListModal" class="fixed inset-0 z-[200] hidden flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" onclick="closePrintListModal()"></div>
+        <div class="bg-white rounded-3xl shadow-2xl relative z-10 w-full max-w-sm p-6 animate-in border border-slate-200">
+            <div class="flex justify-between items-center mb-5 border-b border-slate-100 pb-3">
+                <h3 class="text-base font-black uppercase text-slate-800 flex items-center gap-2"><i class="fas fa-print text-emerald-500"></i> Chọn khoảng thời gian</h3>
+                <button onclick="closePrintListModal()" class="text-slate-400 hover:text-red-500 transition-colors"><i class="fas fa-times text-lg"></i></button>
+            </div>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-[10px] font-black text-slate-500 uppercase mb-1">Từ ngày</label>
+                    <input type="date" id="printFromDate" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-sm text-slate-700 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 transition-all">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-black text-slate-500 uppercase mb-1">Đến ngày</label>
+                    <input type="date" id="printToDate" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-sm text-slate-700 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 transition-all">
+                </div>
+                <button onclick="executePrintList()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-3.5 rounded-xl font-black transition-all active:scale-95 shadow-lg mt-2 flex items-center justify-center gap-2 text-sm uppercase tracking-wider">
+                    <i class="fas fa-file-invoice"></i> TẠO BẢN IN DANH SÁCH
+                </button>
+            </div>
+        </div>
     </div>
 
     <!-- Modal Chi Tiết Báo Cáo -->
@@ -350,7 +383,7 @@
 
             <!-- Footer Modal - Không in -->
             <div class="p-4 md:p-6 bg-white border-t flex flex-col md:flex-row gap-4 justify-between no-print z-20">
-                <button onclick="loadReportFromModal()" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-6 py-3 rounded-2xl font-black text-xs uppercase transition-all flex items-center justify-center border border-indigo-200">
+                <button id="btnLoadForm" onclick="loadReportFromModal()" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-6 py-3 rounded-2xl font-black text-xs uppercase transition-all flex items-center justify-center border border-indigo-200">
                     <i class="fas fa-edit mr-2"></i> Tải dữ liệu lên Form để sửa
                 </button>
             </div>
@@ -554,7 +587,7 @@
                 
                 // Hiển thị danh sách nếu user đã đăng nhập
                 if(appCurrentUser) {
-                    renderHistoryList();
+                    window.renderHistoryList();
                 }
             }, (err) => console.error(err));
         };
@@ -590,7 +623,7 @@
                 updateUI();
                 
                 // Cập nhật lại list lịch sử dựa trên quyền
-                renderHistoryList();
+                window.renderHistoryList();
             } else {
                 showToast("Sai tên đăng nhập hoặc mật khẩu!", "error");
             }
@@ -667,16 +700,18 @@
                 else if (maxPieces === cY) { domColor = 'Vàng'; bgClass = 'bg-yellow-400'; }
             }
 
+            // CHUẨN HOÁ NET WEIGHT: Khối lượng hiển thị sẽ là khối lượng sau khi trừ mồi
             const netWeightG = Math.max(0, totalWeightG - foodWeight);
-            const avgSize = totalCount > 0 ? (netWeightG / totalCount).toFixed(1) : 0;
+            const avgSize = totalCount > 0 ? Math.round(netWeightG / totalCount) : 0;
             
             document.getElementById('statCount').innerText = formatNumber(totalCount);
-            document.getElementById('statWeight').innerText = formatNumber(totalWeightG / 1000);
+            // Đã cập nhật để Tổng Kg Mẫu hiển thị số sau khi trừ mồi
+            document.getElementById('statWeight').innerText = formatNumber(Math.round(netWeightG / 1000));
             document.getElementById('statAvg').innerText = avgSize;
             document.getElementById('statColorLabel').innerText = domColor;
             document.getElementById('statColor').className = `w-6 h-6 rounded-full ${bgClass}`;
 
-            renderSampleList(); renderAnalysisTable(totalCount, totalWeightG);
+            renderSampleList(); renderAnalysisTable(totalCount, totalWeightG, foodWeight);
         };
 
         const renderSampleList = () => {
@@ -690,7 +725,8 @@
             `).join('');
         };
 
-        const getRangesDistribution = (samples, totalCount, totalWeightG) => {
+        // THUẬT TOÁN ĐÃ CHỈNH SỬA: Size của mỗi cá sẽ bị trừ đi lượng mồi trung bình trước khi xếp vào phân bổ
+        const getRangesDistribution = (samples, totalCount, totalWeightG, foodWeight = 0) => {
             const ranges = [
                 { min: 0, max: 300, label: '< 300g', count: 0, weight: 0 },
                 { min: 300, max: 500, label: '300 - 500g', count: 0, weight: 0 },
@@ -700,13 +736,19 @@
                 { min: 1500, max: Infinity, label: '> 1500g', count: 0, weight: 0 },
             ];
 
+            const avgFoodPerFish = totalCount > 0 ? (foodWeight / totalCount) : 0;
+
             samples.forEach(s => {
-                const w = s.weight;
-                const totalSampleWeight = s.isQuick && s.totalW ? s.totalW : (s.weight * s.count);
+                // Trừ đi lượng mồi cho từng con cá
+                const w = Math.max(0, s.weight - avgFoodPerFish);
+                
+                const sampleTotalGross = s.isQuick && s.totalW ? s.totalW : (s.weight * s.count);
+                const sampleTotalNet = Math.max(0, sampleTotalGross - (avgFoodPerFish * s.count));
+
                 for (let r of ranges) {
                     if (w >= r.min && w < r.max) {
                         r.count += s.count;
-                        r.weight += totalSampleWeight;
+                        r.weight += sampleTotalNet;
                         break;
                     }
                 }
@@ -714,16 +756,17 @@
             return ranges;
         };
 
-        const renderAnalysisTable = (totalCount, totalWeightG) => {
+        const renderAnalysisTable = (totalCount, totalWeightG, foodWeight = 0) => {
             const table = document.getElementById('analysisTable');
             if (currentSamples.length === 0) { table.innerHTML = `<tr><td colspan="4" class="p-10 text-center text-slate-300 italic">Chưa có dữ liệu...</td></tr>`; return; }
             
-            const ranges = getRangesDistribution(currentSamples, totalCount, totalWeightG);
+            const netWeightG = Math.max(0, totalWeightG - foodWeight);
+            const ranges = getRangesDistribution(currentSamples, totalCount, totalWeightG, foodWeight);
             let html = '';
             ranges.forEach(r => {
                 if (r.count > 0 || totalCount > 0) {
                     const weightKg = r.weight / 1000;
-                    const pct = totalWeightG > 0 ? (r.weight / totalWeightG) * 100 : 0;
+                    const pct = netWeightG > 0 ? (r.weight / netWeightG) * 100 : 0;
                     html += `
                         <tr class="hover:bg-blue-50/50 transition-colors">
                             <td class="p-4 font-bold text-slate-700">${r.label}</td>
@@ -790,7 +833,7 @@
             updateUI();
         };
 
-        const renderHistoryList = () => {
+        window.renderHistoryList = () => {
             if (!appCurrentUser) return;
             
             const list = document.getElementById('historyList');
@@ -805,13 +848,8 @@
                 displayReports = reports.filter(r => r.createdBy === appCurrentUser.username);
             }
 
-            if (displayReports.length === 0) { 
-                list.innerHTML = `<div class="p-20 text-center text-slate-300 italic text-xs">Chưa có báo cáo nào.</div>`; 
-                return; 
-            }
-            
-            list.innerHTML = displayReports.map(r => {
-                // Tính toán Size cá bình quân để hiển thị ra lịch sử
+            // Tiền xử lý: Tính Size TB trước để phục vụ cho thanh Tìm kiếm
+            displayReports = displayReports.map(r => {
                 let tCount = 0; let tWeight = 0;
                 if (r.samples) {
                     r.samples.forEach(s => {
@@ -820,32 +858,74 @@
                     });
                 }
                 const netW = Math.max(0, tWeight - (r.foodWeight || 0));
-                const avgSize = tCount > 0 ? (netW / tCount).toFixed(1) : 0;
+                const avgSize = tCount > 0 ? Math.round(netW / tCount) : 0;
+                return { ...r, calculatedAvgSize: avgSize };
+            });
+
+            // Lọc dữ liệu bằng Thanh Tìm Kiếm Thông Minh
+            const searchInput = document.getElementById('historySearchInput');
+            const searchTerm = searchInput ? searchInput.value.toLowerCase().trim() : '';
+            if (searchTerm) {
+                displayReports = displayReports.filter(r => {
+                    const searchString = `${r.ownerName || ''} ${r.pondCode || ''} ${r.staffName || ''} ${r.address || ''} ${r.calculatedAvgSize}`.toLowerCase();
+                    return searchString.includes(searchTerm);
+                });
+            }
+
+            if (displayReports.length === 0) { 
+                list.innerHTML = `<div class="p-20 text-center text-slate-400 font-medium text-xs"><i class="fas fa-search mb-2 text-2xl text-slate-300 block"></i>Không tìm thấy dữ liệu phù hợp.</div>`; 
+                return; 
+            }
+            
+            const tableRows = displayReports.map(r => {
+                const avgSize = r.calculatedAvgSize;
 
                 return `
-                <div class="p-4 hover:bg-slate-50 transition-colors flex flex-col md:flex-row justify-between items-start md:items-center gap-4 group border-b border-slate-100 last:border-0">
-                    <div class="flex-1">
-                        <div class="flex items-center gap-2 mb-1">
-                            <span class="bg-indigo-100 text-indigo-700 text-[9px] font-black px-2 py-0.5 rounded uppercase">${r.pondCode}</span>
-                            <h4 class="font-bold text-slate-800 text-sm">${r.ownerName}</h4>
+                <tr class="hover:bg-blue-50/50 transition-colors border-b border-slate-100 last:border-0 group">
+                    <td class="p-3 text-xs text-slate-500 whitespace-nowrap"><i class="far fa-clock mr-1"></i> ${formatDate(r.createdAt)}</td>
+                    <td class="p-3 font-bold text-slate-800 text-sm whitespace-nowrap">${r.ownerName}</td>
+                    <td class="p-3 text-xs text-slate-600 truncate max-w-[150px]" title="${r.address || ''}">${r.address || '---'}</td>
+                    <td class="p-3 text-center"><span class="bg-indigo-100 text-indigo-700 text-[10px] font-black px-2 py-0.5 rounded uppercase tracking-wider">${r.pondCode}</span></td>
+                    <td class="p-3 text-center font-black text-blue-600 text-sm">${avgSize}</td>
+                    <td class="p-3 text-center font-bold text-emerald-600 text-xs">${r.pondYield ? Math.round(parseFloat(r.pondYield)) : '---'}</td>
+                    <td class="p-3 text-xs font-bold text-slate-700 whitespace-nowrap"><i class="fas fa-user-circle text-slate-400 mr-1"></i>${r.staffName}</td>
+                    <td class="p-3 text-right whitespace-nowrap">
+                        <div class="flex items-center justify-end gap-2 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
+                            <button onclick="viewAntibioticForm('${r.id}')" class="px-3 py-1.5 bg-purple-50 text-purple-600 hover:bg-purple-600 hover:text-white rounded-lg text-[10px] font-black transition-all shadow-sm" title="Tạo Phiếu Kiểm Kháng Sinh">
+                                <i class="fas fa-flask"></i> KHÁNG SINH
+                            </button>
+                            <button onclick="viewReport('${r.id}')" class="px-3 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white rounded-lg text-[10px] font-black transition-all shadow-sm" title="Xem & In Báo Cáo">
+                                <i class="fas fa-print"></i> IN
+                            </button>
+                            ${appCurrentUser?.role === 'admin' ? `
+                            <button onclick="confirmDeleteReport('${r.id}', '${r.pondCode}')" class="px-3 py-1.5 bg-red-50 text-red-500 hover:bg-red-500 hover:text-white rounded-lg text-[10px] font-black transition-all shadow-sm" title="Admin xoá báo cáo"><i class="fas fa-trash-alt"></i></button>` : ''}
                         </div>
-                        <div class="text-[10px] text-slate-500 font-medium flex flex-wrap items-center gap-x-3 gap-y-1.5 mt-1.5">
-                            <span class="flex items-center gap-1"><i class="far fa-clock"></i> ${formatDate(r.createdAt)}</span>
-                            <span class="flex items-center gap-1"><i class="fas fa-user"></i> NV: <span class="font-bold text-slate-700">${r.staffName}</span></span>
-                            <span class="flex items-center gap-1 bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded"><i class="fas fa-fish"></i> Size TB: <span class="font-black">${avgSize}g</span></span>
-                            <span class="flex items-center gap-1 bg-emerald-50 text-emerald-700 px-1.5 py-0.5 rounded"><i class="fas fa-weight-hanging"></i> Sản lượng: <span class="font-black">${r.pondYield ? r.pondYield + ' Tấn' : '---'}</span></span>
-                        </div>
-                    </div>
-                    <div class="flex items-center gap-2 w-full md:w-auto mt-2 md:mt-0">
-                        <button onclick="viewReport('${r.id}')" class="flex-1 md:flex-none px-4 py-2 bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white rounded-lg text-[10px] font-black transition-all">
-                            <i class="fas fa-file-alt"></i> XEM & IN
-                        </button>
-                        ${appCurrentUser?.role === 'admin' ? `
-                        <button onclick="confirmDeleteReport('${r.id}', '${r.pondCode}')" class="px-3 py-2 bg-red-50 text-red-500 hover:bg-red-500 hover:text-white rounded-lg text-[10px] font-black transition-all" title="Admin xoá báo cáo"><i class="fas fa-trash-alt"></i></button>` : ''}
-                    </div>
-                </div>
+                    </td>
+                </tr>
                 `;
             }).join('');
+
+            list.innerHTML = `
+                <div class="w-full overflow-x-auto custom-scroll pb-2">
+                    <table class="w-full text-left min-w-[900px]">
+                        <thead class="bg-slate-100 sticky top-0 z-10 border-b border-slate-200">
+                            <tr class="text-[10px] font-black text-slate-500 uppercase tracking-wider">
+                                <th class="p-4 whitespace-nowrap">Ngày lập</th>
+                                <th class="p-4 whitespace-nowrap">Khách hàng</th>
+                                <th class="p-4 whitespace-nowrap">Địa chỉ</th>
+                                <th class="p-4 text-center whitespace-nowrap">Ao/Lô</th>
+                                <th class="p-4 text-center whitespace-nowrap text-blue-600" title="Size cá bình quân">Size TB (g)</th>
+                                <th class="p-4 text-center whitespace-nowrap text-emerald-600">Sản lượng (Tấn)</th>
+                                <th class="p-4 whitespace-nowrap">NV Lấy mẫu</th>
+                                <th class="p-4 text-right whitespace-nowrap">Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${tableRows}
+                        </tbody>
+                    </table>
+                </div>
+            `;
         };
 
         // --- CẬP NHẬT: VIEW REPORT A4 CHUYÊN NGHIỆP ---
@@ -860,17 +940,17 @@
                 tWeight += s.isQuick && s.totalW ? s.totalW : (s.weight * s.count);
             });
             const netW = Math.max(0, tWeight - (r.foodWeight || 0));
-            const avgSize = tCount > 0 ? (netW / tCount).toFixed(1) : 0;
+            const avgSize = tCount > 0 ? Math.round(netW / tCount) : 0;
             
-            // 2. Lấy dữ liệu phân bổ dải cân nặng
-            const ranges = getRangesDistribution(r.samples, tCount, tWeight);
+            // 2. Lấy dữ liệu phân bổ dải cân nặng ĐÃ TRỪ MỒI
+            const ranges = getRangesDistribution(r.samples, tCount, tWeight, r.foodWeight || 0);
             
             // 3. Render Table HTML
             let tableHTML = '';
             ranges.forEach(range => {
                 if(range.count > 0 || tCount > 0) {
                     const weightKg = range.weight / 1000;
-                    const pct = tWeight > 0 ? (range.weight / tWeight) * 100 : 0;
+                    const pct = netW > 0 ? (range.weight / netW) * 100 : 0;
                     tableHTML += `
                         <tr class="border-b border-slate-300">
                             <td class="py-2.5 px-3 text-xs font-semibold text-slate-800 border-r border-slate-300">${range.label}</td>
@@ -894,7 +974,7 @@
                                 <img src="logo-cong-ty.png" alt="Logo Công ty" class="w-full h-full object-contain p-1">
                             </div>
                             <div>
-                                <h1 class="text-xl font-black uppercase tracking-tight text-slate-900 leading-tight">Phiếu Kiểm Tra Chất Lượng</h1>
+                                <h1 class="text-xl font-black uppercase tracking-tight text-slate-900 leading-tight">PHIẾU KẾT QUẢ KIỂM MẪU NGUYÊN LIỆU</h1>
                                 <p class="text-[11px] font-bold text-slate-600 uppercase tracking-widest mt-1">Hệ Thống Quản Lý KCS NGUYÊN LIỆU</p>
                             </div>
                         </div>
@@ -906,12 +986,12 @@
 
                     <!-- THÔNG TIN CHUNG -->
                     <div class="mb-6">
-                        <h2 class="text-xs font-black uppercase text-slate-900 border-b border-slate-300 mb-3 pb-1">1. Thông Tin Chung</h2>
+                        <h2 class="text-xs font-black uppercase text-slate-900 border-b border-slate-300 mb-3 pb-1">1. Thông Đi Chung</h2>
                         <div class="grid grid-cols-2 gap-x-8 gap-y-3 text-xs">
                             <p><span class="font-bold inline-block w-32 text-slate-600">Đại diện/Chủ Ao:</span> <span class="font-black uppercase">${r.ownerName}</span></p>
                             <p><span class="font-bold inline-block w-28 text-slate-600">Mã Ao/Lô:</span> <span class="font-black uppercase">${r.pondCode}</span></p>
                             <p><span class="font-bold inline-block w-32 text-slate-600">Khu vực:</span> <span class="font-semibold">${r.address || '---'}</span></p>
-                            <p><span class="font-bold inline-block w-28 text-slate-600">Sản lượng DK:</span> <span class="font-semibold">${r.pondYield ? r.pondYield + ' Tấn' : '---'}</span></p>
+                            <p><span class="font-bold inline-block w-28 text-slate-600">Sản lượng DK:</span> <span class="font-semibold">${r.pondYield ? Math.round(parseFloat(r.pondYield)) + ' Tấn' : '---'}</span></p>
                             <p class="col-span-2"><span class="font-bold inline-block w-32 text-slate-600">NV Lấy mẫu (QC):</span> <span class="font-black uppercase">${r.staffName}</span></p>
                         </div>
                     </div>
@@ -930,7 +1010,7 @@
                             </div>
                             <div class="border border-slate-400 rounded p-3">
                                 <p class="text-[10px] font-bold text-slate-500 uppercase mb-1">Tổng Khối Lượng</p>
-                                <p class="text-lg font-black">${formatNumber(tWeight/1000)} <span class="text-[10px] font-normal">kg</span></p>
+                                <p class="text-lg font-black">${formatNumber(Math.round(netW/1000))} <span class="text-[10px] font-normal">kg</span></p>
                             </div>
                             <div class="border border-slate-400 rounded p-3">
                                 <p class="text-[10px] font-bold text-slate-500 uppercase mb-1">Khấu Trừ Mồi</p>
@@ -958,7 +1038,7 @@
                                 <tr class="bg-slate-50 print:bg-transparent">
                                     <td class="py-2.5 px-3 text-xs font-black uppercase border-t-2 border-r border-slate-400">Tổng cộng</td>
                                     <td class="py-2.5 px-3 text-center text-xs font-black border-t-2 border-r border-slate-400">${formatNumber(tCount)}</td>
-                                    <td class="py-2.5 px-3 text-right text-xs font-black border-t-2 border-r border-slate-400">${(tWeight/1000).toFixed(2)}</td>
+                                    <td class="py-2.5 px-3 text-right text-xs font-black border-t-2 border-r border-slate-400">${formatNumber(Math.round(netW/1000))}</td>
                                     <td class="py-2.5 px-3 text-right text-xs font-black border-t-2 border-slate-400">100%</td>
                                 </tr>
                             </tfoot>
@@ -1015,6 +1095,102 @@
 
             document.getElementById('modalContent').innerHTML = content;
             document.getElementById('reportModal').classList.remove('hidden');
+            document.getElementById('btnLoadForm').classList.remove('hidden');
+            
+            window._tempViewReportId = id;
+        };
+
+        window.viewAntibioticForm = (id) => {
+            const r = reports.find(x => x.id === id);
+            if (!r) return;
+
+            const content = `
+                <div class="p-8 md:p-10 w-full h-full bg-white text-slate-900">
+                    
+                    <!-- HEADER -->
+                    <div class="flex justify-between items-center border-b-[3px] border-slate-900 pb-4 mb-6">
+                        <div class="flex items-center gap-4">
+                            <div class="w-16 h-16 border-2 border-slate-900 rounded-lg flex items-center justify-center overflow-hidden">
+                                <img src="logo-cong-ty.png" alt="Logo Công ty" class="w-full h-full object-contain p-1">
+                            </div>
+                            <div>
+                                <h1 class="text-xl font-black uppercase tracking-tight text-slate-900 leading-tight">Phiếu Yêu Cầu Kiểm Nghiệm</h1>
+                                <p class="text-[11px] font-bold text-slate-600 uppercase tracking-widest mt-1">Phân tích Dư lượng Kháng sinh</p>
+                            </div>
+                        </div>
+                        <div class="text-right text-xs">
+                            <p class="mb-1"><span class="font-bold text-slate-600">Số phiếu:</span> <span class="font-black">KS-${r.id.substring(0,8).toUpperCase()}</span></p>
+                            <p><span class="font-bold text-slate-600">Ngày lập:</span> <span class="font-bold">${formatDate(r.createdAt)}</span></p>
+                        </div>
+                    </div>
+
+                    <!-- THÔNG TIN MẪU -->
+                    <div class="mb-6">
+                        <h2 class="text-xs font-black uppercase text-slate-900 border-b border-slate-300 mb-3 pb-1">1. Thông Tin Mẫu Gửi</h2>
+                        <div class="grid grid-cols-2 gap-x-8 gap-y-4 text-sm">
+                            <p><span class="font-bold inline-block w-32 text-slate-600">Khách hàng/Ao:</span> <span class="font-black uppercase">${r.ownerName}</span></p>
+                            <p><span class="font-bold inline-block w-28 text-slate-600">Mã Ao/Lô:</span> <span class="font-black uppercase">${r.pondCode}</span></p>
+                            <p><span class="font-bold inline-block w-32 text-slate-600">Địa chỉ:</span> <span class="font-semibold">${r.address || '---'}</span></p>
+                            <p><span class="font-bold inline-block w-28 text-slate-600">Loại mẫu:</span> <span class="font-semibold">Thịt cá nguyên liệu</span></p>
+                            <p><span class="font-bold inline-block w-32 text-slate-600">Ngày lấy mẫu:</span> <span class="font-semibold">${formatDate(r.createdAt)}</span></p>
+                            <p><span class="font-bold inline-block w-28 text-slate-600">Người lấy mẫu:</span> <span class="font-black uppercase">${r.staffName}</span></p>
+                        </div>
+                    </div>
+
+                    <!-- YÊU CẦU KIỂM NGHIỆM -->
+                    <div class="mb-6 page-break-avoid">
+                        <h2 class="text-xs font-black uppercase text-slate-900 border-b border-slate-300 mb-3 pb-1">2. Chỉ Tiêu Yêu Cầu Kiểm Nghiệm</h2>
+                        <div class="border border-slate-400 p-4 rounded-lg bg-slate-50 print:bg-transparent">
+                            <div class="grid grid-cols-3 gap-4 text-sm font-semibold text-slate-800">
+                                <label class="flex items-center gap-2"><input type="checkbox" class="w-4 h-4 cursor-pointer"> AOZ</label>
+                                <label class="flex items-center gap-2"><input type="checkbox" class="w-4 h-4 cursor-pointer"> CAP</label>
+                                <label class="flex items-center gap-2"><input type="checkbox" class="w-4 h-4 cursor-pointer"> FLU</label>
+                                <label class="flex items-center gap-2"><input type="checkbox" class="w-4 h-4 cursor-pointer"> ENRO</label>
+                                <label class="flex items-center gap-2"><input type="checkbox" class="w-4 h-4 cursor-pointer"> MG/LMG</label>
+                                <label class="flex items-center gap-2"><input type="checkbox" class="w-4 h-4 cursor-pointer"> TRF</label>
+                                <label class="flex items-center gap-2"><input type="checkbox" class="w-4 h-4 cursor-pointer"> AMOZ</label>
+                                <label class="flex items-center gap-2"><input type="checkbox" class="w-4 h-4 cursor-pointer"> AHD</label>
+                                <label class="flex items-center gap-2"><input type="checkbox" class="w-4 h-4 cursor-pointer"> SEM</label>
+                                <label class="flex items-center gap-2 col-span-3 mt-2">Khác: ........................................................................................</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-8 page-break-avoid">
+                        <h2 class="text-xs font-black uppercase text-slate-900 border-b border-slate-300 mb-3 pb-1">3. Ghi Chú / Tình Trạng Mẫu</h2>
+                        <div class="border border-slate-400 rounded p-3 text-sm min-h-[80px]">
+                            ....................................................................................................................................
+                            <br><br>
+                            ....................................................................................................................................
+                        </div>
+                    </div>
+
+                    <!-- CHỮ KÝ -->
+                    <div class="grid grid-cols-3 text-center pt-8 text-xs page-break-avoid">
+                        <div>
+                            <p class="font-black uppercase text-slate-900">Người Gửi Mẫu</p>
+                            <p class="text-[10px] text-slate-600 italic mt-1">(Ký & ghi rõ họ tên)</p>
+                            <div class="mt-20 font-bold text-slate-900 uppercase">${r.staffName}</div>
+                        </div>
+                        <div>
+                            <p class="font-black uppercase text-slate-900">Người Nhận Mẫu</p>
+                            <p class="text-[10px] text-slate-600 italic mt-1">(Ký & ghi rõ họ tên)</p>
+                            <div class="mt-20 font-bold text-slate-900 uppercase">..............................</div>
+                        </div>
+                        <div>
+                            <p class="font-black uppercase text-slate-900">Trưởng Bộ Phận / QC</p>
+                            <p class="text-[10px] text-slate-600 italic mt-1">(Ký & duyệt)</p>
+                            <div class="mt-20 font-bold text-slate-900 uppercase">..............................</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('modalContent').innerHTML = content;
+            document.getElementById('reportModal').classList.remove('hidden');
+            
+            // Ẩn nút "Tải dữ liệu lên form để sửa" khi đang xem phiếu kháng sinh
+            document.getElementById('btnLoadForm').classList.add('hidden'); 
             
             window._tempViewReportId = id;
         };
@@ -1034,6 +1210,147 @@
         };
 
         window.closeModal = () => document.getElementById('reportModal').classList.add('hidden');
+
+        // Logic In Danh Sách
+        window.openPrintListModal = () => {
+            const today = new Date();
+            const firstDay = new Date(today.getFullYear(), today.getMonth(), 1); // Ngày đầu tháng
+            
+            const formatDateForInput = (d) => {
+                let month = '' + (d.getMonth() + 1), day = '' + d.getDate(), year = d.getFullYear();
+                if (month.length < 2) month = '0' + month;
+                if (day.length < 2) day = '0' + day;
+                return [year, month, day].join('-');
+            }
+
+            document.getElementById('printFromDate').value = formatDateForInput(firstDay);
+            document.getElementById('printToDate').value = formatDateForInput(today);
+            document.getElementById('printListModal').classList.remove('hidden');
+        };
+
+        window.closePrintListModal = () => {
+            document.getElementById('printListModal').classList.add('hidden');
+        };
+
+        window.executePrintList = () => {
+            const fromDateStr = document.getElementById('printFromDate').value;
+            const toDateStr = document.getElementById('printToDate').value;
+            
+            if(!fromDateStr || !toDateStr) return showToast("Vui lòng chọn đầy đủ ngày!", "error");
+
+            const fromDate = new Date(fromDateStr); fromDate.setHours(0,0,0,0);
+            const toDate = new Date(toDateStr); toDate.setHours(23,59,59,999);
+
+            if (fromDate > toDate) return showToast("Ngày bắt đầu không thể lớn hơn ngày kết thúc!", "error");
+
+            // Xử lý Phân quyền: Lọc theo người dùng hiện tại nếu không phải admin
+            let displayReports = reports;
+            if (appCurrentUser?.role !== 'admin') {
+                displayReports = reports.filter(r => r.createdBy === appCurrentUser?.username);
+            }
+
+            // Lọc theo ngày
+            const filteredList = displayReports.filter(r => {
+                if(!r.createdAt) return false;
+                const rDate = r.createdAt.toDate ? r.createdAt.toDate() : new Date(r.createdAt);
+                return rDate >= fromDate && rDate <= toDate;
+            });
+
+            if(filteredList.length === 0) return showToast("Không có báo cáo nào trong khoảng thời gian này!", "error");
+
+            // Sắp xếp tăng dần theo ngày để in ra cho đúng thứ tự
+            filteredList.sort((a,b) => {
+                const da = a.createdAt?.seconds || 0;
+                const db = b.createdAt?.seconds || 0;
+                return da - db;
+            });
+
+            let tableHTML = '';
+            let totalYield = 0;
+
+            filteredList.forEach((r, idx) => {
+                let tCount = 0; let tWeight = 0;
+                if (r.samples) {
+                    r.samples.forEach(s => {
+                        tCount += s.count;
+                        tWeight += s.isQuick && s.totalW ? s.totalW : (s.weight * s.count);
+                    });
+                }
+                const netW = Math.max(0, tWeight - (r.foodWeight || 0));
+                const avgSize = tCount > 0 ? Math.round(netW / tCount) : 0;
+                
+                totalYield += parseFloat(r.pondYield || 0);
+
+                // Lấy riêng phần định dạng ngày/tháng/năm
+                const dateObj = r.createdAt?.toDate ? r.createdAt.toDate() : new Date(r.createdAt);
+                const dateOnlyStr = dateObj.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
+
+                tableHTML += `
+                    <tr class="border-b border-slate-300 print:border-slate-400">
+                        <td class="py-2.5 px-2 text-center text-[10px] border-r border-slate-300 print:border-slate-400">${idx + 1}</td>
+                        <td class="py-2.5 px-2 text-[10px] whitespace-nowrap border-r border-slate-300 print:border-slate-400 font-medium">${dateOnlyStr}</td>
+                        <td class="py-2.5 px-2 text-[10px] font-bold border-r border-slate-300 print:border-slate-400 uppercase">${r.ownerName}</td>
+                        <td class="py-2.5 px-2 text-[10px] border-r border-slate-300 print:border-slate-400 truncate max-w-[120px]">${r.address || ''}</td>
+                        <td class="py-2.5 px-2 text-center text-[10px] font-bold border-r border-slate-300 print:border-slate-400 uppercase">${r.pondCode}</td>
+                        <td class="py-2.5 px-2 text-center text-[10px] font-black border-r border-slate-300 print:border-slate-400">${avgSize}</td>
+                        <td class="py-2.5 px-2 text-right text-[10px] font-bold border-r border-slate-300 print:border-slate-400">${r.pondYield ? Math.round(parseFloat(r.pondYield)) : '-'}</td>
+                        <td class="py-2.5 px-2 text-[10px] whitespace-nowrap font-medium">${r.staffName}</td>
+                    </tr>
+                `;
+            });
+
+            const content = `
+                <div class="p-8 md:p-10 w-full h-full bg-white text-slate-900">
+                    <div class="text-center mb-6 border-b-2 border-slate-900 pb-4">
+                        <h1 class="text-xl font-black uppercase tracking-tight text-slate-900 mb-1">DANH SÁCH KIỂM MẪU CÁ TRA NGUYÊN LIỆU</h1>
+                        <p class="text-xs font-bold text-slate-600">Từ ngày: <span class="text-slate-900">${fromDateStr.split('-').reverse().join('/')}</span> - Đến ngày: <span class="text-slate-900">${toDateStr.split('-').reverse().join('/')}</span></p>
+                    </div>
+
+                    <table class="w-full text-left border-collapse border border-slate-400 mb-6">
+                        <thead>
+                            <tr class="bg-slate-100 print:bg-slate-100">
+                                <th class="py-2.5 px-2 text-[10px] font-black uppercase border-b-2 border-r border-slate-400 text-center w-8">STT</th>
+                                <th class="py-2.5 px-2 text-[10px] font-black uppercase border-b-2 border-r border-slate-400 w-20">Ngày lấy</th>
+                                <th class="py-2.5 px-2 text-[10px] font-black uppercase border-b-2 border-r border-slate-400">Khách Hàng / Chủ Ao</th>
+                                <th class="py-2.5 px-2 text-[10px] font-black uppercase border-b-2 border-r border-slate-400">Địa chỉ</th>
+                                <th class="py-2.5 px-2 text-[10px] font-black uppercase border-b-2 border-r border-slate-400 text-center w-16">Ao/Lô</th>
+                                <th class="py-2.5 px-2 text-[10px] font-black uppercase border-b-2 border-r border-slate-400 text-center w-16">Size TB (g)</th>
+                                <th class="py-2.5 px-2 text-[10px] font-black uppercase border-b-2 border-r border-slate-400 text-right w-16">Sản lượng<br>(Tấn)</th>
+                                <th class="py-2.5 px-2 text-[10px] font-black uppercase border-b-2 border-slate-400 w-24">NV Lấy Mẫu</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${tableHTML}
+                        </tbody>
+                        <tfoot>
+                            <tr class="bg-slate-50 print:bg-slate-50">
+                                <td colspan="6" class="py-2.5 px-2 text-[11px] font-black uppercase border-t-2 border-r border-slate-400 text-right">Tổng Sản Lượng DDK</td>
+                                <td class="py-2.5 px-2 text-right text-[11px] font-black border-t-2 border-r border-slate-400">${Math.round(totalYield)}</td>
+                                <td class="py-2.5 px-2 border-t-2 border-slate-400"></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+
+                     <div class="grid grid-cols-2 text-center pt-4 text-xs page-break-avoid">
+                        <div>
+                            <p class="font-black uppercase text-slate-900">Người Lập Bảng</p>
+                            <p class="text-[10px] text-slate-600 italic mt-1">(Ký & ghi rõ họ tên)</p>
+                            <div class="mt-16 font-bold text-slate-900 uppercase">${appCurrentUser?.fullName || ''}</div>
+                        </div>
+                        <div>
+                            <p class="font-black uppercase text-slate-900">Quản Lý Trực Tiếp</p>
+                            <p class="text-[10px] text-slate-600 italic mt-1">(Ký & duyệt)</p>
+                            <div class="mt-16 font-bold text-slate-900 uppercase">..............................</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('modalContent').innerHTML = content;
+            closePrintListModal(); // Đóng modal chọn ngày
+            document.getElementById('reportModal').classList.remove('hidden'); // Mở modal In
+            document.getElementById('btnLoadForm').classList.add('hidden'); // Ẩn nút edit
+        };
 
         // Delete Logic
         window.confirmDeleteReport = (id, code) => { 
@@ -1088,7 +1405,7 @@
         window.exportToExcel = () => {
             if (currentSamples.length === 0) return showToast("Không có dữ liệu!", "error");
             const totalCount = parseInt(document.getElementById('statCount').innerText.replace(/,/g, ''));
-            const totalWeight = parseFloat(document.getElementById('statWeight').innerText.replace(/,/g, '')) * 1000;
+            const totalWeightNet = parseFloat(document.getElementById('statWeight').innerText.replace(/,/g, '')) * 1000;
             const avg = document.getElementById('statAvg').innerText;
             const pondCode = document.getElementById('pondCode').value || 'NA';
 
@@ -1097,7 +1414,7 @@
                 ['Nhân viên', document.getElementById('staffName').value], ['Chủ ao', document.getElementById('ownerName').value],
                 ['Mã ao', pondCode], ['Khu vực', document.getElementById('address').value], ['Sản lượng', document.getElementById('pondYield').value + ' Tấn'],
                 [], ['Kết quả kiểm tra size'],
-                ['Tổng mẫu (con)', totalCount], ['Tổng khối lượng (kg)', (totalWeight / 1000).toFixed(2)],
+                ['Tổng mẫu (con)', totalCount], ['Tổng khối lượng (kg)', Math.round(totalWeightNet / 1000)],
                 ['Lượng mồi trừ (g)', document.getElementById('foodWeight').value || 0], ['Size trung bình (g/con)', avg],
                 [], ['Chất lượng Fillet'],
                 ['Định mức', document.getElementById('filletRatio').value || 0], ['Trắng', document.getElementById('colorWhite').value || 0],
