@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hệ thống kiểm & phân tích nguyên liệu cty IDI</title>
+    <title>Hệ thống Đánh Gía Chất Lượng Cá Tra (IDI)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
@@ -220,7 +220,7 @@
                     </div>
                     <div class="grid grid-cols-2 gap-3 mb-4">
                         <div class="bg-slate-50 p-3 rounded-2xl border border-slate-100 shadow-inner">
-                            <label class="block text-[9px] font-black text-indigo-500 uppercase mb-1">Lượng mồi (g)</label>
+                            <label class="block text-[9px] font-black text-indigo-500 uppercase mb-1">Lượng mồi (g/con)</label>
                             <input id="foodWeight" type="number" oninput="updateUI()" placeholder="0" class="w-full bg-transparent text-lg font-black text-indigo-900 outline-none">
                         </div>
                         <div class="bg-white p-3 rounded-2xl border border-slate-100 shadow-sm">
@@ -684,7 +684,7 @@
                 totalCount += s.count;
                 totalWeightG += s.isQuick && s.totalW ? s.totalW : (s.weight * s.count);
             });
-            const foodWeight = parseFloat(document.getElementById('foodWeight').value) || 0;
+            const foodWeightPerFish = parseFloat(document.getElementById('foodWeight').value) || 0;
             const cW = parseInt(document.getElementById('colorWhite').value) || 0;
             const cWP = parseInt(document.getElementById('colorWhitePink').value) || 0;
             const cP = parseInt(document.getElementById('colorPink').value) || 0;
@@ -700,9 +700,10 @@
                 else if (maxPieces === cY) { domColor = 'Vàng'; bgClass = 'bg-yellow-400'; }
             }
 
-            // CHUẨN HOÁ NET WEIGHT: Khối lượng hiển thị sẽ là khối lượng sau khi trừ mồi
-            const netWeightG = Math.max(0, totalWeightG - foodWeight);
-            const avgSize = totalCount > 0 ? Math.round(netWeightG / totalCount) : 0;
+            // CHUẨN HOÁ NET WEIGHT: Khối lượng hiển thị sẽ là khối lượng sau khi trừ mồi (g/con)
+            const totalFoodWeight = foodWeightPerFish * totalCount;
+            const netWeightG = Math.max(0, totalWeightG - totalFoodWeight);
+            const avgSize = totalCount > 0 ? Math.max(0, Math.round(netWeightG / totalCount)) : 0;
             
             document.getElementById('statCount').innerText = formatNumber(totalCount);
             // Đã cập nhật để Tổng Kg Mẫu hiển thị số sau khi trừ mồi
@@ -711,7 +712,7 @@
             document.getElementById('statColorLabel').innerText = domColor;
             document.getElementById('statColor').className = `w-6 h-6 rounded-full ${bgClass}`;
 
-            renderSampleList(); renderAnalysisTable(totalCount, totalWeightG, foodWeight);
+            renderSampleList(); renderAnalysisTable(totalCount, totalWeightG, foodWeightPerFish);
         };
 
         const renderSampleList = () => {
@@ -725,8 +726,8 @@
             `).join('');
         };
 
-        // THUẬT TOÁN ĐÃ CHỈNH SỬA: Size của mỗi cá sẽ bị trừ đi lượng mồi trung bình trước khi xếp vào phân bổ
-        const getRangesDistribution = (samples, totalCount, totalWeightG, foodWeight = 0) => {
+        // THUẬT TOÁN ĐÃ CHỈNH SỬA: Size của mỗi cá sẽ bị trừ đi lượng mồi trước khi xếp vào phân bổ
+        const getRangesDistribution = (samples, totalCount, totalWeightG, foodWeightPerFish = 0) => {
             const ranges = [
                 { min: 0, max: 300, label: '< 300g', count: 0, weight: 0 },
                 { min: 300, max: 500, label: '300 - 500g', count: 0, weight: 0 },
@@ -736,14 +737,12 @@
                 { min: 1500, max: Infinity, label: '> 1500g', count: 0, weight: 0 },
             ];
 
-            const avgFoodPerFish = totalCount > 0 ? (foodWeight / totalCount) : 0;
-
             samples.forEach(s => {
                 // Trừ đi lượng mồi cho từng con cá
-                const w = Math.max(0, s.weight - avgFoodPerFish);
+                const w = Math.max(0, s.weight - foodWeightPerFish);
                 
                 const sampleTotalGross = s.isQuick && s.totalW ? s.totalW : (s.weight * s.count);
-                const sampleTotalNet = Math.max(0, sampleTotalGross - (avgFoodPerFish * s.count));
+                const sampleTotalNet = Math.max(0, sampleTotalGross - (foodWeightPerFish * s.count));
 
                 for (let r of ranges) {
                     if (w >= r.min && w < r.max) {
@@ -756,12 +755,13 @@
             return ranges;
         };
 
-        const renderAnalysisTable = (totalCount, totalWeightG, foodWeight = 0) => {
+        const renderAnalysisTable = (totalCount, totalWeightG, foodWeightPerFish = 0) => {
             const table = document.getElementById('analysisTable');
             if (currentSamples.length === 0) { table.innerHTML = `<tr><td colspan="4" class="p-10 text-center text-slate-300 italic">Chưa có dữ liệu...</td></tr>`; return; }
             
-            const netWeightG = Math.max(0, totalWeightG - foodWeight);
-            const ranges = getRangesDistribution(currentSamples, totalCount, totalWeightG, foodWeight);
+            const totalFoodWeight = foodWeightPerFish * totalCount;
+            const netWeightG = Math.max(0, totalWeightG - totalFoodWeight);
+            const ranges = getRangesDistribution(currentSamples, totalCount, totalWeightG, foodWeightPerFish);
             let html = '';
             ranges.forEach(r => {
                 if (r.count > 0 || totalCount > 0) {
@@ -857,8 +857,10 @@
                         tWeight += s.isQuick && s.totalW ? s.totalW : (s.weight * s.count);
                     });
                 }
-                const netW = Math.max(0, tWeight - (r.foodWeight || 0));
-                const avgSize = tCount > 0 ? Math.round(netW / tCount) : 0;
+                const foodWeightPerFish = r.foodWeight || 0;
+                const totalFoodW = foodWeightPerFish * tCount;
+                const netW = Math.max(0, tWeight - totalFoodW);
+                const avgSize = tCount > 0 ? Math.max(0, Math.round(netW / tCount)) : 0;
                 return { ...r, calculatedAvgSize: avgSize };
             });
 
@@ -939,11 +941,13 @@
                 tCount += s.count;
                 tWeight += s.isQuick && s.totalW ? s.totalW : (s.weight * s.count);
             });
-            const netW = Math.max(0, tWeight - (r.foodWeight || 0));
-            const avgSize = tCount > 0 ? Math.round(netW / tCount) : 0;
+            const foodWeightPerFish = r.foodWeight || 0;
+            const totalFoodW = foodWeightPerFish * tCount;
+            const netW = Math.max(0, tWeight - totalFoodW);
+            const avgSize = tCount > 0 ? Math.max(0, Math.round(netW / tCount)) : 0;
             
             // 2. Lấy dữ liệu phân bổ dải cân nặng ĐÃ TRỪ MỒI
-            const ranges = getRangesDistribution(r.samples, tCount, tWeight, r.foodWeight || 0);
+            const ranges = getRangesDistribution(r.samples, tCount, tWeight, foodWeightPerFish);
             
             // 3. Render Table HTML
             let tableHTML = '';
@@ -971,7 +975,7 @@
                         <div class="flex items-center gap-4">
                             <div class="w-16 h-16 border-2 border-slate-900 rounded-lg flex items-center justify-center overflow-hidden">
                                 <!-- HƯỚNG DẪN: Thay "logo-cong-ty.png" bằng tên file ảnh để cùng thư mục hoặc link ảnh online -->
-                                <img src="logo-cong-ty.png" alt="Logo Công ty" class="w-full h-full object-contain p-1">
+                                <img src="https://i.postimg.cc/mDTcM1ks/logo-cong-ty.png" alt="Logo Công ty" class="w-full h-full object-contain p-1">
                             </div>
                             <div>
                                 <h1 class="text-xl font-black uppercase tracking-tight text-slate-900 leading-tight">PHIẾU KẾT QUẢ KIỂM MẪU NGUYÊN LIỆU</h1>
@@ -986,7 +990,7 @@
 
                     <!-- THÔNG TIN CHUNG -->
                     <div class="mb-6">
-                        <h2 class="text-xs font-black uppercase text-slate-900 border-b border-slate-300 mb-3 pb-1">1. Thông Đi Chung</h2>
+                        <h2 class="text-xs font-black uppercase text-slate-900 border-b border-slate-300 mb-3 pb-1">1. Thông Tin Chung</h2>
                         <div class="grid grid-cols-2 gap-x-8 gap-y-3 text-xs">
                             <p><span class="font-bold inline-block w-32 text-slate-600">Đại diện/Chủ Ao:</span> <span class="font-black uppercase">${r.ownerName}</span></p>
                             <p><span class="font-bold inline-block w-28 text-slate-600">Mã Ao/Lô:</span> <span class="font-black uppercase">${r.pondCode}</span></p>
@@ -1014,7 +1018,7 @@
                             </div>
                             <div class="border border-slate-400 rounded p-3">
                                 <p class="text-[10px] font-bold text-slate-500 uppercase mb-1">Khấu Trừ Mồi</p>
-                                <p class="text-lg font-black">${formatNumber(r.foodWeight||0)} <span class="text-[10px] font-normal">g</span></p>
+                                <p class="text-lg font-black">${formatNumber(r.foodWeight||0)} <span class="text-[10px] font-normal">g/con</span></p>
                             </div>
                         </div>
                     </div>
@@ -1112,9 +1116,33 @@
                     tWeight += s.isQuick && s.totalW ? s.totalW : (s.weight * s.count);
                 });
             }
-            const netW = Math.max(0, tWeight - (r.foodWeight || 0));
-            const avgSize = tCount > 0 ? Math.round(netW / tCount) : 0;
+            const foodWeightPerFish = r.foodWeight || 0;
+            const totalFoodW = foodWeightPerFish * tCount;
+            const netW = Math.max(0, tWeight - totalFoodW);
+            const avgSize = tCount > 0 ? Math.max(0, Math.round(netW / tCount)) : 0;
+            
             const pondYieldStr = r.pondYield ? Math.round(parseFloat(r.pondYield)) : '---';
+
+            // Tạo mã phiếu kiểm nghiệm: YYMMDDxxĐK
+            const reportDate = r.createdAt?.toDate ? r.createdAt.toDate() : new Date(r.createdAt || Date.now());
+            const yy = String(reportDate.getFullYear()).slice(-2);
+            const mm = String(reportDate.getMonth() + 1).padStart(2, '0');
+            const dd = String(reportDate.getDate()).padStart(2, '0');
+
+            // Tìm số thứ tự mẫu trong ngày
+            const sameDayReports = reports.filter(rep => {
+                const d = rep.createdAt?.toDate ? rep.createdAt.toDate() : new Date(rep.createdAt || Date.now());
+                return d.getFullYear() === reportDate.getFullYear() &&
+                       d.getMonth() === reportDate.getMonth() &&
+                       d.getDate() === reportDate.getDate();
+            }).sort((a, b) => {
+                const da = a.createdAt?.seconds || 0;
+                const db = b.createdAt?.seconds || 0;
+                return da - db;
+            });
+            const seqIndex = sameDayReports.findIndex(rep => rep.id === r.id) + 1;
+            const xx = String(seqIndex > 0 ? seqIndex : 1).padStart(2, '0');
+            const ticketNumber = `${yy}${mm}${dd}${xx}ĐK`;
 
             const content = `
                 <div class="p-8 md:p-10 w-full h-full bg-white text-slate-900">
@@ -1308,8 +1336,10 @@
                         tWeight += s.isQuick && s.totalW ? s.totalW : (s.weight * s.count);
                     });
                 }
-                const netW = Math.max(0, tWeight - (r.foodWeight || 0));
-                const avgSize = tCount > 0 ? Math.round(netW / tCount) : 0;
+                const foodWeightPerFish = r.foodWeight || 0;
+                const totalFoodW = foodWeightPerFish * tCount;
+                const netW = Math.max(0, tWeight - totalFoodW);
+                const avgSize = tCount > 0 ? Math.max(0, Math.round(netW / tCount)) : 0;
                 
                 totalYield += parseFloat(r.pondYield || 0);
 
@@ -1447,7 +1477,7 @@
                 ['Mã ao', pondCode], ['Khu vực', document.getElementById('address').value], ['Sản lượng', document.getElementById('pondYield').value + ' Tấn'],
                 [], ['Kết quả kiểm tra size'],
                 ['Tổng mẫu (con)', totalCount], ['Tổng khối lượng (kg)', Math.round(totalWeightNet / 1000)],
-                ['Lượng mồi trừ (g)', document.getElementById('foodWeight').value || 0], ['Size trung bình (g/con)', avg],
+                ['Lượng mồi trừ (g/con)', document.getElementById('foodWeight').value || 0], ['Size trung bình (g/con)', avg],
                 [], ['Chất lượng Fillet'],
                 ['Định mức', document.getElementById('filletRatio').value || 0], ['Trắng', document.getElementById('colorWhite').value || 0],
                 ['Hồng Trắng', document.getElementById('colorWhitePink').value || 0], ['Hồng', document.getElementById('colorPink').value || 0],
