@@ -1104,6 +1104,18 @@
             const r = reports.find(x => x.id === id);
             if (!r) return;
 
+            // Tính toán Size TB và Sản lượng
+            let tCount = 0; let tWeight = 0;
+            if (r.samples) {
+                r.samples.forEach(s => {
+                    tCount += s.count;
+                    tWeight += s.isQuick && s.totalW ? s.totalW : (s.weight * s.count);
+                });
+            }
+            const netW = Math.max(0, tWeight - (r.foodWeight || 0));
+            const avgSize = tCount > 0 ? Math.round(netW / tCount) : 0;
+            const pondYieldStr = r.pondYield ? Math.round(parseFloat(r.pondYield)) : '---';
+
             const content = `
                 <div class="p-8 md:p-10 w-full h-full bg-white text-slate-900">
                     
@@ -1119,7 +1131,7 @@
                             </div>
                         </div>
                         <div class="text-right text-xs">
-                            <p class="mb-1"><span class="font-bold text-slate-600">Số phiếu:</span> <span class="font-black">KS-${r.id.substring(0,8).toUpperCase()}</span></p>
+                            <p class="mb-1"><span class="font-bold text-slate-600">Số phiếu:</span> <span class="font-black tracking-widest">.......................</span></p>
                             <p><span class="font-bold text-slate-600">Ngày lập:</span> <span class="font-bold">${formatDate(r.createdAt)}</span></p>
                         </div>
                     </div>
@@ -1130,8 +1142,13 @@
                         <div class="grid grid-cols-2 gap-x-8 gap-y-4 text-sm">
                             <p><span class="font-bold inline-block w-32 text-slate-600">Khách hàng/Ao:</span> <span class="font-black uppercase">${r.ownerName}</span></p>
                             <p><span class="font-bold inline-block w-28 text-slate-600">Mã Ao/Lô:</span> <span class="font-black uppercase">${r.pondCode}</span></p>
+                            
                             <p><span class="font-bold inline-block w-32 text-slate-600">Địa chỉ:</span> <span class="font-semibold">${r.address || '---'}</span></p>
                             <p><span class="font-bold inline-block w-28 text-slate-600">Loại mẫu:</span> <span class="font-semibold">Thịt cá nguyên liệu</span></p>
+                            
+                            <p><span class="font-bold inline-block w-32 text-slate-600">Sản lượng (Tấn):</span> <span class="font-black">${pondYieldStr}</span></p>
+                            <p><span class="font-bold inline-block w-28 text-slate-600">Size (gam):</span> <span class="font-black">${avgSize}</span></p>
+                            
                             <p><span class="font-bold inline-block w-32 text-slate-600">Ngày lấy mẫu:</span> <span class="font-semibold">${formatDate(r.createdAt)}</span></p>
                             <p><span class="font-bold inline-block w-28 text-slate-600">Người lấy mẫu:</span> <span class="font-black uppercase">${r.staffName}</span></p>
                         </div>
@@ -1140,23 +1157,29 @@
                     <!-- YÊU CẦU KIỂM NGHIỆM -->
                     <div class="mb-6 page-break-avoid">
                         <h2 class="text-xs font-black uppercase text-slate-900 border-b border-slate-300 mb-3 pb-1">2. Chỉ Tiêu Yêu Cầu Kiểm Nghiệm</h2>
-                        <div class="border border-slate-400 p-4 rounded-lg bg-slate-50 print:bg-transparent">
-                            <div class="grid grid-cols-3 gap-4 text-sm font-semibold text-slate-800">
+                        <div class="border border-slate-400 p-4 rounded-lg bg-slate-50 print:bg-transparent text-sm font-semibold text-slate-800">
+                            <div class="grid grid-cols-5 gap-y-4 gap-x-2 mb-4">
+                                <!-- Hàng 1 -->
                                 <label class="flex items-center gap-2"><input type="checkbox" class="w-4 h-4 cursor-pointer"> AOZ</label>
+                                <label class="flex items-center gap-2"><input type="checkbox" class="w-4 h-4 cursor-pointer"> AMOZ</label>
+                                <label class="flex items-center gap-2"><input type="checkbox" class="w-4 h-4 cursor-pointer"> AHD</label>
+                                <label class="flex items-center gap-2"><input type="checkbox" class="w-4 h-4 cursor-pointer"> SEM</label>
+                                <div></div> <!-- Ô trống để căn dòng -->
+                                
+                                <!-- Hàng 2 -->
                                 <label class="flex items-center gap-2"><input type="checkbox" class="w-4 h-4 cursor-pointer"> CAP</label>
                                 <label class="flex items-center gap-2"><input type="checkbox" class="w-4 h-4 cursor-pointer"> FLU</label>
                                 <label class="flex items-center gap-2"><input type="checkbox" class="w-4 h-4 cursor-pointer"> ENRO</label>
                                 <label class="flex items-center gap-2"><input type="checkbox" class="w-4 h-4 cursor-pointer"> MG/LMG</label>
                                 <label class="flex items-center gap-2"><input type="checkbox" class="w-4 h-4 cursor-pointer"> TRF</label>
-                                <label class="flex items-center gap-2"><input type="checkbox" class="w-4 h-4 cursor-pointer"> AMOZ</label>
-                                <label class="flex items-center gap-2"><input type="checkbox" class="w-4 h-4 cursor-pointer"> AHD</label>
-                                <label class="flex items-center gap-2"><input type="checkbox" class="w-4 h-4 cursor-pointer"> SEM</label>
-                                <label class="flex items-center gap-2 col-span-3 mt-2">Khác: ........................................................................................</label>
+                            </div>
+                            <div class="mt-2">
+                                <label class="flex items-center gap-2">Khác: ........................................................................................................................</label>
                             </div>
                         </div>
                     </div>
 
-                    <div class="mb-8 page-break-avoid">
+                    <div class="mb-6 page-break-avoid">
                         <h2 class="text-xs font-black uppercase text-slate-900 border-b border-slate-300 mb-3 pb-1">3. Ghi Chú / Tình Trạng Mẫu</h2>
                         <div class="border border-slate-400 rounded p-3 text-sm min-h-[80px]">
                             ....................................................................................................................................
@@ -1165,8 +1188,17 @@
                         </div>
                     </div>
 
+                    <!-- THỜI GIAN YÊU CẦU -->
+                    <div class="mb-6 page-break-avoid">
+                        <h2 class="text-xs font-black uppercase text-slate-900 border-b border-slate-300 mb-3 pb-1">4. Thời Gian Yêu Cầu Trả Kết Quả Phân Tích</h2>
+                        <div class="flex flex-wrap gap-x-12 gap-y-3 text-sm font-semibold text-slate-800 pl-2">
+                            <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" class="w-4 h-4 cursor-pointer" checked> Trả kết quả bình thường (trong vòng 72h)</label>
+                            <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" class="w-4 h-4 cursor-pointer"> Trả kết quả nhanh (trong vòng 24h)</label>
+                        </div>
+                    </div>
+
                     <!-- CHỮ KÝ -->
-                    <div class="grid grid-cols-3 text-center pt-8 text-xs page-break-avoid">
+                    <div class="grid grid-cols-3 text-center pt-4 text-xs page-break-avoid">
                         <div>
                             <p class="font-black uppercase text-slate-900">Người Gửi Mẫu</p>
                             <p class="text-[10px] text-slate-600 italic mt-1">(Ký & ghi rõ họ tên)</p>
