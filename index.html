@@ -405,12 +405,12 @@
             </div>
             <div class="flex-1 overflow-y-auto p-6 bg-slate-50 flex flex-col md:flex-row gap-6">
                 <!-- Add User Form -->
-                <div class="md:w-1/3 bg-white p-5 rounded-2xl shadow-sm border border-slate-200 h-fit">
-                    <h4 class="text-xs font-black text-slate-800 uppercase mb-4 border-b pb-2">Thêm tài khoản mới</h4>
+                <div class="md:w-1/3 bg-white p-5 rounded-2xl shadow-sm border border-slate-200 h-fit sticky top-0">
+                    <h4 id="userFormTitle" class="text-xs font-black text-slate-800 uppercase mb-4 border-b pb-2">Thêm tài khoản mới</h4>
                     <form onsubmit="handleAddUser(event)" class="space-y-3">
                         <div>
                             <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Tên đăng nhập</label>
-                            <input id="newUsername" type="text" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm font-bold focus:border-blue-500 outline-none" required>
+                            <input id="newUsername" type="text" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm font-bold focus:border-blue-500 outline-none transition-all" required>
                         </div>
                         <div>
                             <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Họ và tên nhân viên</label>
@@ -427,8 +427,11 @@
                                 <option value="admin">Admin (Quản trị)</option>
                             </select>
                         </div>
-                        <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-3 rounded-lg font-black text-xs uppercase transition-all shadow-md mt-2">
-                            <i class="fas fa-plus mr-1"></i> Tạo Tài Khoản
+                        <button id="btnSubmitUser" type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-3 rounded-lg font-black text-xs uppercase transition-all shadow-md mt-4 flex items-center justify-center gap-2">
+                            <i class="fas fa-plus"></i> Tạo Tài Khoản
+                        </button>
+                        <button type="button" id="btnCancelEditUser" onclick="cancelEditUser()" class="hidden w-full bg-slate-200 hover:bg-slate-300 text-slate-700 py-3 rounded-lg font-black text-xs uppercase transition-all mt-2">
+                            Hủy Bỏ
                         </button>
                     </form>
                 </div>
@@ -500,6 +503,7 @@
         let reports = [];
         let currentSamples = [];
         let editingReportId = null;
+        let editingUserId = null;
         let deleteAction = null;
         let unsubscribeUsers = null;
         let unsubscribeReports = null;
@@ -1185,23 +1189,61 @@
                     <!-- YÊU CẦU KIỂM NGHIỆM -->
                     <div class="mb-6 page-break-avoid">
                         <h2 class="text-xs font-black uppercase text-slate-900 border-b border-slate-300 mb-3 pb-1">2. Chỉ Tiêu Yêu Cầu Kiểm Nghiệm</h2>
+                        
+                        <!-- Lựa chọn gói kiểm nghiệm -->
+                        <div class="flex gap-6 mb-3 text-sm font-bold text-blue-700 print:text-slate-900 ml-2">
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="testMode" checked class="cursor-pointer w-4 h-4" onchange="window.toggleTestMode('normal')"> Kiểm thông thường
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="testMode" class="cursor-pointer w-4 h-4" onchange="window.toggleTestMode('us')"> Kiểm TT Mỹ/Ai Cập
+                            </label>
+                        </div>
+
                         <div class="border border-slate-400 p-4 rounded-lg bg-slate-50 print:bg-transparent text-sm font-semibold text-slate-800">
-                            <div class="grid grid-cols-5 gap-y-4 gap-x-2 mb-4">
-                                <!-- Hàng 1 -->
-                                <label class="flex items-center gap-2"><input type="checkbox" class="w-4 h-4 cursor-pointer"> AOZ</label>
-                                <label class="flex items-center gap-2"><input type="checkbox" class="w-4 h-4 cursor-pointer"> AMOZ</label>
-                                <label class="flex items-center gap-2"><input type="checkbox" class="w-4 h-4 cursor-pointer"> AHD</label>
-                                <label class="flex items-center gap-2"><input type="checkbox" class="w-4 h-4 cursor-pointer"> SEM</label>
-                                <div></div> <!-- Ô trống để căn dòng -->
-                                
-                                <!-- Hàng 2 -->
-                                <label class="flex items-center gap-2"><input type="checkbox" class="w-4 h-4 cursor-pointer"> CAP</label>
-                                <label class="flex items-center gap-2"><input type="checkbox" class="w-4 h-4 cursor-pointer"> FLU</label>
-                                <label class="flex items-center gap-2"><input type="checkbox" class="w-4 h-4 cursor-pointer"> ENRO</label>
-                                <label class="flex items-center gap-2"><input type="checkbox" class="w-4 h-4 cursor-pointer"> MG/LMG</label>
-                                <label class="flex items-center gap-2"><input type="checkbox" class="w-4 h-4 cursor-pointer"> TRF</label>
+                            
+                            <!-- Grid Thông Thường -->
+                            <div id="gridNormal" class="block">
+                                <div class="grid grid-cols-5 gap-y-4 gap-x-2">
+                                    <!-- Hàng 1 -->
+                                    <label class="flex items-center gap-2"><input type="checkbox" class="w-4 h-4 cursor-pointer"> AOZ</label>
+                                    <label class="flex items-center gap-2"><input type="checkbox" class="w-4 h-4 cursor-pointer"> AMOZ</label>
+                                    <label class="flex items-center gap-2"><input type="checkbox" class="w-4 h-4 cursor-pointer"> AHD</label>
+                                    <label class="flex items-center gap-2"><input type="checkbox" class="w-4 h-4 cursor-pointer"> SEM</label>
+                                    <div></div> <!-- Ô trống để căn dòng -->
+                                    
+                                    <!-- Hàng 2 -->
+                                    <label class="flex items-center gap-2"><input type="checkbox" class="w-4 h-4 cursor-pointer"> CAP</label>
+                                    <label class="flex items-center gap-2"><input type="checkbox" class="w-4 h-4 cursor-pointer"> FLU</label>
+                                    <label class="flex items-center gap-2"><input type="checkbox" class="w-4 h-4 cursor-pointer"> ENRO</label>
+                                    <label class="flex items-center gap-2"><input type="checkbox" class="w-4 h-4 cursor-pointer"> MG/LMG</label>
+                                    <label class="flex items-center gap-2"><input type="checkbox" class="w-4 h-4 cursor-pointer"> TRF</label>
+                                </div>
                             </div>
-                            <div class="mt-2">
+
+                            <!-- Grid TT Mỹ/Ai Cập -->
+                            <div id="gridUS" class="hidden">
+                                <!-- Dùng grid-cols-4 để các tên chỉ tiêu dài hiển thị đẹp, không bị tràn -->
+                                <div class="grid grid-cols-4 gap-y-4 gap-x-4 text-[13px]">
+                                    <!-- Hàng 1 -->
+                                    <label class="flex items-center gap-2"><input type="checkbox" class="w-4 h-4 cursor-pointer"> Fipronil</label>
+                                    <label class="flex items-center gap-2"><input type="checkbox" class="w-4 h-4 cursor-pointer"> Fipronil desulfinyl</label>
+                                    <label class="flex items-center gap-2"><input type="checkbox" class="w-4 h-4 cursor-pointer"> Fipronil sulfide</label>
+                                    <label class="flex items-center gap-2"><input type="checkbox" class="w-4 h-4 cursor-pointer"> Sulfanilamide</label>
+                                    
+                                    <!-- Hàng 2 -->
+                                    <label class="flex items-center gap-2"><input type="checkbox" class="w-4 h-4 cursor-pointer"> Oxolinic acid</label>
+                                    <label class="flex items-center gap-2"><input type="checkbox" class="w-4 h-4 cursor-pointer"> Sarafloxacine</label>
+                                    <label class="flex items-center gap-2"><input type="checkbox" class="w-4 h-4 cursor-pointer"> Crystal violet</label>
+                                    <label class="flex items-center gap-2"><input type="checkbox" class="w-4 h-4 cursor-pointer"> Leuco crystal violet</label>
+                                    
+                                    <!-- Hàng 3 -->
+                                    <label class="flex items-center gap-2"><input type="checkbox" class="w-4 h-4 cursor-pointer"> Chlorpyrifos</label>
+                                    <label class="flex items-center gap-2"><input type="checkbox" class="w-4 h-4 cursor-pointer"> Chlorpyryfos methyl</label>
+                                </div>
+                            </div>
+
+                            <div class="mt-4 pt-2 border-t border-slate-300 border-dashed">
                                 <label class="flex items-center gap-2">Khác: ........................................................................................................................</label>
                             </div>
                         </div>
@@ -1267,6 +1309,26 @@
             currentSamples = [...r.samples]; editingReportId = r.id;
             document.getElementById('btnSaveCloudText').innerText = "CẬP NHẬT HỆ THỐNG";
             updateUI(); closeModal(); showToast("Đã tải dữ liệu để chỉnh sửa", "info");
+        };
+
+        // Hàm xử lý logic ẩn/hiện lưới chỉ tiêu kiểm nghiệm
+        window.toggleTestMode = (mode) => {
+            const gridNormal = document.getElementById('gridNormal');
+            const gridUS = document.getElementById('gridUS');
+            
+            if (!gridNormal || !gridUS) return;
+
+            if (mode === 'normal') {
+                gridNormal.classList.remove('hidden');
+                gridNormal.classList.add('block');
+                gridUS.classList.remove('block');
+                gridUS.classList.add('hidden');
+            } else {
+                gridNormal.classList.remove('block');
+                gridNormal.classList.add('hidden');
+                gridUS.classList.remove('hidden');
+                gridUS.classList.add('block');
+            }
         };
 
         window.closeModal = () => document.getElementById('reportModal').classList.add('hidden');
@@ -1442,25 +1504,79 @@
 
         // User Management
         window.openManageUsers = () => { if (appCurrentUser?.role === 'admin') document.getElementById('userManageModal').classList.remove('hidden'); };
-        window.closeManageUsers = () => document.getElementById('userManageModal').classList.add('hidden');
+        
+        window.closeManageUsers = () => { 
+            document.getElementById('userManageModal').classList.add('hidden'); 
+            cancelEditUser(); 
+        };
+
+        window.editUser = (id) => {
+            const u = appUsers.find(user => user.id === id);
+            if (!u) return;
+            
+            document.getElementById('newUsername').value = u.username;
+            document.getElementById('newUsername').disabled = true;
+            document.getElementById('newUsername').classList.add('bg-slate-200', 'cursor-not-allowed', 'text-slate-500');
+            document.getElementById('newFullName').value = u.fullName;
+            document.getElementById('newPassword').value = u.password;
+            document.getElementById('newRole').value = u.role;
+            
+            editingUserId = id;
+            document.getElementById('userFormTitle').innerHTML = `<span class="text-blue-600">Cập nhật tài khoản:</span> ${u.username}`;
+            document.getElementById('btnSubmitUser').innerHTML = `<i class="fas fa-save"></i> LƯU THAY ĐỔI`;
+            document.getElementById('btnSubmitUser').className = "w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-black text-xs uppercase transition-all shadow-md mt-4 flex items-center justify-center gap-2";
+            document.getElementById('btnCancelEditUser').classList.remove('hidden');
+        };
+
+        window.cancelEditUser = () => {
+            editingUserId = null;
+            document.getElementById('newUsername').value = '';
+            document.getElementById('newUsername').disabled = false;
+            document.getElementById('newUsername').classList.remove('bg-slate-200', 'cursor-not-allowed', 'text-slate-500');
+            document.getElementById('newFullName').value = '';
+            document.getElementById('newPassword').value = '';
+            document.getElementById('newRole').value = 'user';
+            
+            document.getElementById('userFormTitle').innerText = "Thêm tài khoản mới";
+            document.getElementById('btnSubmitUser').innerHTML = `<i class="fas fa-plus"></i> TẠO TÀI KHOẢN`;
+            document.getElementById('btnSubmitUser').className = "w-full bg-indigo-600 hover:bg-indigo-700 text-white py-3 rounded-lg font-black text-xs uppercase transition-all shadow-md mt-4 flex items-center justify-center gap-2";
+            document.getElementById('btnCancelEditUser').classList.add('hidden');
+        };
+
         window.handleAddUser = async (e) => {
             e.preventDefault(); if (!fbUser || appCurrentUser?.role !== 'admin') return;
             const u = document.getElementById('newUsername').value.trim(); const p = document.getElementById('newPassword').value.trim();
             const f = document.getElementById('newFullName').value.trim(); const r = document.getElementById('newRole').value;
-            if (appUsers.some(user => user.username === u)) return showToast("Tài khoản đã tồn tại!", "error");
+            
             try {
-                await addDoc(usersColRef, { username: u, password: p, fullName: f, role: r, createdAt: Timestamp.now() });
-                showToast("Đã tạo tài khoản!"); ['newUsername', 'newPassword', 'newFullName'].forEach(id => document.getElementById(id).value = '');
-            } catch (err) { showToast("Lỗi tạo tài khoản!", "error"); }
+                if (editingUserId) {
+                    await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'app_users', editingUserId), {
+                        fullName: f, password: p, role: r, updatedAt: Timestamp.now()
+                    });
+                    showToast("Cập nhật thông tin tài khoản thành công!");
+                    cancelEditUser();
+                } else {
+                    if (appUsers.some(user => user.username === u)) return showToast("Tài khoản đã tồn tại!", "error");
+                    await addDoc(usersColRef, { username: u, password: p, fullName: f, role: r, createdAt: Timestamp.now() });
+                    showToast("Đã tạo tài khoản!"); 
+                    cancelEditUser();
+                }
+            } catch (err) { showToast("Lỗi thao tác dữ liệu!", "error"); }
         };
 
         const renderUserTable = () => {
             const tbody = document.getElementById('userTableBody'); if (!tbody) return;
             tbody.innerHTML = appUsers.map(u => `
-                <tr class="hover:bg-slate-50">
+                <tr class="hover:bg-slate-50 transition-colors">
                     <td class="p-4 font-bold text-slate-800">${u.username}</td><td class="p-4 font-medium">${u.fullName}</td>
-                    <td class="p-4 text-center"><span class="${u.role === 'admin' ? 'bg-indigo-100 text-indigo-700' : 'bg-slate-100 text-slate-600'} text-[10px] font-black px-2 py-1 rounded uppercase">${u.role}</span></td>
-                    <td class="p-4 text-right">${u.username !== 'admin' ? `<button onclick="confirmDeleteUser('${u.id}', '${u.username}')" class="text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 w-8 h-8 rounded flex items-center justify-center ml-auto transition-colors"><i class="fas fa-trash"></i></button>` : '<span class="text-[10px] text-slate-400 italic">Mặc định</span>'}</td>
+                    <td class="p-4 text-center"><span class="${u.role === 'admin' ? 'bg-indigo-100 text-indigo-700' : 'bg-slate-100 text-slate-600'} text-[10px] font-black px-2 py-1 rounded uppercase tracking-wider">${u.role}</span></td>
+                    <td class="p-4 text-right">
+                        ${u.username !== 'admin' ? `
+                        <div class="flex items-center justify-end gap-2">
+                            <button onclick="editUser('${u.id}')" class="text-blue-500 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 w-8 h-8 rounded-lg flex items-center justify-center transition-colors shadow-sm" title="Sửa tài khoản"><i class="fas fa-edit"></i></button>
+                            <button onclick="confirmDeleteUser('${u.id}', '${u.username}')" class="text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 w-8 h-8 rounded-lg flex items-center justify-center transition-colors shadow-sm" title="Xóa tài khoản"><i class="fas fa-trash"></i></button>
+                        </div>` : '<span class="text-[10px] text-slate-400 italic font-medium">Mặc định</span>'}
+                    </td>
                 </tr>`).join('');
         };
 
