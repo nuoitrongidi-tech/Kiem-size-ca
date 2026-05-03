@@ -182,9 +182,10 @@
             <div class="bg-emerald-800 border-t border-emerald-700">
                 <div class="max-w-[1440px] mx-auto px-4 flex overflow-x-auto custom-scroll">
                     <button onclick="window.switchProdSection('summary')" id="tab-summary" class="prod-tab active px-6 py-3 text-xs font-black uppercase whitespace-nowrap border-b-4 transition-colors">Tổng hợp</button>
-                    <button onclick="window.switchProdSection('plans')" id="tab-plans" class="prod-tab inactive px-6 py-3 text-xs font-black uppercase whitespace-nowrap border-b-4 border-transparent transition-colors">Kế hoạch Sản lượng</button>
-                    <button onclick="window.switchProdSection('ponds')" id="tab-ponds" class="prod-tab inactive px-6 py-3 text-xs font-black uppercase whitespace-nowrap border-b-4 border-transparent transition-colors">Ao nuôi</button>
                     <button onclick="window.switchProdSection('farmers')" id="tab-farmers" class="prod-tab inactive px-6 py-3 text-xs font-black uppercase whitespace-nowrap border-b-4 border-transparent transition-colors">Hộ nuôi (Khách hàng)</button>
+                    <button onclick="window.switchProdSection('ponds')" id="tab-ponds" class="prod-tab inactive px-6 py-3 text-xs font-black uppercase whitespace-nowrap border-b-4 border-transparent transition-colors">Ao nuôi</button>
+                    <button onclick="window.switchProdSection('plans')" id="tab-plans" class="prod-tab inactive px-6 py-3 text-xs font-black uppercase whitespace-nowrap border-b-4 border-transparent transition-colors">Kế hoạch Sản lượng</button>
+                    <button onclick="window.switchProdSection('diary')" id="tab-diary" class="prod-tab inactive px-6 py-3 text-xs font-black uppercase whitespace-nowrap border-b-4 border-transparent transition-colors">Nhật ký ao nuôi</button>
                     <button onclick="window.switchProdSection('harvest')" id="tab-harvest" class="prod-tab inactive px-6 py-3 text-xs font-black uppercase whitespace-nowrap border-b-4 border-transparent transition-colors">Nhật ký thu hoạch</button>
                 </div>
             </div>
@@ -248,24 +249,29 @@
                 </div>
             </div>
 
-            <!-- SECTION: KẾ HOẠCH SẢN LƯỢNG -->
-            <div id="sec-plans" class="hidden space-y-4">
-                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
-                    <div>
-                        <h2 class="text-xl font-black text-slate-800">Kế hoạch & Dự báo Sản lượng</h2>
-                        <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1"><i class="fas fa-info-circle mr-1"></i> Đồng bộ Tự động với Hợp Đồng</div>
-                    </div>
-                    <div class="flex flex-wrap gap-2">
-                        <button onclick="window.openSizeReportModal()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-xl font-bold transition-all shadow-md active:scale-95 text-xs flex items-center gap-2">
-                            <i class="fas fa-balance-scale"></i> NHẬP BÁO CÁO SIZE
-                        </button>
-                        <button onclick="window.openSizeSummaryModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2.5 rounded-xl font-bold transition-all shadow-md active:scale-95 text-xs flex items-center gap-2">
-                            <i class="fas fa-chart-bar"></i> BÁO CÁO SIZE TỔNG HỢP
-                        </button>
-                    </div>
+            <!-- SECTION: HỘ NUÔI -->
+            <div id="sec-farmers" class="hidden space-y-4">
+                <div class="flex justify-between items-center">
+                    <h2 class="text-xl font-black text-slate-800">Danh sách Hộ Nuôi</h2>
+                    <button id="btn-add-farmer" onclick="window.openFarmerModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl font-bold transition-all shadow-md active:scale-95 text-xs flex items-center gap-2">
+                        <i class="fas fa-plus"></i> THÊM HỘ NUÔI
+                    </button>
                 </div>
                 <div class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
-                    <div class="overflow-x-auto custom-scroll" id="plansTableContainer"></div>
+                    <div class="overflow-x-auto custom-scroll">
+                        <table class="w-full text-sm text-left">
+                            <thead class="bg-slate-100 border-b border-slate-200 text-[10px] font-black text-slate-500 uppercase tracking-wider">
+                                <tr>
+                                    <th class="p-4">Tên Hộ / Chủ Ao</th>
+                                    <th class="p-4">Điện thoại</th>
+                                    <th class="p-4">Địa chỉ</th>
+                                    <th class="p-4">Giám sát</th>
+                                    <th class="p-4 text-right">Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody id="farmersTableBody" class="divide-y divide-slate-100"></tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
 
@@ -319,28 +325,41 @@
                 </div>
             </div>
 
-            <!-- SECTION: HỘ NUÔI -->
-            <div id="sec-farmers" class="hidden space-y-4">
+            <!-- SECTION: KẾ HOẠCH SẢN LƯỢNG -->
+            <div id="sec-plans" class="hidden space-y-4">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
+                    <div>
+                        <h2 class="text-xl font-black text-slate-800">Kế hoạch & Dự báo Sản lượng</h2>
+                        <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1"><i class="fas fa-info-circle mr-1"></i> Đồng bộ Tự động với Hợp Đồng</div>
+                    </div>
+                    <div class="flex flex-wrap gap-2">
+                        <button onclick="window.exportPlansToExcel()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-xl font-bold transition-all shadow-md active:scale-95 text-xs flex items-center gap-2">
+                            <i class="fas fa-file-excel"></i> XUẤT EXCEL
+                        </button>
+                        <button onclick="window.openSizeReportModal()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-xl font-bold transition-all shadow-md active:scale-95 text-xs flex items-center gap-2">
+                            <i class="fas fa-balance-scale"></i> NHẬP BÁO CÁO SIZE
+                        </button>
+                        <button onclick="window.openSizeSummaryModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2.5 rounded-xl font-bold transition-all shadow-md active:scale-95 text-xs flex items-center gap-2">
+                            <i class="fas fa-chart-bar"></i> BÁO CÁO SIZE TỔNG HỢP
+                        </button>
+                    </div>
+                </div>
+                <div class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
+                    <div class="overflow-x-auto custom-scroll" id="plansTableContainer"></div>
+                </div>
+            </div>
+
+            <!-- SECTION: NHẬT KÝ AO NUÔI -->
+            <div id="sec-diary" class="hidden space-y-4">
                 <div class="flex justify-between items-center">
-                    <h2 class="text-xl font-black text-slate-800">Danh sách Hộ Nuôi</h2>
-                    <button id="btn-add-farmer" onclick="window.openFarmerModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl font-bold transition-all shadow-md active:scale-95 text-xs flex items-center gap-2">
-                        <i class="fas fa-plus"></i> THÊM HỘ NUÔI
+                    <h2 class="text-xl font-black text-slate-800">Nhật Ký Ao Nuôi</h2>
+                    <button onclick="window.showToast('Tính năng đang phát triển', 'info')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl font-bold transition-all shadow-md active:scale-95 text-xs flex items-center gap-2">
+                        <i class="fas fa-plus"></i> THÊM NHẬT KÝ
                     </button>
                 </div>
                 <div class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
-                    <div class="overflow-x-auto custom-scroll">
-                        <table class="w-full text-sm text-left">
-                            <thead class="bg-slate-100 border-b border-slate-200 text-[10px] font-black text-slate-500 uppercase tracking-wider">
-                                <tr>
-                                    <th class="p-4">Tên Hộ / Chủ Ao</th>
-                                    <th class="p-4">Điện thoại</th>
-                                    <th class="p-4">Địa chỉ</th>
-                                    <th class="p-4">Giám sát</th>
-                                    <th class="p-4 text-right">Thao tác</th>
-                                </tr>
-                            </thead>
-                            <tbody id="farmersTableBody" class="divide-y divide-slate-100"></tbody>
-                        </table>
+                    <div class="p-10 text-center text-slate-400 italic text-sm">
+                        Giao diện Nhật ký ao nuôi đang được cập nhật...
                     </div>
                 </div>
             </div>
@@ -1004,7 +1023,7 @@
             </div>
             
             <div class="modal-content-wrapper flex-1 overflow-y-auto p-4 md:p-8 bg-slate-200 print:bg-white custom-scroll flex justify-center">
-                <div id="modalContent" class="bg-white w-full max-w-[210mm] min-h-[297mm] shadow-xl print:shadow-none print:m-0 border border-slate-300 print:border-none relative">
+                <div id="modalContent" class="bg-white w-full max-w-[210mm] min-h-[297mm] shadow-xl print:shadow-none print:m-0 relative">
                 </div>
             </div>
 
@@ -1477,7 +1496,7 @@
         };
 
         window.switchProdSection = (section) => {
-            ['summary', 'plans', 'ponds', 'farmers', 'harvest'].forEach(s => {
+            ['summary', 'farmers', 'ponds', 'plans', 'diary', 'harvest'].forEach(s => {
                 const tab = document.getElementById(`tab-${s}`);
                 const sec = document.getElementById(`sec-${s}`);
                 if(s === section) {
@@ -1904,7 +1923,7 @@
                             <p class="font-black text-sm">${r.colors?.yellow || 0}</p>
                         </div>
                     </div>
-                    <div class="text-[11px] mb-8">
+                    <div class="text-[11px] mb-4">
                         <span class="font-bold uppercase">GHI CHÚ:</span> <span class="italic">${r.filletNote || 'Không có ghi chú thêm.'}</span>
                     </div>
 
@@ -2088,7 +2107,7 @@
                     </div>
 
                     <h3 class="font-bold mb-3 uppercase text-xs text-blue-900">4. THỜI GIAN YÊU CẦU TRẢ KẾT QUẢ PHÂN TÍCH</h3>
-                    <div class="space-y-3 font-bold text-[11px] mb-8 flex flex-col">
+                    <div class="space-y-3 font-bold text-[11px] mb-4 flex flex-col">
                         <label class="flex items-center gap-2 cursor-pointer text-slate-800 w-fit"><input type="radio" name="timeReq" checked class="w-3.5 h-3.5 accent-slate-800"> Trả kết quả bình thường (trong vòng 72h)</label>
                         <label class="flex items-center gap-2 cursor-pointer text-slate-600 w-fit"><input type="radio" name="timeReq" class="w-3.5 h-3.5 accent-slate-800"> Trả kết quả nhanh (trong vòng 24h)</label>
                     </div>
@@ -2711,10 +2730,17 @@
             } catch(err) { window.showToast("Lỗi lưu dữ liệu!", "error"); }
         };
 
-        window.calculateForecastedYieldTemporary = (pond, planQty) => {
+        window.calculateForecastedYieldTemporary = (pond, planQty, inputSize = null) => {
             if (!pond) return 0;
             const plan = prodPlans.find(pl => pl.pondId === pond.id && (pl.status === 'planning' || pl.status === 'ongoing'));
             if (!plan || !plan.endDate) return 0;
+
+            const currentSize = inputSize !== null ? inputSize : (pond.seedSize || 0);
+            
+            // Công thức mới theo yêu cầu: Nếu size > 800g thì tính trực tiếp = Size * Qty / 1000000
+            if (currentSize > 800) {
+                return Math.round((currentSize * planQty) / 1000000);
+            }
 
             const [y, m] = plan.endDate.split('-');
             const harvestY = parseInt(y);
@@ -2733,6 +2759,13 @@
             if (!pond || !plan || !plan.endDate) return 0;
             const seedQty = pond.seedQty || 0;
             if (seedQty === 0) return 0;
+
+            const currentSize = pond.seedSize || 0;
+            
+            // Công thức mới theo yêu cầu: Nếu size > 800g thì tính trực tiếp = Size * Qty / 1000000
+            if (currentSize > 800) {
+                return Math.round((currentSize * seedQty) / 1000000);
+            }
 
             const [y, m] = plan.endDate.split('-');
             const harvestY = parseInt(y);
@@ -2818,12 +2851,12 @@
                 const currentFeed = plan.feedQuantity || 0;
                 const currentNote = plan.note || '';
                 
-                const initialYield = window.calculateForecastedYieldTemporary(p, currentQty);
+                const initialYield = window.calculateForecastedYieldTemporary(p, currentQty, currentSize);
 
                 return `
                 <tr class="hover:bg-slate-100 transition-colors pond-report-row border-b border-slate-200" data-pond-id="${p.id}">
                     <td class="p-3 font-black text-blue-600 uppercase whitespace-nowrap">${p.code}</td>
-                    <td class="p-3"><input type="number" step="0.1" id="sr_size_${p.id}" value="${currentSize}" class="w-20 p-2 bg-white border border-slate-300 rounded text-xs font-bold focus:border-blue-500 outline-none" placeholder="g"></td>
+                    <td class="p-3"><input type="number" step="0.1" id="sr_size_${p.id}" value="${currentSize}" oninput="window.calcAutoYield('${p.id}')" class="w-20 p-2 bg-white border border-slate-300 rounded text-xs font-bold focus:border-blue-500 outline-none" placeholder="g"></td>
                     <td class="p-3"><input type="number" id="sr_qty_${p.id}" value="${currentQty}" oninput="window.calcAutoYield('${p.id}')" class="w-24 p-2 bg-white border border-slate-300 rounded text-xs font-bold focus:border-blue-500 outline-none" placeholder="con"></td>
                     <td class="p-3"><input type="number" step="0.1" id="sr_feed_${p.id}" value="${currentFeed}" class="w-20 p-2 bg-white border border-slate-300 rounded text-xs font-bold focus:border-blue-500 outline-none" placeholder="Tấn"></td>
                     <td class="p-3 text-center font-black text-emerald-600 bg-emerald-50" id="sr_yield_${p.id}">${window.formatNumber(initialYield)}</td>
@@ -2835,12 +2868,14 @@
 
         window.calcAutoYield = (pondId) => {
             const qtyInput = document.getElementById(`sr_qty_${pondId}`);
+            const sizeInput = document.getElementById(`sr_size_${pondId}`);
             const yieldDisplay = document.getElementById(`sr_yield_${pondId}`);
-            if(!qtyInput || !yieldDisplay) return;
+            if(!qtyInput || !sizeInput || !yieldDisplay) return;
 
             const qty = parseInt(qtyInput.value) || 0;
+            const size = parseFloat(sizeInput.value) || 0;
             const pond = prodPonds.find(p => p.id === pondId);
-            const val = window.calculateForecastedYieldTemporary(pond, qty);
+            const val = window.calculateForecastedYieldTemporary(pond, qty, size);
             yieldDisplay.innerText = window.formatNumber(val);
         };
 
@@ -2873,7 +2908,7 @@
                     const plan = prodPlans.find(pl => pl.pondId === pondId && (pl.status === 'planning' || pl.status === 'ongoing'));
                     if (plan) {
                         const pond = prodPonds.find(p => p.id === pondId);
-                        const targetYieldTons = window.calculateForecastedYieldTemporary(pond, qtyVal);
+                        const targetYieldTons = window.calculateForecastedYieldTemporary(pond, qtyVal, sizeVal);
 
                         await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'prod_plans', plan.id), {
                             feedQuantity: feedVal,
@@ -2923,6 +2958,7 @@
                         <th class="p-2 border border-slate-200 text-blue-700 w-20" rowspan="2">Sản lượng<br>dự kiến<br>HĐ(Tấn)</th>
                         <th class="p-2 border border-slate-200 text-amber-600 w-20" rowspan="2">SL SIZE<br>800 G<br>DỰ KIẾN</th>
                         <th class="p-2 border border-slate-200 w-24" rowspan="2">NV GIÁM SÁT</th>
+                        <th class="p-2 border border-slate-200 w-20" rowspan="2">Ngày<br>Cập nhật</th>
                         <th class="p-2 border border-slate-200 w-16" rowspan="2">Thao tác</th>
                     </tr>
                     <tr class="bg-slate-50">
@@ -2939,9 +2975,9 @@
 
             if(contractedPonds.length === 0) {
                 container.innerHTML = `
-                    <table class="w-full text-[11px] border-collapse min-w-[1800px]">
+                    <table id="plansExportTable" class="w-full text-[11px] border-collapse min-w-[1800px]">
                         ${theadHtml}
-                        <tbody><tr><td colspan="${13 + monthCols.length}" class="p-8 text-center text-slate-400 italic">Chưa có dữ liệu ao nuôi đã ký hợp đồng.</td></tr></tbody>
+                        <tbody><tr><td colspan="${14 + monthCols.length}" class="p-8 text-center text-slate-400 italic">Chưa có dữ liệu ao nuôi đã ký hợp đồng.</td></tr></tbody>
                     </table>`;
                 return;
             }
@@ -2956,6 +2992,13 @@
             let currentFarmerId = null;
             let useAlternateBg = false;
             let stt = 1;
+
+            // Variables for Total calculations
+            let sumSeedQty = 0;
+            let sumCurrentWeightTons = 0;
+            let sumFeedQty = 0;
+            let sumTargetYield = 0;
+            let sumMonthlyYields = new Array(monthCols.length).fill(0);
 
             contractedPonds.forEach(pond => {
                 const farmer = prodFarmers.find(f => f.id === pond.farmerId);
@@ -2974,14 +3017,27 @@
                 const feedQty = Math.round(plan.feedQuantity || 0);
                 const targetYield = window.calculateForecastedYield(pond, plan);
                 
+                // Add to totals
+                sumSeedQty += seedQty;
+                sumCurrentWeightTons += currentWeightTons;
+                sumFeedQty += feedQty;
+                sumTargetYield += targetYield;
+
                 let harvestMonthStr = '';
                 if (plan.endDate) {
                     const [y, m, d] = plan.endDate.split('-');
                     harvestMonthStr = `${m}/${y}`;
                 }
 
-                let monthlyVolumesHtml = monthCols.map(col => {
+                let updateDateStr = '---';
+                if (plan.updatedAt) {
+                    const dObj = plan.updatedAt.toDate ? plan.updatedAt.toDate() : new Date(plan.updatedAt);
+                    updateDateStr = window.formatDateOnly(dObj.toISOString().split('T')[0]);
+                }
+
+                let monthlyVolumesHtml = monthCols.map((col, idx) => {
                     if (harvestMonthStr === col && targetYield > 0) {
+                        sumMonthlyYields[idx] += targetYield;
                         return `<td class="p-2 border border-slate-200 text-center font-black text-emerald-600 ${useAlternateBg ? 'bg-emerald-100/50' : 'bg-emerald-50/50'}">${window.formatNumber(targetYield)}</td>`;
                     }
                     return `<td class="p-2 border border-slate-200 text-center text-slate-300">-</td>`;
@@ -3005,6 +3061,7 @@
                     <td class="p-2 border border-slate-200 text-center font-black text-blue-700">${window.formatNumber(targetYield)}</td>
                     <td class="p-2 border border-slate-200 text-center font-black text-amber-600">${window.formatNumber(targetYield)}</td>
                     <td class="p-2 border border-slate-200 text-center text-[10px] font-bold uppercase whitespace-nowrap">${farmer?.supervisor || '---'}</td>
+                    <td class="p-2 border border-slate-200 text-center text-[10px] font-medium text-slate-600">${updateDateStr}</td>
                     
                     <td class="p-2 border border-slate-200 text-center">
                         ${canPlan ? `
@@ -3017,11 +3074,49 @@
                 `;
             });
 
+            // Constructing Total Row (Footer)
+            let tfootMonthlyHtml = sumMonthlyYields.map(sum => 
+                `<td class="p-2 border border-slate-300 text-center font-black text-emerald-700 bg-emerald-50/80">${sum > 0 ? window.formatNumber(sum) : '-'}</td>`
+            ).join('');
+
+            let tfootHtml = `
+                <tfoot class="bg-slate-200 sticky bottom-0 z-20 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
+                    <tr>
+                        <td colspan="5" class="p-2 border border-slate-300 text-right font-black uppercase text-slate-800">Tổng Cộng Hệ Thống:</td>
+                        <td class="p-2 border border-slate-300 text-center font-black text-slate-800">${window.formatNumber(sumSeedQty)}</td>
+                        <td class="p-2 border border-slate-300 text-center font-black text-slate-800">${window.formatNumber(sumCurrentWeightTons)}</td>
+                        <td class="p-2 border border-slate-300 text-center font-black text-slate-800">${window.formatNumber(sumFeedQty)}</td>
+                        ${tfootMonthlyHtml}
+                        <td class="p-2 border border-slate-300 bg-slate-100"></td>
+                        <td class="p-2 border border-slate-300 text-center font-black text-blue-800 bg-blue-50">${window.formatNumber(sumTargetYield)}</td>
+                        <td class="p-2 border border-slate-300 text-center font-black text-amber-700 bg-amber-50">${window.formatNumber(sumTargetYield)}</td>
+                        <td class="p-2 border border-slate-300 bg-slate-100" colspan="3"></td>
+                    </tr>
+                </tfoot>
+            `;
+
             container.innerHTML = `
-                <table class="w-full text-[11px] border-collapse min-w-[1800px] bg-white">
-                    ${theadHtml}
-                    <tbody>${tbodyHtml}</tbody>
-                </table>`;
+                <div class="max-h-[650px] overflow-y-auto relative">
+                    <table id="plansExportTable" class="w-full text-[11px] border-collapse min-w-[1800px] bg-white">
+                        ${theadHtml}
+                        <tbody>${tbodyHtml}</tbody>
+                        ${tfootHtml}
+                    </table>
+                </div>`;
+        };
+
+        window.exportPlansToExcel = () => {
+            const table = document.getElementById('plansExportTable');
+            if (!table) return window.showToast("Không có dữ liệu để xuất!", "error");
+            
+            const wb = XLSX.utils.book_new();
+            // Lấy dữ liệu từ HTML Table hiện tại trên UI (hỗ trợ tốt các cột gộp/span)
+            const ws = XLSX.utils.table_to_sheet(table);
+            XLSX.utils.book_append_sheet(wb, ws, "Kế Hoạch Sản Lượng");
+            
+            const dateStr = window.formatDateOnly(new Date().toISOString().split('T')[0]).replace(/\//g, '');
+            XLSX.writeFile(wb, `KeHoachSanLuong_${dateStr}.xlsx`);
+            window.showToast("Đã xuất file Excel Kế hoạch thành công!");
         };
 
         window.renderProdSummary = () => {
@@ -3373,7 +3468,7 @@
             const pondCode = document.getElementById('pondCode').value || 'NA';
 
             const summaryData = [
-                ['BÁO CÁO KIỂM TRA CHẤT LƯỢNG CÁ'], [], ['Thông পুন chung'],
+                ['BÁO CÁO KIỂM TRA CHẤT LƯỢNG CÁ'], [], ['Thông tin chung'],
                 ['Nhân viên', document.getElementById('staffName').value], ['Chủ ao', document.getElementById('ownerName').value],
                 ['Mã ao', pondCode], ['Khu vực', document.getElementById('address').value], ['Sản lượng', document.getElementById('pondYield').value + ' Tấn'],
                 [], ['Kết quả kiểm tra size'],
