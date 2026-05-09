@@ -121,7 +121,7 @@
             </div>
         </header>
 
-        <div class="flex-1 w-full max-w-6xl mx-auto px-4 py-10 md:py-20 flex flex-col justify-center animate-in">
+        <div class="flex-1 w-full max-w-[96%] mx-auto px-4 py-10 md:py-20 flex flex-col justify-center animate-in">
             <div class="text-center mb-12">
                 <h2 class="text-3xl md:text-5xl font-black text-slate-800 mb-4 tracking-tight">Xin chào, <span id="dashWelcomeName" class="text-indigo-600"></span> 👋</h2>
                 <p class="text-slate-500 font-medium text-sm md:text-base">Vui lòng chọn phân hệ ứng dụng bên dưới để bắt đầu phiên làm việc.</p>
@@ -162,7 +162,7 @@
     <!-- 3. PRODUCTION MODULE CONTAINER -->
     <div id="productionContainer" class="hidden min-h-screen bg-slate-50 relative z-[40]">
         <header class="bg-emerald-900 text-white sticky top-0 z-40 shadow-xl border-b border-emerald-800 no-print">
-            <div class="max-w-[1440px] mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="w-full mx-auto px-4 md:px-8 py-3 flex justify-between items-center">
                 <div class="flex items-center gap-4">
                     <div class="bg-white p-0.5 rounded-xl shadow-lg border border-emerald-400/20 w-12 h-12 flex items-center justify-center overflow-hidden">
                         <img src="https://i.postimg.cc/qvpsdMy3/panda-logo.png" alt="Logo" class="w-full h-full object-contain rounded-lg">
@@ -180,18 +180,18 @@
             </div>
             
             <div class="bg-emerald-800 border-t border-emerald-700">
-                <div class="max-w-[1440px] mx-auto px-4 flex overflow-x-auto custom-scroll">
+                <div class="w-full mx-auto px-4 md:px-8 flex overflow-x-auto custom-scroll">
                     <button onclick="window.switchProdSection('summary')" id="tab-summary" class="prod-tab active px-6 py-3 text-xs font-black uppercase whitespace-nowrap border-b-4 transition-colors">Tổng hợp</button>
-                    <button onclick="window.switchProdSection('farmers')" id="tab-farmers" class="prod-tab inactive px-6 py-3 text-xs font-black uppercase whitespace-nowrap border-b-4 border-transparent transition-colors">Hộ nuôi (Khách hàng)</button>
-                    <button onclick="window.switchProdSection('ponds')" id="tab-ponds" class="prod-tab inactive px-6 py-3 text-xs font-black uppercase whitespace-nowrap border-b-4 border-transparent transition-colors">Ao nuôi</button>
                     <button onclick="window.switchProdSection('plans')" id="tab-plans" class="prod-tab inactive px-6 py-3 text-xs font-black uppercase whitespace-nowrap border-b-4 border-transparent transition-colors">Kế hoạch Sản lượng</button>
-                    <button onclick="window.switchProdSection('diary')" id="tab-diary" class="prod-tab inactive px-6 py-3 text-xs font-black uppercase whitespace-nowrap border-b-4 border-transparent transition-colors">Nhật ký ao nuôi</button>
+                    <button onclick="window.switchProdSection('ponds')" id="tab-ponds" class="prod-tab inactive px-6 py-3 text-xs font-black uppercase whitespace-nowrap border-b-4 border-transparent transition-colors">Ao nuôi</button>
+                    <button onclick="window.switchProdSection('farmers')" id="tab-farmers" class="prod-tab inactive px-6 py-3 text-xs font-black uppercase whitespace-nowrap border-b-4 border-transparent transition-colors">Hộ nuôi (Khách hàng)</button>
                     <button onclick="window.switchProdSection('harvest')" id="tab-harvest" class="prod-tab inactive px-6 py-3 text-xs font-black uppercase whitespace-nowrap border-b-4 border-transparent transition-colors">Nhật ký thu hoạch</button>
+                    <button onclick="window.switchProdSection('logs')" id="tab-logs" class="prod-tab inactive px-6 py-3 text-xs font-black uppercase whitespace-nowrap border-b-4 border-transparent transition-colors">Nhật ký ao nuôi</button>
                 </div>
             </div>
         </header>
 
-        <main class="max-w-[1440px] mx-auto p-4 md:p-6 animate-in">
+        <main class="w-full mx-auto p-4 md:p-8 animate-in">
             <!-- SECTION: SUMMARY -->
             <div id="sec-summary" class="block space-y-6">
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -249,6 +249,85 @@
                 </div>
             </div>
 
+            <!-- SECTION: KẾ HOẠCH SẢN LƯỢNG -->
+            <div id="sec-plans" class="hidden space-y-4">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
+                    <div>
+                        <h2 class="text-xl font-black text-slate-800">Kế hoạch & Dự báo Sản lượng</h2>
+                        <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1"><i class="fas fa-info-circle mr-1"></i> Đồng bộ Tự động với Hợp Đồng</div>
+                    </div>
+                    <div class="flex flex-wrap gap-2">
+                        <button onclick="window.openSizeReportModal()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-xl font-bold transition-all shadow-md active:scale-95 text-xs flex items-center gap-2">
+                            <i class="fas fa-balance-scale"></i> NHẬP BÁO CÁO SIZE
+                        </button>
+                        <button onclick="window.openSizeSummaryModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2.5 rounded-xl font-bold transition-all shadow-md active:scale-95 text-xs flex items-center gap-2">
+                            <i class="fas fa-chart-bar"></i> BÁO CÁO SIZE TỔNG HỢP
+                        </button>
+                    </div>
+                </div>
+                <div class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
+                    <div class="overflow-x-auto custom-scroll" id="plansTableContainer"></div>
+                </div>
+            </div>
+
+            <!-- SECTION: AO NUÔI -->
+            <div id="sec-ponds" class="hidden space-y-4">
+                <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-3">
+                    <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3 w-full lg:w-auto">
+                        <h2 class="text-xl font-black text-slate-800 whitespace-nowrap">Danh sách Ao Nuôi</h2>
+                        <div class="relative w-full sm:w-64">
+                            <i class="fas fa-search absolute left-3 top-2.5 text-slate-400 text-xs"></i>
+                            <input type="text" id="searchPondFarmerInput" oninput="window.renderPondsTable()" placeholder="Tìm theo tên Hộ nuôi..." class="w-full pl-8 p-2 text-xs bg-white border border-slate-200 rounded-lg outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-100 transition-all font-medium text-slate-700 shadow-sm">
+                        </div>
+                    </div>
+                    <div class="flex flex-wrap gap-2 w-full lg:w-auto lg:justify-end">
+                        <button id="btn-stocking" onclick="window.openStockingModal()" class="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2.5 rounded-xl font-bold transition-all shadow-md active:scale-95 text-xs flex items-center gap-2">
+                            <i class="fas fa-fish"></i> THẢ GIỐNG
+                        </button>
+                        <button id="btn-contract" onclick="window.openContractModal()" class="bg-amber-600 hover:bg-amber-700 text-white px-4 py-2.5 rounded-xl font-bold transition-all shadow-md active:scale-95 text-xs flex items-center gap-2">
+                            <i class="fas fa-file-signature"></i> NHẬP HĐ LIÊN KẾT
+                        </button>
+                        <button id="btn-add-pond" onclick="window.openPondModal()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-xl font-bold transition-all shadow-md active:scale-95 text-xs flex items-center gap-2">
+                            <i class="fas fa-plus"></i> THÊM AO NUÔI
+                        </button>
+                    </div>
+                </div>
+                <div class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
+                    <div class="overflow-x-auto custom-scroll">
+                        <table class="w-full text-sm text-left min-w-[1200px]">
+                            <thead class="bg-slate-100 border-b border-slate-200 text-[10px] font-black text-slate-500 uppercase tracking-wider">
+                                <tr>
+                                    <th class="p-3 w-10 text-center">STT</th>
+                                    <th class="p-3">Hộ Nuôi</th>
+                                    <th class="p-3">Mã Ao</th>
+                                    <th class="p-3 text-center border-x border-slate-200" colspan="5">Thông tin thả giống</th>
+                                    <th class="p-3 text-center" colspan="4">Hợp đồng liên kết</th>
+                                    <th class="p-3 text-center border-l border-slate-200">Trạng thái</th>
+                                    <th class="p-3 text-right">Thao tác</th>
+                                </tr>
+                                <tr class="bg-slate-50 border-b border-slate-200 text-[9px] font-bold text-slate-500">
+                                    <th class="p-2"></th>
+                                    <th class="p-2"></th>
+                                    <th class="p-2"></th>
+                                    <th class="p-2 text-center border-l border-slate-200 text-teal-600">Ngày thả</th>
+                                    <th class="p-2 text-center text-teal-600">Size (g/c)</th>
+                                    <th class="p-2 text-center text-teal-600">SL Giống (con)</th>
+                                    <th class="p-2 text-center text-teal-600">KL (kg)</th>
+                                    <th class="p-2 text-center border-r border-slate-200 text-teal-600">Giá (đ/kg)</th>
+                                    <th class="p-2 text-center text-amber-600">Số HĐ</th>
+                                    <th class="p-2 text-center text-amber-600">Ngày Ký</th>
+                                    <th class="p-2 text-center text-amber-600">Giá Ký (đ/kg)</th>
+                                    <th class="p-2 text-center text-amber-600">Giám sát</th>
+                                    <th class="p-2 border-l border-slate-200"></th>
+                                    <th class="p-2"></th>
+                                </tr>
+                            </thead>
+                            <tbody id="pondsTableBody" class="divide-y divide-slate-100"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
             <!-- SECTION: HỘ NUÔI -->
             <div id="sec-farmers" class="hidden space-y-4">
                 <div class="flex justify-between items-center">
@@ -271,95 +350,6 @@
                             </thead>
                             <tbody id="farmersTableBody" class="divide-y divide-slate-100"></tbody>
                         </table>
-                    </div>
-                </div>
-            </div>
-
-            <!-- SECTION: AO NUÔI -->
-            <div id="sec-ponds" class="hidden space-y-4">
-                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
-                    <h2 class="text-xl font-black text-slate-800">Danh sách Ao Nuôi</h2>
-                    <div class="flex flex-wrap gap-2">
-                        <button id="btn-stocking" onclick="window.openStockingModal()" class="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2.5 rounded-xl font-bold transition-all shadow-md active:scale-95 text-xs flex items-center gap-2">
-                            <i class="fas fa-fish"></i> THẢ GIỐNG
-                        </button>
-                        <button id="btn-contract" onclick="window.openContractModal()" class="bg-amber-600 hover:bg-amber-700 text-white px-4 py-2.5 rounded-xl font-bold transition-all shadow-md active:scale-95 text-xs flex items-center gap-2">
-                            <i class="fas fa-file-signature"></i> NHẬP HĐ LIÊN KẾT
-                        </button>
-                        <button id="btn-add-pond" onclick="window.openPondModal()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-xl font-bold transition-all shadow-md active:scale-95 text-xs flex items-center gap-2">
-                            <i class="fas fa-plus"></i> THÊM AO NUÔI
-                        </button>
-                    </div>
-                </div>
-                <div class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
-                    <div class="overflow-x-auto custom-scroll">
-                        <table class="w-full text-sm text-left min-w-[1200px]">
-                            <thead class="bg-slate-100 border-b border-slate-200 text-[10px] font-black text-slate-500 uppercase tracking-wider">
-                                <tr>
-                                    <th class="p-3">Mã Ao</th>
-                                    <th class="p-3">Hộ Nuôi</th>
-                                    <th class="p-3 text-center border-x border-slate-200" colspan="5">Thông tin thả giống</th>
-                                    <th class="p-3 text-center" colspan="4">Hợp đồng liên kết</th>
-                                    <th class="p-3 text-center border-l border-slate-200">Trạng thái</th>
-                                    <th class="p-3 text-right">Thao tác</th>
-                                </tr>
-                                <tr class="bg-slate-50 border-b border-slate-200 text-[9px] font-bold text-slate-500">
-                                    <th class="p-2"></th>
-                                    <th class="p-2"></th>
-                                    <th class="p-2 text-center border-l border-slate-200 text-teal-600">Ngày thả</th>
-                                    <th class="p-2 text-center text-teal-600">Size (g/c)</th>
-                                    <th class="p-2 text-center text-teal-600">SL Giống (con)</th>
-                                    <th class="p-2 text-center text-teal-600">KL (kg)</th>
-                                    <th class="p-2 text-center border-r border-slate-200 text-teal-600">Giá (đ/kg)</th>
-                                    <th class="p-2 text-center text-amber-600">Số HĐ</th>
-                                    <th class="p-2 text-center text-amber-600">Ngày Ký</th>
-                                    <th class="p-2 text-center text-amber-600">Giá Ký (đ/kg)</th>
-                                    <th class="p-2 text-center text-amber-600">Giám sát</th>
-                                    <th class="p-2 border-l border-slate-200"></th>
-                                    <th class="p-2"></th>
-                                </tr>
-                            </thead>
-                            <tbody id="pondsTableBody" class="divide-y divide-slate-100"></tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <!-- SECTION: KẾ HOẠCH SẢN LƯỢNG -->
-            <div id="sec-plans" class="hidden space-y-4">
-                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
-                    <div>
-                        <h2 class="text-xl font-black text-slate-800">Kế hoạch & Dự báo Sản lượng</h2>
-                        <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1"><i class="fas fa-info-circle mr-1"></i> Đồng bộ Tự động với Hợp Đồng</div>
-                    </div>
-                    <div class="flex flex-wrap gap-2">
-                        <button onclick="window.exportPlansToExcel()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-xl font-bold transition-all shadow-md active:scale-95 text-xs flex items-center gap-2">
-                            <i class="fas fa-file-excel"></i> XUẤT EXCEL
-                        </button>
-                        <button onclick="window.openSizeReportModal()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-xl font-bold transition-all shadow-md active:scale-95 text-xs flex items-center gap-2">
-                            <i class="fas fa-balance-scale"></i> NHẬP BÁO CÁO SIZE
-                        </button>
-                        <button onclick="window.openSizeSummaryModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2.5 rounded-xl font-bold transition-all shadow-md active:scale-95 text-xs flex items-center gap-2">
-                            <i class="fas fa-chart-bar"></i> BÁO CÁO SIZE TỔNG HỢP
-                        </button>
-                    </div>
-                </div>
-                <div class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
-                    <div class="overflow-x-auto custom-scroll" id="plansTableContainer"></div>
-                </div>
-            </div>
-
-            <!-- SECTION: NHẬT KÝ AO NUÔI -->
-            <div id="sec-diary" class="hidden space-y-4">
-                <div class="flex justify-between items-center">
-                    <h2 class="text-xl font-black text-slate-800">Nhật Ký Ao Nuôi</h2>
-                    <button onclick="window.showToast('Tính năng đang phát triển', 'info')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl font-bold transition-all shadow-md active:scale-95 text-xs flex items-center gap-2">
-                        <i class="fas fa-plus"></i> THÊM NHẬT KÝ
-                    </button>
-                </div>
-                <div class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
-                    <div class="p-10 text-center text-slate-400 italic text-sm">
-                        Giao diện Nhật ký ao nuôi đang được cập nhật...
                     </div>
                 </div>
             </div>
@@ -390,9 +380,47 @@
                                     <th class="p-3 text-center">T.Gian<br>Nuôi</th>
                                     <th class="p-3 text-center text-blue-600">Tỷ lệ sống<br>(%)</th>
                                     <th class="p-3">Ghi chú</th>
+                                    <th class="p-3 text-right">Thao tác</th>
                                 </tr>
                             </thead>
                             <tbody id="harvestsTableBody" class="divide-y divide-slate-100"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION: NHẬT KÝ AO NUÔI -->
+            <div id="sec-logs" class="hidden space-y-4">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
+                    <h2 class="text-xl font-black text-slate-800">Nhật Ký Chăm Sóc Ao</h2>
+                    <div class="flex flex-col sm:flex-row items-center gap-2 w-full md:w-auto">
+                        <select id="filterLogPondId" onchange="window.renderLogsTable()" class="w-full sm:w-64 p-2.5 bg-white border border-slate-200 rounded-xl text-xs font-bold focus:border-blue-500 outline-none shadow-sm">
+                            <option value="">-- Tất cả ao nuôi --</option>
+                        </select>
+                        <button id="btn-view-logs" onclick="window.printPondLog()" class="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2.5 rounded-xl font-bold transition-all shadow-md active:scale-95 text-xs flex items-center justify-center gap-2 whitespace-nowrap">
+                            <i class="fas fa-clipboard-list"></i> NHẬT KÝ
+                        </button>
+                        <button id="btn-add-log" onclick="window.openLogModal()" class="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-xl font-bold transition-all shadow-md active:scale-95 text-xs flex items-center justify-center gap-2 whitespace-nowrap">
+                            <i class="fas fa-edit"></i> GHI NHẬT KÝ
+                        </button>
+                    </div>
+                </div>
+                <div class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
+                    <div class="overflow-x-auto custom-scroll">
+                        <table class="w-full text-sm text-left">
+                            <thead class="bg-slate-100 border-b border-slate-200 text-[10px] font-black text-slate-500 uppercase tracking-wider">
+                                <tr>
+                                    <th class="p-4 text-center w-12">STT</th>
+                                    <th class="p-4 w-28">Ngày</th>
+                                    <th class="p-4 w-40">Mã Ao / Hộ nuôi</th>
+                                    <th class="p-4 w-32">Phân loại</th>
+                                    <th class="p-4 text-right w-32">Số lượng</th>
+                                    <th class="p-4">Nội dung chi tiết</th>
+                                    <th class="p-4 w-32 text-center">Người ghi</th>
+                                    <th class="p-4 text-right w-16">Xóa</th>
+                                </tr>
+                            </thead>
+                            <tbody id="logsTableBody" class="divide-y divide-slate-100"></tbody>
                         </table>
                     </div>
                 </div>
@@ -631,6 +659,134 @@
         </div>
     </div>
 
+    <!-- Modal: Nhập Nhật Ký Ao Nuôi -->
+    <div id="modalLog" class="fixed inset-0 z-[200] hidden flex items-center justify-center p-4 overflow-y-auto">
+        <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm fixed" onclick="window.closeProdModal('modalLog')"></div>
+        <div class="bg-white rounded-3xl shadow-2xl relative z-10 w-full max-w-4xl p-6 animate-in border border-slate-200 my-auto max-h-[95vh] flex flex-col">
+            <div class="flex justify-between items-center mb-5 border-b pb-2">
+                <h3 class="text-lg font-black uppercase text-blue-600 flex items-center gap-2"><i class="fas fa-book"></i> Ghi Nhật Ký Chăm Sóc Hàng Ngày</h3>
+                <button onclick="window.closeProdModal('modalLog')" class="text-slate-400 hover:text-red-500"><i class="fas fa-times text-xl"></i></button>
+            </div>
+            
+            <form onsubmit="window.saveLog(event)" class="space-y-6 flex-1 overflow-y-auto custom-scroll pr-2">
+                
+                <!-- THÔNG TIN CƠ BẢN -->
+                <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                    <h4 class="text-xs font-black text-slate-700 uppercase mb-3 border-b pb-1">1. Thông tin chung</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        <div>
+                            <label class="block text-[10px] font-black text-slate-500 uppercase mb-1">Chọn Ao Nuôi</label>
+                            <select id="logPondId" onchange="window.handleLogPondChange()" class="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-sm font-bold focus:border-blue-500 outline-none transition-all" required></select>
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-black text-slate-500 uppercase mb-1">Ngày thực hiện</label>
+                            <input type="date" id="logDate" class="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-sm font-bold focus:border-blue-500 outline-none transition-all" required>
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-black text-slate-500 uppercase mb-1">TLBQ (Size cá hiện tại - tự động)</label>
+                            <div class="relative">
+                                <input type="number" id="logAvgWeight" class="w-full p-2.5 bg-slate-200 border border-slate-300 rounded-xl text-sm font-black text-slate-600 outline-none cursor-not-allowed" readonly>
+                                <span class="absolute right-3 top-2.5 text-xs font-bold text-slate-400">g/con</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- THỨC ĂN & NƯỚC -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="bg-amber-50 p-4 rounded-2xl border border-amber-100">
+                        <div class="flex justify-between items-center border-b border-amber-200 pb-1 mb-3">
+                            <h4 class="text-xs font-black text-amber-800 uppercase">2. Thức ăn</h4>
+                            <button type="button" onclick="window.addLogFeedRow()" class="text-[10px] bg-amber-600 text-white px-2 py-1 rounded shadow-sm hover:bg-amber-700 font-bold"><i class="fas fa-plus"></i> Thêm loại</button>
+                        </div>
+                        <div id="logFeedsContainer" class="space-y-2">
+                            <!-- Dynamic feed rows -->
+                        </div>
+                    </div>
+
+                    <div class="bg-blue-50 p-4 rounded-2xl border border-blue-100">
+                        <h4 class="text-xs font-black text-blue-800 uppercase mb-3 border-b border-blue-200 pb-1">3. Cấp / Thay Nước</h4>
+                        <div>
+                            <label class="block text-[10px] font-black text-blue-600 uppercase mb-1">Lượng nước thay (m3)</label>
+                            <input type="number" step="0.1" id="logWater" placeholder="VD: 500" class="w-full p-2.5 bg-white border border-blue-200 rounded-xl text-sm font-bold focus:border-blue-500 outline-none transition-all">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- MÔI TRƯỜNG -->
+                <div class="bg-emerald-50 p-4 rounded-2xl border border-emerald-100">
+                    <h4 class="text-xs font-black text-emerald-800 uppercase mb-3 border-b border-emerald-200 pb-1">4. Môi trường</h4>
+                    <div class="grid grid-cols-2 md:grid-cols-7 gap-3">
+                        <div class="md:col-span-1">
+                            <label class="block text-[10px] font-black text-emerald-700 uppercase mb-1">T0</label>
+                            <input type="text" id="logEnvT0" class="w-full p-2 bg-white border border-emerald-200 rounded-lg text-sm font-bold focus:border-emerald-500 outline-none">
+                        </div>
+                        <div class="md:col-span-1">
+                            <label class="block text-[10px] font-black text-emerald-700 uppercase mb-1">pH Sáng</label>
+                            <input type="number" step="0.1" id="logEnvPhS" class="w-full p-2 bg-white border border-emerald-200 rounded-lg text-sm font-bold focus:border-emerald-500 outline-none">
+                        </div>
+                        <div class="md:col-span-1">
+                            <label class="block text-[10px] font-black text-emerald-700 uppercase mb-1">pH Chiều</label>
+                            <input type="number" step="0.1" id="logEnvPhC" class="w-full p-2 bg-white border border-emerald-200 rounded-lg text-sm font-bold focus:border-emerald-500 outline-none">
+                        </div>
+                        <div class="md:col-span-1">
+                            <label class="block text-[10px] font-black text-emerald-700 uppercase mb-1">O2 Sáng</label>
+                            <input type="text" id="logEnvO2S" class="w-full p-2 bg-white border border-emerald-200 rounded-lg text-sm font-bold focus:border-emerald-500 outline-none">
+                        </div>
+                        <div class="md:col-span-1">
+                            <label class="block text-[10px] font-black text-emerald-700 uppercase mb-1">O2 Chiều</label>
+                            <input type="text" id="logEnvO2C" class="w-full p-2 bg-white border border-emerald-200 rounded-lg text-sm font-bold focus:border-emerald-500 outline-none">
+                        </div>
+                        <div class="md:col-span-1">
+                            <label class="block text-[10px] font-black text-emerald-700 uppercase mb-1">NH3</label>
+                            <input type="text" id="logEnvNH3" class="w-full p-2 bg-white border border-emerald-200 rounded-lg text-sm font-bold focus:border-emerald-500 outline-none">
+                        </div>
+                        <div class="md:col-span-1">
+                            <label class="block text-[10px] font-black text-emerald-700 uppercase mb-1">H2S / Kh</label>
+                            <input type="text" id="logEnvH2SKh" placeholder="H2S - Kh" class="w-full p-2 bg-white border border-emerald-200 rounded-lg text-sm font-bold focus:border-emerald-500 outline-none">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- THUỐC, CÁ HAO, TRIỆU CHỨNG -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="bg-purple-50 p-4 rounded-2xl border border-purple-100">
+                        <h4 class="text-xs font-black text-purple-800 uppercase mb-3 border-b border-purple-200 pb-1">5. Thuốc / Hóa chất</h4>
+                        <div class="space-y-2">
+                            <input type="text" id="logMedName" placeholder="Tên thuốc/hóa chất" class="w-full p-2 bg-white border border-purple-200 rounded-lg text-xs font-bold outline-none">
+                            <input type="text" id="logMedBatch" placeholder="Mã số lô" class="w-full p-2 bg-white border border-purple-200 rounded-lg text-xs font-bold outline-none">
+                            <input type="text" id="logMedQty" placeholder="Số lượng (kg/lít)" class="w-full p-2 bg-white border border-purple-200 rounded-lg text-xs font-bold outline-none">
+                        </div>
+                    </div>
+
+                    <div class="bg-rose-50 p-4 rounded-2xl border border-rose-100">
+                        <h4 class="text-xs font-black text-rose-800 uppercase mb-3 border-b border-rose-200 pb-1">6. Cá Hao hụt (Chết)</h4>
+                        <div class="space-y-2">
+                            <div>
+                                <label class="block text-[10px] font-black text-rose-600 uppercase mb-1">Số con</label>
+                                <input type="number" id="logDeadCount" placeholder="VD: 50" class="w-full p-2 bg-white border border-rose-200 rounded-lg text-sm font-bold focus:border-rose-500 outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-black text-rose-600 uppercase mb-1">Khối lượng (Kg)</label>
+                                <input type="number" step="0.1" id="logDeadWeight" placeholder="VD: 15.5" class="w-full p-2 bg-white border border-rose-200 rounded-lg text-sm font-bold focus:border-rose-500 outline-none">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-100 p-4 rounded-2xl border border-slate-200">
+                        <h4 class="text-xs font-black text-slate-800 uppercase mb-3 border-b border-slate-300 pb-1">7. Triệu chứng bệnh / Khác</h4>
+                        <textarea id="logSymptoms" rows="4" placeholder="Mô tả biểu hiện của cá, hoặc ghi chú công việc khác..." class="w-full p-2 bg-white border border-slate-300 rounded-lg text-xs font-medium focus:border-slate-500 outline-none resize-none"></textarea>
+                    </div>
+                </div>
+
+                <div class="flex gap-3 pt-2">
+                    <button type="button" onclick="window.closeProdModal('modalLog')" class="w-1/3 py-3.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-bold transition-all text-sm">Hủy</button>
+                    <button type="submit" class="w-2/3 py-3.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-black transition-all shadow-md text-sm uppercase tracking-wider">Lưu Nhật Ký</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- Modal: Nhập Báo Cáo Size -->
     <div id="modalSizeReport" class="fixed inset-0 z-[200] hidden flex items-center justify-center p-4">
         <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" onclick="window.closeProdModal('modalSizeReport')"></div>
@@ -730,7 +886,7 @@
     <!-- 4. APP CONTAINER (QUALITY) -->
     <div id="appContainer" class="hidden">
         <header class="bg-slate-900 text-white sticky top-0 z-40 shadow-2xl border-b border-slate-800 no-print">
-            <div class="max-w-[1440px] mx-auto px-4 py-3 flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="w-full mx-auto px-4 md:px-8 py-3 flex flex-col md:flex-row justify-between items-center gap-4">
                 <div class="flex items-center gap-4">
                     <div class="bg-white p-0.5 rounded-xl shadow-lg border border-blue-400/20 w-12 h-12 flex items-center justify-center overflow-hidden">
                         <img src="https://i.postimg.cc/qvpsdMy3/panda-logo.png" alt="Logo" class="w-full h-full object-contain rounded-lg">
@@ -759,7 +915,7 @@
             </div>
         </header>
 
-        <main class="max-w-[1440px] mx-auto p-4 md:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 no-print">
+        <main class="w-full mx-auto p-4 md:p-8 grid grid-cols-1 lg:grid-cols-12 gap-6 no-print">
             <div class="lg:col-span-4 space-y-6">
                 <!-- Info -->
                 <section class="bg-white p-5 rounded-3xl shadow-sm border border-slate-200">
@@ -1196,6 +1352,7 @@
         let prodPonds = [];
         let prodPlans = [];
         let prodHarvests = [];
+        let prodLogs = []; // Thêm mảng lưu log
         
         // Tracking IDs
         let editingReportId = null;
@@ -1204,6 +1361,7 @@
         let editingFarmerId = null;
         let editingPondId = null;
         let editingPlanId = null;
+        let editingHarvestId = null;
 
         let unsubscribeUsers = null;
         let unsubscribeReports = null;
@@ -1211,6 +1369,7 @@
         let unsubscribeProdPonds = null;
         let unsubscribeProdPlans = null;
         let unsubscribeProdHarvests = null;
+        let unsubscribeProdLogs = null; // Thêm unsubscribe cho log
 
         const usersColRef = collection(db, 'artifacts', appId, 'public', 'data', 'app_users');
         const reportsColRef = collection(db, 'artifacts', appId, 'public', 'data', 'reports');
@@ -1218,6 +1377,7 @@
         const pondsColRef = collection(db, 'artifacts', appId, 'public', 'data', 'prod_ponds');
         const plansColRef = collection(db, 'artifacts', appId, 'public', 'data', 'prod_plans');
         const harvestsColRef = collection(db, 'artifacts', appId, 'public', 'data', 'prod_harvests');
+        const logsColRef = collection(db, 'artifacts', appId, 'public', 'data', 'prod_logs'); // Thêm collection log
 
         // ==========================================
         // UI HELPERS
@@ -1301,6 +1461,7 @@
             toggleHidden('btn-stocking', !p_prod_plan);
             toggleHidden('btn-contract', !p_prod_plan);
             toggleHidden('btn-add-harvest', !p_prod_plan);
+            toggleHidden('btn-add-log', !p_prod_plan); // Check quyền ghi log
 
             toggleHidden('btnSaveCloud', !p_qc_add);
         };
@@ -1315,6 +1476,25 @@
                 } else {
                     await signInAnonymously(auth);
                 }
+
+                // Cài đặt bộ đếm thời gian: tự động ẩn màn hình chờ sau 5 giây nếu mạng bị lỗi / chậm
+                setTimeout(() => {
+                    const loading = document.getElementById('loginLoading');
+                    if (loading && !loading.classList.contains('hidden')) {
+                        loading.style.opacity = '0';
+                        setTimeout(() => loading.classList.add('hidden'), 500);
+                        if (appUsers.length === 0) {
+                            appUsers = [{ 
+                                id: 'local_admin', username: 'admin', password: '123', fullName: 'Admin (Chế độ Offline)', 
+                                jobTitle: 'Hệ thống', role: 'admin', 
+                                permissions: { prod_view: true, prod_master: true, prod_plan: true, qc_view: true, qc_add: true, qc_delete: true, view_all: true, admin: true }, 
+                                createdAt: Timestamp.now() 
+                            }];
+                            window.showToast("Mạng chậm hoặc bị chặn. Đã bật chế độ Offline", "error");
+                        }
+                    }
+                }, 5000);
+
             } catch (error) {
                 console.error("Auth error:", error);
                 appUsers = [{ 
@@ -1366,6 +1546,7 @@
                             if(window.renderPondsTable) window.renderPondsTable();
                             if(window.renderPlansTable) window.renderPlansTable();
                             if(window.renderProdSummary) window.renderProdSummary();
+                            if(window.renderLogsTable) window.renderLogsTable();
                             if(window.updatePondFarmerDropdown) window.updatePondFarmerDropdown();
                             if(window.updateStockingContractPondDropdowns) window.updateStockingContractPondDropdowns();
                         }
@@ -1415,6 +1596,13 @@
                 prodHarvests.sort((a,b) => new Date(b.date) - new Date(a.date));
                 if(window.renderHarvestsTable) window.renderHarvestsTable();
             }, (err) => console.error(err));
+
+            unsubscribeProdLogs = onSnapshot(query(logsColRef), (snapshot) => {
+                prodLogs = [];
+                snapshot.forEach(doc => prodLogs.push({ id: doc.id, ...doc.data() }));
+                prodLogs.sort((a,b) => new Date(b.date) - new Date(a.date));
+                if(window.renderLogsTable) window.renderLogsTable();
+            }, (err) => console.error(err));
         };
 
         const seedDefaultAdmin = async () => {
@@ -1461,6 +1649,7 @@
                 if(window.renderPlansTable) window.renderPlansTable();
                 if(window.renderProdSummary) window.renderProdSummary();
                 if(window.renderHarvestsTable) window.renderHarvestsTable();
+                if(window.renderLogsTable) window.renderLogsTable();
                 if(window.updatePondFarmerDropdown) window.updatePondFarmerDropdown();
                 if(window.updateStockingContractPondDropdowns) window.updateStockingContractPondDropdowns();
             } else {
@@ -1496,7 +1685,7 @@
         };
 
         window.switchProdSection = (section) => {
-            ['summary', 'farmers', 'ponds', 'plans', 'diary', 'harvest'].forEach(s => {
+            ['summary', 'plans', 'ponds', 'farmers', 'harvest', 'logs'].forEach(s => {
                 const tab = document.getElementById(`tab-${s}`);
                 const sec = document.getElementById(`sec-${s}`);
                 if(s === section) {
@@ -1658,16 +1847,30 @@
                 return;
             }
 
-            const groups = { '< 800g': { count: 0, weight: 0 }, '800g - 1kg': { count: 0, weight: 0 }, '> 1kg': { count: 0, weight: 0 } };
+            const groups = {
+                '< 300g': { count: 0, weight: 0 },
+                '300 - 480g': { count: 0, weight: 0 },
+                '480 - 700g': { count: 0, weight: 0 },
+                '700 - 900g': { count: 0, weight: 0 },
+                '900 - 1100g': { count: 0, weight: 0 },
+                '1100 - 1400g': { count: 0, weight: 0 },
+                '1400 - 1600g': { count: 0, weight: 0 },
+                '> 1600g': { count: 0, weight: 0 }
+            };
             
             currentSamples.forEach(s => {
                 const avgFishWeightGross = s.isQuick ? (s.totalW / s.count) : s.weight;
                 const netFishW = Math.max(0, avgFishWeightGross - foodW);
                 
                 let group = '';
-                if (netFishW < 800) group = '< 800g';
-                else if (netFishW <= 1000) group = '800g - 1kg';
-                else group = '> 1kg';
+                if (netFishW < 300) group = '< 300g';
+                else if (netFishW <= 480) group = '300 - 480g';
+                else if (netFishW <= 700) group = '480 - 700g';
+                else if (netFishW <= 900) group = '700 - 900g';
+                else if (netFishW <= 1100) group = '900 - 1100g';
+                else if (netFishW <= 1400) group = '1100 - 1400g';
+                else if (netFishW <= 1600) group = '1400 - 1600g';
+                else group = '> 1600g';
 
                 groups[group].count += s.count;
                 groups[group].weight += (netFishW * s.count);
@@ -1785,11 +1988,13 @@
             
             const bins = {
                 '< 300g': { count: 0, weight: 0 },
-                '300-500g': { count: 0, weight: 0 },
-                '500-800g': { count: 0, weight: 0 },
-                '800-1000g': { count: 0, weight: 0 },
-                '1000-1500g': { count: 0, weight: 0 },
-                '> 1500g': { count: 0, weight: 0 }
+                '300 - 480g': { count: 0, weight: 0 },
+                '480 - 700g': { count: 0, weight: 0 },
+                '700 - 900g': { count: 0, weight: 0 },
+                '900 - 1100g': { count: 0, weight: 0 },
+                '1100 - 1400g': { count: 0, weight: 0 },
+                '1400 - 1600g': { count: 0, weight: 0 },
+                '> 1600g': { count: 0, weight: 0 }
             };
 
             if (r.samples) {
@@ -1803,11 +2008,13 @@
                     
                     let group = '';
                     if (netFishW < 300) group = '< 300g';
-                    else if (netFishW <= 500) group = '300-500g';
-                    else if (netFishW <= 800) group = '500-800g';
-                    else if (netFishW <= 1000) group = '800-1000g';
-                    else if (netFishW <= 1500) group = '1000-1500g';
-                    else group = '> 1500g';
+                    else if (netFishW <= 480) group = '300 - 480g';
+                    else if (netFishW <= 700) group = '480 - 700g';
+                    else if (netFishW <= 900) group = '700 - 900g';
+                    else if (netFishW <= 1100) group = '900 - 1100g';
+                    else if (netFishW <= 1400) group = '1100 - 1400g';
+                    else if (netFishW <= 1600) group = '1400 - 1600g';
+                    else group = '> 1600g';
 
                     bins[group].count += s.count;
                     bins[group].weight += (netFishW * s.count);
@@ -1948,7 +2155,7 @@
             document.getElementById('modalContent').innerHTML = content;
             
             const btnLoad = document.getElementById('btnLoadForm');
-            if(btnLoad) btnLoad.classList.remove('hidden');
+            if(btnLoad) btnLoad.classList.add('hidden');
 
             document.getElementById('reportModal').classList.remove('hidden');
         };
@@ -2245,8 +2452,8 @@
                 const farmer = prodFarmers.find(f => f.id === p.farmerId);
                 const plan = prodPlans.find(pl => pl.pondId === p.id && (pl.status === 'planning' || pl.status === 'ongoing')) || {};
                 
-                const size = p.seedSize || 0;
-                const qty = p.seedQty || 0;
+                const size = p.currentSize || p.seedSize || 0;
+                const qty = p.currentQty || p.seedQty || 0;
                 const feed = plan.feedQuantity || 0;
                 
                 // Thay đổi thành Sản lượng hiện tại: (Size * Số lượng) / 1,000,000 (để quy ra Tấn)
@@ -2281,7 +2488,7 @@
                 let html = '';
                 tableData.forEach((item, index) => {
                     html += `
-                        <tr class="hover:bg-slate-100 transition-colors">
+                        <tr class="hover:bg-slate-100 transition-colors border-b border-slate-200">
                             <td class="p-3 text-center font-medium">${index + 1}</td>
                             <td class="p-3 font-bold text-slate-800 whitespace-nowrap">${item.farmer ? item.farmer.name : '---'}</td>
                             <td class="p-3 text-center font-black text-blue-600 uppercase">${item.p.code}</td>
@@ -2565,12 +2772,22 @@
             if(!tbody) return;
             
             const canMaster = appCurrentUser?.permissions?.prod_master ?? appCurrentUser?.permissions?.prod ?? true;
-            const visiblePonds = getVisiblePonds();
+            let visiblePonds = getVisiblePonds();
+
+            const searchTerm = (document.getElementById('searchPondFarmerInput')?.value || '').toLowerCase().trim();
+            if (searchTerm) {
+                visiblePonds = visiblePonds.filter(p => {
+                    const farmer = prodFarmers.find(f => f.id === p.farmerId);
+                    return farmer && farmer.name.toLowerCase().includes(searchTerm);
+                });
+            }
 
             if(visiblePonds.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="13" class="p-8 text-center text-slate-400 italic">Chưa có dữ liệu ao nuôi.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="14" class="p-8 text-center text-slate-400 italic">Chưa có dữ liệu ao nuôi.</td></tr>`;
                 return;
             }
+            
+            let stt = 1;
             tbody.innerHTML = visiblePonds.map(p => {
                 const farmer = prodFarmers.find(f => f.id === p.farmerId);
                 const statusHtml = p.status === 'active' ? 
@@ -2580,8 +2797,9 @@
 
                 return `
                 <tr class="hover:bg-slate-50 transition-colors border-b border-slate-100 last:border-0">
-                    <td class="p-3 font-black text-blue-600 uppercase whitespace-nowrap">${p.code}</td>
+                    <td class="p-3 text-center font-medium">${stt++}</td>
                     <td class="p-3 font-bold text-slate-700 whitespace-nowrap">${farmer ? farmer.name : '<span class="text-red-400 italic">Lỗi: Hộ nuôi đã xóa</span>'}</td>
+                    <td class="p-3 font-black text-blue-600 uppercase whitespace-nowrap">${p.code}</td>
                     
                     <td class="p-3 text-center font-bold text-teal-700 border-l border-slate-100 bg-teal-50/30 whitespace-nowrap">${p.seedDate ? window.formatDateOnly(p.seedDate) : '---'}</td>
                     <td class="p-3 text-center font-bold text-teal-700 bg-teal-50/30">${p.seedSize ? window.formatNumber(p.seedSize) : '---'}</td>
@@ -2611,15 +2829,37 @@
         window.updateStockingContractPondDropdowns = () => {
             const selectStocking = document.getElementById('stockingPondId');
             const selectContract = document.getElementById('contractPondId');
-            if(!selectStocking || !selectContract) return;
+            const selectLog = document.getElementById('logPondId');
+            const selectFilterLog = document.getElementById('filterLogPondId');
+
             const visiblePonds = getVisiblePonds();
             const options = '<option value="">-- Chọn Ao Nuôi --</option>' + 
                 visiblePonds.map(p => {
                     const farmer = prodFarmers.find(f => f.id === p.farmerId);
                     return `<option value="${p.id}">${farmer ? farmer.name : 'Unknown'} - Ao ${p.code}</option>`;
                 }).join('');
-            selectStocking.innerHTML = options;
-            selectContract.innerHTML = options;
+            
+            if(selectStocking) selectStocking.innerHTML = options;
+            if(selectContract) selectContract.innerHTML = options;
+            
+            const activeOptions = '<option value="">-- Chọn Ao Đang Nuôi --</option>' + 
+                visiblePonds.filter(p => p.status === 'active').map(p => {
+                    const farmer = prodFarmers.find(f => f.id === p.farmerId);
+                    return `<option value="${p.id}">${farmer ? farmer.name : 'Unknown'} - Ao ${p.code}</option>`;
+                }).join('');
+            
+            if(selectLog) selectLog.innerHTML = activeOptions;
+
+            const filterOptions = '<option value="">-- Tất cả ao nuôi --</option>' + 
+                visiblePonds.map(p => {
+                    const farmer = prodFarmers.find(f => f.id === p.farmerId);
+                    return `<option value="${p.id}">${farmer ? farmer.name : 'Unknown'} - Ao ${p.code}</option>`;
+                }).join('');
+            if(selectFilterLog) {
+                const currentVal = selectFilterLog.value;
+                selectFilterLog.innerHTML = filterOptions;
+                selectFilterLog.value = currentVal;
+            }
         };
 
         window.openStockingModal = () => {
@@ -2730,15 +2970,13 @@
             } catch(err) { window.showToast("Lỗi lưu dữ liệu!", "error"); }
         };
 
-        window.calculateForecastedYieldTemporary = (pond, planQty, inputSize = null) => {
+        window.calculateForecastedYieldTemporary = (pond, planQty) => {
             if (!pond) return 0;
             const plan = prodPlans.find(pl => pl.pondId === pond.id && (pl.status === 'planning' || pl.status === 'ongoing'));
             if (!plan || !plan.endDate) return 0;
 
-            const currentSize = inputSize !== null ? inputSize : (pond.seedSize || 0);
-            
-            // Công thức mới theo yêu cầu: Nếu size > 800g thì tính trực tiếp = Size * Qty / 1000000
-            if (currentSize > 800) {
+            const currentSize = pond.currentSize || pond.seedSize || 0;
+            if (currentSize >= 800) {
                 return Math.round((currentSize * planQty) / 1000000);
             }
 
@@ -2757,13 +2995,11 @@
 
         window.calculateForecastedYield = (pond, plan) => {
             if (!pond || !plan || !plan.endDate) return 0;
-            const seedQty = pond.seedQty || 0;
+            const seedQty = pond.currentQty || pond.seedQty || 0;
             if (seedQty === 0) return 0;
 
-            const currentSize = pond.seedSize || 0;
-            
-            // Công thức mới theo yêu cầu: Nếu size > 800g thì tính trực tiếp = Size * Qty / 1000000
-            if (currentSize > 800) {
+            const currentSize = pond.currentSize || pond.seedSize || 0;
+            if (currentSize >= 800) {
                 return Math.round((currentSize * seedQty) / 1000000);
             }
 
@@ -2846,17 +3082,17 @@
             tbody.innerHTML = ponds.map(p => {
                 const plan = prodPlans.find(pl => pl.pondId === p.id && (pl.status === 'planning' || pl.status === 'ongoing')) || {};
                 
-                const currentSize = p.seedSize || 0;
-                const currentQty = p.seedQty || 0;
+                const currentSize = p.currentSize || p.seedSize || 0;
+                const currentQty = p.currentQty || p.seedQty || 0;
                 const currentFeed = plan.feedQuantity || 0;
                 const currentNote = plan.note || '';
                 
-                const initialYield = window.calculateForecastedYieldTemporary(p, currentQty, currentSize);
+                const initialYield = window.calculateForecastedYieldTemporary(p, currentQty);
 
                 return `
                 <tr class="hover:bg-slate-100 transition-colors pond-report-row border-b border-slate-200" data-pond-id="${p.id}">
                     <td class="p-3 font-black text-blue-600 uppercase whitespace-nowrap">${p.code}</td>
-                    <td class="p-3"><input type="number" step="0.1" id="sr_size_${p.id}" value="${currentSize}" oninput="window.calcAutoYield('${p.id}')" class="w-20 p-2 bg-white border border-slate-300 rounded text-xs font-bold focus:border-blue-500 outline-none" placeholder="g"></td>
+                    <td class="p-3"><input type="number" step="0.1" id="sr_size_${p.id}" value="${currentSize}" class="w-20 p-2 bg-white border border-slate-300 rounded text-xs font-bold focus:border-blue-500 outline-none" placeholder="g"></td>
                     <td class="p-3"><input type="number" id="sr_qty_${p.id}" value="${currentQty}" oninput="window.calcAutoYield('${p.id}')" class="w-24 p-2 bg-white border border-slate-300 rounded text-xs font-bold focus:border-blue-500 outline-none" placeholder="con"></td>
                     <td class="p-3"><input type="number" step="0.1" id="sr_feed_${p.id}" value="${currentFeed}" class="w-20 p-2 bg-white border border-slate-300 rounded text-xs font-bold focus:border-blue-500 outline-none" placeholder="Tấn"></td>
                     <td class="p-3 text-center font-black text-emerald-600 bg-emerald-50" id="sr_yield_${p.id}">${window.formatNumber(initialYield)}</td>
@@ -2868,14 +3104,12 @@
 
         window.calcAutoYield = (pondId) => {
             const qtyInput = document.getElementById(`sr_qty_${pondId}`);
-            const sizeInput = document.getElementById(`sr_size_${pondId}`);
             const yieldDisplay = document.getElementById(`sr_yield_${pondId}`);
-            if(!qtyInput || !sizeInput || !yieldDisplay) return;
+            if(!qtyInput || !yieldDisplay) return;
 
             const qty = parseInt(qtyInput.value) || 0;
-            const size = parseFloat(sizeInput.value) || 0;
             const pond = prodPonds.find(p => p.id === pondId);
-            const val = window.calculateForecastedYieldTemporary(pond, qty, size);
+            const val = window.calculateForecastedYieldTemporary(pond, qty);
             yieldDisplay.innerText = window.formatNumber(val);
         };
 
@@ -2899,8 +3133,8 @@
                     const noteVal = document.getElementById(`sr_note_${pondId}`).value.trim();
 
                     await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'prod_ponds', pondId), {
-                        seedSize: sizeVal,
-                        seedQty: qtyVal,
+                        currentSize: sizeVal,
+                        currentQty: qtyVal,
                         updatedAt: Timestamp.now(),
                         updatedBy: appCurrentUser?.username
                     });
@@ -2908,7 +3142,7 @@
                     const plan = prodPlans.find(pl => pl.pondId === pondId && (pl.status === 'planning' || pl.status === 'ongoing'));
                     if (plan) {
                         const pond = prodPonds.find(p => p.id === pondId);
-                        const targetYieldTons = window.calculateForecastedYieldTemporary(pond, qtyVal, sizeVal);
+                        const targetYieldTons = window.calculateForecastedYieldTemporary(pond, qtyVal);
 
                         await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'prod_plans', plan.id), {
                             feedQuantity: feedVal,
@@ -2927,6 +3161,12 @@
             } finally {
                 btn.disabled = false; btn.innerHTML = ogText;
             }
+        };
+
+        window.planSizeSortOrder = 0; // 0: None (Theo Hộ), 1: ASC, 2: DESC
+        window.togglePlanSizeSort = () => {
+            window.planSizeSortOrder = (window.planSizeSortOrder + 1) % 3;
+            window.renderPlansTable();
         };
 
         window.renderPlansTable = () => {
@@ -2949,7 +3189,12 @@
                 <thead class="bg-slate-100 border-b border-slate-200 text-[10px] font-black text-slate-600 uppercase tracking-wider text-center align-middle">
                     <tr>
                         <th class="p-2 border border-slate-200" colspan="4">THÔNG TIN AO NUÔI</th>
-                        <th class="p-2 border border-slate-200 w-16" rowspan="2">Size cá<br>hiện tại<br>(Gr/con)</th>
+                        <th class="p-2 border border-slate-200 w-20 cursor-pointer hover:bg-slate-200 transition-colors select-none group" rowspan="2" onclick="window.togglePlanSizeSort()">
+                            <div class="flex flex-col items-center justify-center">
+                                <span>Size cá<br>hiện tại<br>(Gr/con)</span>
+                                <i id="planSizeSortIcon" class="fas fa-sort text-slate-400 group-hover:text-emerald-600 mt-1 text-sm"></i>
+                            </div>
+                        </th>
                         <th class="p-2 border border-slate-200 w-20" rowspan="2">Con giống<br>hiện có<br>(con)</th>
                         <th class="p-2 border border-slate-200 w-16" rowspan="2">SL HIỆN<br>TẠI<br>(Tấn)</th>
                         <th class="p-2 border border-slate-200 w-16" rowspan="2">THỨC ĂN<br>ĐÃ CẤP<br>(Tấn)</th>
@@ -2958,6 +3203,7 @@
                         <th class="p-2 border border-slate-200 text-blue-700 w-20" rowspan="2">Sản lượng<br>dự kiến<br>HĐ(Tấn)</th>
                         <th class="p-2 border border-slate-200 text-amber-600 w-20" rowspan="2">SL SIZE<br>800 G<br>DỰ KIẾN</th>
                         <th class="p-2 border border-slate-200 w-24" rowspan="2">NV GIÁM SÁT</th>
+                        <th class="p-2 border border-slate-200 text-amber-700 bg-amber-50/50" colspan="3">HỢP ĐỒNG LIÊN KẾT</th>
                         <th class="p-2 border border-slate-200 w-20" rowspan="2">Ngày<br>Cập nhật</th>
                         <th class="p-2 border border-slate-200 w-16" rowspan="2">Thao tác</th>
                     </tr>
@@ -2967,6 +3213,9 @@
                         <th class="p-2 border border-slate-200 w-20">Mã số ao</th>
                         <th class="p-2 border border-slate-200 w-48 text-left">ĐỊA CHỈ AO NUÔI</th>
                         ${monthCols.map(m => `<th class="p-2 border border-slate-200 bg-emerald-50/50">${m}</th>`).join('')}
+                        <th class="p-2 border border-slate-200 w-24 text-amber-700 bg-amber-50/50">SỐ HĐ</th>
+                        <th class="p-2 border border-slate-200 w-24 text-amber-700 bg-amber-50/50">NGÀY KÝ</th>
+                        <th class="p-2 border border-slate-200 w-24 text-amber-700 bg-amber-50/50">GIÁ KÝ<br>(đ/kg)</th>
                     </tr>
                 </thead>
             `;
@@ -2975,17 +3224,27 @@
 
             if(contractedPonds.length === 0) {
                 container.innerHTML = `
-                    <table id="plansExportTable" class="w-full text-[11px] border-collapse min-w-[1800px]">
+                    <table class="w-full text-[11px] border-collapse min-w-[1800px]">
                         ${theadHtml}
-                        <tbody><tr><td colspan="${14 + monthCols.length}" class="p-8 text-center text-slate-400 italic">Chưa có dữ liệu ao nuôi đã ký hợp đồng.</td></tr></tbody>
+                        <tbody><tr><td colspan="${17 + monthCols.length}" class="p-8 text-center text-slate-400 italic">Chưa có dữ liệu ao nuôi đã ký hợp đồng.</td></tr></tbody>
                     </table>`;
                 return;
             }
 
             contractedPonds.sort((a, b) => {
-                const farmerA = prodFarmers.find(f => f.id === a.farmerId)?.name || '';
-                const farmerB = prodFarmers.find(f => f.id === b.farmerId)?.name || '';
-                return farmerA.localeCompare(farmerB);
+                if (window.planSizeSortOrder === 1) {
+                    const sizeA = a.currentSize || a.seedSize || 0;
+                    const sizeB = b.currentSize || b.seedSize || 0;
+                    return sizeA - sizeB;
+                } else if (window.planSizeSortOrder === 2) {
+                    const sizeA = a.currentSize || a.seedSize || 0;
+                    const sizeB = b.currentSize || b.seedSize || 0;
+                    return sizeB - sizeA;
+                } else {
+                    const farmerA = prodFarmers.find(f => f.id === a.farmerId)?.name || '';
+                    const farmerB = prodFarmers.find(f => f.id === b.farmerId)?.name || '';
+                    return farmerA.localeCompare(farmerB);
+                }
             });
 
             let tbodyHtml = '';
@@ -3011,8 +3270,8 @@
 
                 const rowBgClass = useAlternateBg ? 'bg-slate-50' : 'bg-white';
 
-                const currentSize = pond.seedSize || 0;
-                const seedQty = pond.seedQty || 0;
+                const currentSize = pond.currentSize || pond.seedSize || 0;
+                const seedQty = pond.currentQty || pond.seedQty || 0;
                 const currentWeightTons = Math.round((currentSize * seedQty) / 1000000);
                 const feedQty = Math.round(plan.feedQuantity || 0);
                 const targetYield = window.calculateForecastedYield(pond, plan);
@@ -3034,6 +3293,10 @@
                     const dObj = plan.updatedAt.toDate ? plan.updatedAt.toDate() : new Date(plan.updatedAt);
                     updateDateStr = window.formatDateOnly(dObj.toISOString().split('T')[0]);
                 }
+                
+                let contractNoStr = pond.contractNo || '---';
+                let contractDateStr = pond.contractDate ? window.formatDateOnly(pond.contractDate) : '---';
+                let contractPriceStr = pond.contractPrice ? window.formatNumber(pond.contractPrice) : '---';
 
                 let monthlyVolumesHtml = monthCols.map((col, idx) => {
                     if (harvestMonthStr === col && targetYield > 0) {
@@ -3061,6 +3324,11 @@
                     <td class="p-2 border border-slate-200 text-center font-black text-blue-700">${window.formatNumber(targetYield)}</td>
                     <td class="p-2 border border-slate-200 text-center font-black text-amber-600">${window.formatNumber(targetYield)}</td>
                     <td class="p-2 border border-slate-200 text-center text-[10px] font-bold uppercase whitespace-nowrap">${farmer?.supervisor || '---'}</td>
+                    
+                    <td class="p-2 border border-slate-200 text-center font-bold text-amber-700 bg-amber-50/30 uppercase">${contractNoStr}</td>
+                    <td class="p-2 border border-slate-200 text-center font-medium text-amber-700 bg-amber-50/30 whitespace-nowrap">${contractDateStr}</td>
+                    <td class="p-2 border border-slate-200 text-center font-black text-amber-700 bg-amber-50/30">${contractPriceStr}</td>
+                    
                     <td class="p-2 border border-slate-200 text-center text-[10px] font-medium text-slate-600">${updateDateStr}</td>
                     
                     <td class="p-2 border border-slate-200 text-center">
@@ -3090,33 +3358,27 @@
                         <td class="p-2 border border-slate-300 bg-slate-100"></td>
                         <td class="p-2 border border-slate-300 text-center font-black text-blue-800 bg-blue-50">${window.formatNumber(sumTargetYield)}</td>
                         <td class="p-2 border border-slate-300 text-center font-black text-amber-700 bg-amber-50">${window.formatNumber(sumTargetYield)}</td>
-                        <td class="p-2 border border-slate-300 bg-slate-100" colspan="3"></td>
+                        <td class="p-2 border border-slate-300 bg-slate-100" colspan="6"></td>
                     </tr>
                 </tfoot>
             `;
 
             container.innerHTML = `
                 <div class="max-h-[650px] overflow-y-auto relative">
-                    <table id="plansExportTable" class="w-full text-[11px] border-collapse min-w-[1800px] bg-white">
+                    <table class="w-full text-[11px] border-collapse min-w-[1800px] bg-white">
                         ${theadHtml}
                         <tbody>${tbodyHtml}</tbody>
                         ${tfootHtml}
                     </table>
                 </div>`;
-        };
-
-        window.exportPlansToExcel = () => {
-            const table = document.getElementById('plansExportTable');
-            if (!table) return window.showToast("Không có dữ liệu để xuất!", "error");
-            
-            const wb = XLSX.utils.book_new();
-            // Lấy dữ liệu từ HTML Table hiện tại trên UI (hỗ trợ tốt các cột gộp/span)
-            const ws = XLSX.utils.table_to_sheet(table);
-            XLSX.utils.book_append_sheet(wb, ws, "Kế Hoạch Sản Lượng");
-            
-            const dateStr = window.formatDateOnly(new Date().toISOString().split('T')[0]).replace(/\//g, '');
-            XLSX.writeFile(wb, `KeHoachSanLuong_${dateStr}.xlsx`);
-            window.showToast("Đã xuất file Excel Kế hoạch thành công!");
+                
+            // Cập nhật trạng thái Icon sau khi render lại
+            const sortIcon = document.getElementById('planSizeSortIcon');
+            if(sortIcon) {
+                if(window.planSizeSortOrder === 0) sortIcon.className = 'fas fa-sort text-slate-400 group-hover:text-emerald-600 mt-1 text-sm';
+                else if(window.planSizeSortOrder === 1) sortIcon.className = 'fas fa-sort-up text-emerald-600 mt-1 text-sm';
+                else if(window.planSizeSortOrder === 2) sortIcon.className = 'fas fa-sort-down text-emerald-600 mt-1 text-sm';
+            }
         };
 
         window.renderProdSummary = () => {
@@ -3172,22 +3434,42 @@
             `).join('');
         };
 
-        window.openHarvestModal = () => {
+        window.openHarvestModal = (id = null) => {
+            editingHarvestId = id;
             const select = document.getElementById('harvestPondId');
             if(!select) return;
-            const visiblePonds = getVisiblePonds().filter(p => p.status === 'active');
-            const options = '<option value="">-- Chọn Ao Đang Nuôi --</option>' + 
-                visiblePonds.map(p => {
-                    const farmer = prodFarmers.find(f => f.id === p.farmerId);
-                    return `<option value="${p.id}">${farmer ? farmer.name : 'Unknown'} - Ao ${p.code}</option>`;
-                }).join('');
-            select.innerHTML = options;
-            
-            document.getElementById('harvestDate').value = new Date().toISOString().split('T')[0];
-            document.getElementById('harvestYield').value = '';
-            document.getElementById('harvestSize').value = '';
-            document.getElementById('harvestFeed').value = '';
-            document.getElementById('harvestNote').value = '';
+
+            if (id) {
+                const h = prodHarvests.find(x => x.id === id);
+                if (h) {
+                    const pond = prodPonds.find(p => p.id === h.pondId);
+                    const farmer = pond ? prodFarmers.find(f => f.id === pond.farmerId) : null;
+                    select.innerHTML = `<option value="${h.pondId}">${farmer ? farmer.name : 'Unknown'} - Ao ${pond ? pond.code : 'Unknown'}</option>`;
+                    select.value = h.pondId;
+                    select.disabled = true;
+
+                    document.getElementById('harvestDate').value = h.date || '';
+                    document.getElementById('harvestYield').value = h.yield || '';
+                    document.getElementById('harvestSize').value = h.size || '';
+                    document.getElementById('harvestFeed').value = h.feed || '';
+                    document.getElementById('harvestNote').value = h.note || '';
+                }
+            } else {
+                const visiblePonds = getVisiblePonds().filter(p => p.status === 'active');
+                const options = '<option value="">-- Chọn Ao Đang Nuôi --</option>' + 
+                    visiblePonds.map(p => {
+                        const farmer = prodFarmers.find(f => f.id === p.farmerId);
+                        return `<option value="${p.id}">${farmer ? farmer.name : 'Unknown'} - Ao ${p.code}</option>`;
+                    }).join('');
+                select.innerHTML = options;
+                select.disabled = false;
+                
+                document.getElementById('harvestDate').value = new Date().toISOString().split('T')[0];
+                document.getElementById('harvestYield').value = '';
+                document.getElementById('harvestSize').value = '';
+                document.getElementById('harvestFeed').value = '';
+                document.getElementById('harvestNote').value = '';
+            }
             document.getElementById('modalHarvest').classList.remove('hidden');
         };
 
@@ -3203,10 +3485,19 @@
             const dateStr = document.getElementById('harvestDate').value;
             const note = document.getElementById('harvestNote').value.trim();
 
-            const pond = prodPonds.find(p => p.id === pondId);
-            const activePlan = prodPlans.find(pl => pl.pondId === pondId && (pl.status === 'planning' || pl.status === 'ongoing'));
-            const seedQty = pond ? (pond.seedQty || 0) : 0;
-            const startDate = activePlan ? activePlan.startDate : null;
+            let seedQty = 0;
+            let startDate = null;
+
+            if (editingHarvestId) {
+                const existingH = prodHarvests.find(x => x.id === editingHarvestId);
+                seedQty = existingH ? existingH.seedQtyAtHarvest : 0;
+                startDate = existingH ? existingH.startDate : null;
+            } else {
+                const pond = prodPonds.find(p => p.id === pondId);
+                const activePlan = prodPlans.find(pl => pl.pondId === pondId && (pl.status === 'planning' || pl.status === 'ongoing'));
+                seedQty = pond ? (pond.seedQty || 0) : 0;
+                startDate = pond ? pond.seedDate : (activePlan ? activePlan.startDate : null);
+            }
 
             let fcr = 0;
             if (yieldVal > 0) fcr = feedVal / yieldVal;
@@ -3214,15 +3505,19 @@
             let survivalRate = 0;
             if (sizeVal > 0 && seedQty > 0) {
                 const harvestedFishCount = (yieldVal * 1000 * 1000) / sizeVal;
-                survivalRate = (harvestedFishCount / seedQty) * 100;
+                survivalRate = ((harvestedFishCount - seedQty) / seedQty) * 100;
             }
 
             let rearingMonths = 0;
             if (startDate && dateStr) {
                 const start = new Date(startDate);
                 const end = new Date(dateStr);
-                const diffTime = Math.abs(end - start);
-                rearingMonths = (diffTime / (1000 * 60 * 60 * 24 * 30.44)).toFixed(1);
+                const diffTime = end.getTime() - start.getTime();
+                
+                if (diffTime > 0) {
+                    const diffDays = diffTime / (1000 * 60 * 60 * 24);
+                    rearingMonths = (diffDays / 30).toFixed(1);
+                }
             }
 
             const harvestPayload = {
@@ -3237,26 +3532,36 @@
                 seedQtyAtHarvest: seedQty,
                 startDate: startDate,
                 note: note,
-                createdAt: Timestamp.now(),
-                createdBy: appCurrentUser?.username
+                updatedAt: Timestamp.now(),
+                updatedBy: appCurrentUser?.username
             };
 
             try {
-                await addDoc(harvestsColRef, harvestPayload);
+                if (editingHarvestId) {
+                    await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'prod_harvests', editingHarvestId), harvestPayload);
+                    window.showToast("Đã cập nhật nhật ký thu hoạch!");
+                    editingHarvestId = null;
+                } else {
+                    harvestPayload.createdAt = Timestamp.now();
+                    harvestPayload.createdBy = appCurrentUser?.username;
+                    await addDoc(harvestsColRef, harvestPayload);
 
-                await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'prod_ponds', pondId), {
-                    seedDate: '', seedSize: 0, seedQty: 0, seedWeight: 0, seedPrice: 0,
-                    contractNo: '', contractDate: '', contractPrice: 0,
-                    status: 'inactive', updatedAt: Timestamp.now(), updatedBy: appCurrentUser?.username
-                });
-
-                if (activePlan) {
-                    await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'prod_plans', activePlan.id), {
-                        status: 'completed', updatedAt: Timestamp.now(), updatedBy: appCurrentUser?.username
+                    await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'prod_ponds', pondId), {
+                        seedDate: '', seedSize: 0, seedQty: 0, seedWeight: 0, seedPrice: 0,
+                        currentSize: 0, currentQty: 0,
+                        contractNo: '', contractDate: '', contractPrice: 0,
+                        status: 'inactive', updatedAt: Timestamp.now(), updatedBy: appCurrentUser?.username
                     });
-                }
 
-                window.showToast("Đã nhập nhật ký thu hoạch và reset thông tin Ao!");
+                    const activePlan = prodPlans.find(pl => pl.pondId === pondId && (pl.status === 'planning' || pl.status === 'ongoing'));
+                    if (activePlan) {
+                        await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'prod_plans', activePlan.id), {
+                            status: 'completed', updatedAt: Timestamp.now(), updatedBy: appCurrentUser?.username
+                        });
+                    }
+
+                    window.showToast("Đã nhập nhật ký thu hoạch và reset thông tin Ao!");
+                }
                 window.closeProdModal('modalHarvest');
             } catch(err) { window.showToast("Lỗi lưu dữ liệu thu hoạch!", "error"); }
         };
@@ -3265,6 +3570,7 @@
             const tbody = document.getElementById('harvestsTableBody');
             if(!tbody) return;
 
+            const canPlan = appCurrentUser?.permissions?.prod_plan ?? appCurrentUser?.permissions?.prod ?? true;
             const visibleFarmers = getVisibleFarmers();
             const visibleFarmerIds = new Set(visibleFarmers.map(f => f.id));
 
@@ -3275,7 +3581,7 @@
             });
 
             if(visibleHarvests.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="13" class="p-8 text-center text-slate-400 italic">Chưa có lịch sử thu hoạch.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="14" class="p-8 text-center text-slate-400 italic">Chưa có lịch sử thu hoạch.</td></tr>`;
                 return;
             }
 
@@ -3289,7 +3595,7 @@
                 const contractNo = pond && pond.contractNo ? pond.contractNo : '---';
                 const contractPrice = pond && pond.contractPrice ? window.formatNumber(pond.contractPrice) : '---';
 
-                const rearingTime = h.rearingMonths ? h.rearingMonths + ' tháng' : '---';
+                const rearingTime = (h.rearingMonths !== undefined && h.rearingMonths !== null && h.rearingMonths > 0) ? h.rearingMonths + ' tháng' : '---';
                 const fcrStr = h.fcr ? h.fcr.toFixed(2) : '---';
                 const srStr = h.survivalRate ? h.survivalRate.toFixed(1) + '%' : '---';
                 const sizeStr = h.size ? window.formatNumber(h.size) : '---';
@@ -3310,6 +3616,14 @@
                     <td class="p-3 text-center font-medium text-slate-700 whitespace-nowrap">${rearingTime}</td>
                     <td class="p-3 text-center font-black text-blue-600">${srStr}</td>
                     <td class="p-3 text-slate-500 text-xs truncate max-w-[150px]" title="${h.note || ''}">${h.note || '---'}</td>
+                    <td class="p-3 text-right">
+                        ${canPlan ? `
+                        <div class="flex items-center justify-end gap-1">
+                            <button onclick="window.openHarvestModal('${h.id}')" class="w-7 h-7 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white flex items-center justify-center transition-all" title="Sửa Thu hoạch"><i class="fas fa-edit text-[10px]"></i></button>
+                            <button onclick="window.confirmDeleteProd('harvest', '${h.id}', 'Ngày ${window.formatDateOnly(h.date)}')" class="w-7 h-7 rounded-lg bg-red-50 text-red-500 hover:bg-red-500 hover:text-white flex items-center justify-center transition-all" title="Xóa Thu hoạch"><i class="fas fa-trash-alt text-[10px]"></i></button>
+                        </div>
+                        ` : `<span class="text-[10px] text-slate-400 italic">Chỉ xem</span>`}
+                    </td>
                 </tr>
                 `;
             }).join('');
@@ -3318,6 +3632,438 @@
         window.closeModal = () => {
             const r = document.getElementById('reportModal');
             if(r) r.classList.add('hidden');
+        };
+
+        // ==========================================
+        // NHẬT KÝ AO NUÔI (LOGS)
+        // ==========================================
+        window.handleLogPondChange = () => {
+            const pondId = document.getElementById('logPondId').value;
+            const avgInput = document.getElementById('logAvgWeight');
+            if (!pondId) {
+                avgInput.value = '';
+                return;
+            }
+            const pond = prodPonds.find(p => p.id === pondId);
+            if (pond) {
+                avgInput.value = pond.currentSize || pond.seedSize || 0;
+            }
+        };
+
+        window.addLogFeedRow = (feedType = '', feedQty = '') => {
+            const container = document.getElementById('logFeedsContainer');
+            const row = document.createElement('div');
+            row.className = 'flex gap-2 log-feed-row';
+            row.innerHTML = `
+                <input type="text" value="${feedType}" placeholder="Tên / Loại (VD: 2mm, 3mm)" class="log-feed-type w-1/2 p-2 bg-white border border-amber-200 rounded-lg text-xs font-bold outline-none">
+                <input type="number" step="0.1" value="${feedQty}" placeholder="Kg" class="log-feed-qty w-1/3 p-2 bg-white border border-amber-200 rounded-lg text-xs font-bold outline-none">
+                <button type="button" onclick="this.parentElement.remove()" class="w-1/6 bg-red-50 text-red-500 rounded-lg hover:bg-red-500 hover:text-white transition-colors"><i class="fas fa-trash"></i></button>
+            `;
+            container.appendChild(row);
+        };
+
+        window.openLogModal = () => {
+            const select = document.getElementById('logPondId');
+            if(!select) return;
+            const visiblePonds = getVisiblePonds().filter(p => p.status === 'active');
+            const options = '<option value="">-- Chọn Ao Đang Nuôi --</option>' + 
+                visiblePonds.map(p => {
+                    const farmer = prodFarmers.find(f => f.id === p.farmerId);
+                    return `<option value="${p.id}">${farmer ? farmer.name : 'Unknown'} - Ao ${p.code}</option>`;
+                }).join('');
+            select.innerHTML = options;
+
+            // Reset form
+            document.getElementById('logDate').value = new Date().toISOString().split('T')[0];
+            document.getElementById('logAvgWeight').value = '';
+            
+            document.getElementById('logFeedsContainer').innerHTML = '';
+            window.addLogFeedRow(); // Add one empty row by default
+
+            document.getElementById('logWater').value = '';
+            document.getElementById('logEnvT0').value = '';
+            document.getElementById('logEnvPhS').value = '';
+            document.getElementById('logEnvPhC').value = '';
+            document.getElementById('logEnvO2S').value = '';
+            document.getElementById('logEnvO2C').value = '';
+            document.getElementById('logEnvNH3').value = '';
+            document.getElementById('logEnvH2SKh').value = '';
+
+            document.getElementById('logMedName').value = '';
+            document.getElementById('logMedBatch').value = '';
+            document.getElementById('logMedQty').value = '';
+
+            document.getElementById('logDeadCount').value = '';
+            document.getElementById('logDeadWeight').value = '';
+            document.getElementById('logSymptoms').value = '';
+
+            document.getElementById('modalLog').classList.remove('hidden');
+        };
+
+        window.saveLog = async (e) => {
+            e.preventDefault();
+            const canPlan = appCurrentUser?.permissions?.prod_plan ?? appCurrentUser?.permissions?.prod ?? true;
+            if(!fbUser || !canPlan) return window.showToast("Bạn không có quyền Ghi nhật ký!", "error");
+
+            const pondId = document.getElementById('logPondId').value;
+            const dateStr = document.getElementById('logDate').value;
+            
+            if(!pondId || !dateStr) return window.showToast("Vui lòng chọn Ao và Ngày!", "error");
+
+            // Extract Feeds
+            const feedRows = document.querySelectorAll('.log-feed-row');
+            const feeds = [];
+            let totalFeed = 0;
+            feedRows.forEach(row => {
+                const type = row.querySelector('.log-feed-type').value.trim();
+                const qty = parseFloat(row.querySelector('.log-feed-qty').value) || 0;
+                if (type || qty > 0) {
+                    feeds.push({ type, qty });
+                    totalFeed += qty;
+                }
+            });
+
+            const payload = {
+                pondId,
+                date: dateStr,
+                avgWeight: parseFloat(document.getElementById('logAvgWeight').value) || 0,
+                feeds: feeds,
+                totalFeed: totalFeed,
+                waterExchange: parseFloat(document.getElementById('logWater').value) || 0,
+                environment: {
+                    t0: document.getElementById('logEnvT0').value.trim(),
+                    phS: document.getElementById('logEnvPhS').value.trim(),
+                    phC: document.getElementById('logEnvPhC').value.trim(),
+                    o2S: document.getElementById('logEnvO2S').value.trim(),
+                    o2C: document.getElementById('logEnvO2C').value.trim(),
+                    nh3: document.getElementById('logEnvNH3').value.trim(),
+                    h2sKh: document.getElementById('logEnvH2SKh').value.trim()
+                },
+                meds: {
+                    name: document.getElementById('logMedName').value.trim(),
+                    batch: document.getElementById('logMedBatch').value.trim(),
+                    qty: document.getElementById('logMedQty').value.trim()
+                },
+                deadFish: {
+                    count: parseInt(document.getElementById('logDeadCount').value) || 0,
+                    weight: parseFloat(document.getElementById('logDeadWeight').value) || 0
+                },
+                symptoms: document.getElementById('logSymptoms').value.trim(),
+                createdAt: Timestamp.now(),
+                createdBy: appCurrentUser?.username,
+                creatorName: appCurrentUser?.fullName
+            };
+
+            try {
+                await addDoc(logsColRef, payload);
+                window.showToast("Đã lưu nhật ký thành công!");
+                window.closeProdModal('modalLog');
+            } catch(err) {
+                window.showToast("Lỗi lưu nhật ký!", "error");
+            }
+        };
+
+        window.renderLogsTable = () => {
+            const tbody = document.getElementById('logsTableBody');
+            if(!tbody) return;
+
+            const filterPondId = document.getElementById('filterLogPondId')?.value;
+            const visibleFarmers = getVisibleFarmers();
+            const visibleFarmerIds = new Set(visibleFarmers.map(f => f.id));
+
+            // Filter logs based on visible ponds (Row Level Security) and dropdown filter
+            let displayLogs = prodLogs.filter(log => {
+                const pond = prodPonds.find(p => p.id === log.pondId);
+                if (!pond) return false;
+                
+                // RLS Check
+                const isVisible = canViewAllData() ? true : visibleFarmerIds.has(pond.farmerId);
+                if (!isVisible) return false;
+
+                // Dropdown Filter Check
+                if (filterPondId && log.pondId !== filterPondId) return false;
+
+                return true;
+            });
+
+            if(displayLogs.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="8" class="p-8 text-center text-slate-400 italic">Chưa có nhật ký nào cho ao này.</td></tr>`;
+                return;
+            }
+
+            const canDelete = appCurrentUser?.role === 'admin' || appCurrentUser?.permissions?.admin;
+
+            let stt = 1;
+            tbody.innerHTML = displayLogs.map(log => {
+                const pond = prodPonds.find(p => p.id === log.pondId);
+                const farmer = pond ? prodFarmers.find(f => f.id === pond.farmerId) : null;
+                const pondCode = pond ? pond.code : '---';
+                const farmerName = farmer ? farmer.name : '---';
+                
+                // Build a summary note for the table view
+                let notesArr = [];
+                if (log.totalFeed > 0) notesArr.push(`<span class="text-amber-600 font-bold">Thức ăn: ${log.totalFeed}kg</span>`);
+                if (log.waterExchange > 0) notesArr.push(`<span class="text-blue-600">Thay nước: ${log.waterExchange}m3</span>`);
+                if (log.meds && log.meds.name) notesArr.push(`<span class="text-purple-600">Thuốc: ${log.meds.name} (${log.meds.qty})</span>`);
+                if (log.deadFish && log.deadFish.count > 0) notesArr.push(`<span class="text-rose-600">Hao hụt: ${log.deadFish.count} con (${log.deadFish.weight}kg)</span>`);
+                if (log.symptoms) notesArr.push(`<span class="text-slate-500 italic">Ghi chú: ${log.symptoms}</span>`);
+                
+                const summaryContent = notesArr.length > 0 ? notesArr.join('<br>') : '<span class="text-slate-300">Không có dữ liệu</span>';
+
+                return `
+                <tr class="hover:bg-slate-50 transition-colors border-b border-slate-100 last:border-0">
+                    <td class="p-4 text-center font-medium text-slate-500">${stt++}</td>
+                    <td class="p-4 font-bold text-slate-700 whitespace-nowrap">${window.formatDateOnly(log.date)}</td>
+                    <td class="p-4">
+                        <div class="font-black text-blue-600 uppercase">${pondCode}</div>
+                        <div class="text-[10px] text-slate-500 font-bold truncate max-w-[150px]">${farmerName}</div>
+                    </td>
+                    <td class="p-4 text-xs leading-relaxed">${summaryContent}</td>
+                    <td class="p-4 text-center font-black text-slate-700">${log.avgWeight ? log.avgWeight + 'g' : '-'}</td>
+                    <td class="p-4 text-center text-[10px] font-bold text-slate-500 uppercase">${log.creatorName || log.createdBy || '---'}</td>
+                    <td class="p-4 text-right">
+                        ${canDelete ? `
+                        <button onclick="window.confirmDeleteProd('log', '${log.id}', 'nhật ký ngày ${window.formatDateOnly(log.date)}')" class="w-8 h-8 rounded-lg bg-red-50 text-red-500 hover:bg-red-500 hover:text-white flex items-center justify-center transition-all ml-auto" title="Xóa">
+                            <i class="fas fa-trash-alt text-xs"></i>
+                        </button>
+                        ` : `<span class="text-[10px] text-slate-300 italic">Chỉ xem</span>`}
+                    </td>
+                </tr>
+                `;
+            }).join('');
+            
+            // Fix header dynamically
+            const thead = document.querySelector('#logsTableBody').previousElementSibling;
+            if(thead) {
+                thead.innerHTML = `
+                    <tr>
+                        <th class="p-4 text-center w-12">STT</th>
+                        <th class="p-4 w-28">Ngày</th>
+                        <th class="p-4 w-40">Mã Ao / Hộ nuôi</th>
+                        <th class="p-4">Nội dung tóm tắt</th>
+                        <th class="p-4 text-center w-24">TLBQ (g)</th>
+                        <th class="p-4 w-32 text-center">Người ghi</th>
+                        <th class="p-4 text-right w-16">Xóa</th>
+                    </tr>
+                `;
+            }
+        };
+
+        window.printPondLog = () => {
+            const pondId = document.getElementById('filterLogPondId').value;
+            if (!pondId) {
+                return window.showToast("Vui lòng chọn một Ao nuôi cụ thể để xem Nhật ký!", "error");
+            }
+
+            const pond = prodPonds.find(p => p.id === pondId);
+            const farmer = prodFarmers.find(f => f.id === pond.farmerId);
+            
+            const pondCode = pond ? pond.code : '---';
+            const farmerName = farmer ? farmer.name : '---';
+            const pondArea = pond && pond.area ? window.formatNumber(pond.area) + ' m2' : '---';
+            const supervisor = farmer && farmer.supervisor ? farmer.supervisor : '---';
+
+            const pondLogs = prodLogs.filter(l => l.pondId === pondId);
+            pondLogs.sort((a,b) => new Date(a.date) - new Date(b.date));
+
+            // Pad with empty rows to make it a printable full sheet (minimum 20 rows)
+            const minRows = 20;
+            const tableData = [...pondLogs];
+            const emptyRowsNeeded = minRows - tableData.length;
+            for(let i=0; i < emptyRowsNeeded; i++) {
+                tableData.push({ isEmpty: true });
+            }
+
+            let tbodyHtml = '';
+            tableData.forEach(row => {
+                if(row.isEmpty) {
+                    tbodyHtml += `
+                        <tr>
+                            <td class="border border-black px-1 py-1.5 h-6"></td><td class="border border-black px-1 py-1.5"></td>
+                            <td class="border border-black px-1 py-1.5"></td><td class="border border-black px-1 py-1.5"></td>
+                            <td class="border border-black px-1 py-1.5"></td><td class="border border-black px-1 py-1.5"></td>
+                            <td class="border border-black px-1 py-1.5"></td><td class="border border-black px-1 py-1.5"></td>
+                            <td class="border border-black px-1 py-1.5"></td><td class="border border-black px-1 py-1.5"></td>
+                            <td class="border border-black px-1 py-1.5"></td><td class="border border-black px-1 py-1.5"></td>
+                            <td class="border border-black px-1 py-1.5"></td><td class="border border-black px-1 py-1.5"></td>
+                            <td class="border border-black px-1 py-1.5"></td><td class="border border-black px-1 py-1.5"></td>
+                            <td class="border border-black px-1 py-1.5"></td><td class="border border-black px-1 py-1.5"></td>
+                            <td class="border border-black px-1 py-1.5"></td><td class="border border-black px-1 py-1.5"></td>
+                            <td class="border border-black px-1 py-1.5"></td><td class="border border-black px-1 py-1.5"></td>
+                        </tr>
+                    `;
+                    return;
+                }
+
+                const dateDisplay = row.date ? window.formatDateOnly(row.date).substring(0, 5) : ''; 
+                
+                // Parse Feeds
+                let f15 = '', f2 = '', f3 = '', f5 = '', fOther = '';
+                if(row.feeds && row.feeds.length > 0) {
+                    row.feeds.forEach(f => {
+                        const t = f.type.toLowerCase();
+                        if (t.includes('1.5')) f15 = (parseFloat(f15||0) + f.qty).toString();
+                        else if (t.includes('2')) f2 = (parseFloat(f2||0) + f.qty).toString();
+                        else if (t.includes('3')) f3 = (parseFloat(f3||0) + f.qty).toString();
+                        else if (t.includes('5')) f5 = (parseFloat(f5||0) + f.qty).toString();
+                        else fOther += `${f.type}: ${f.qty}kg `;
+                    });
+                }
+
+                const env = row.environment || {};
+                const med = row.meds || {};
+                const dead = row.deadFish || {};
+
+                tbodyHtml += `
+                    <tr>
+                        <td class="border border-black px-1 py-1.5 font-medium whitespace-nowrap text-center">${dateDisplay}</td>
+                        <td class="border border-black px-1 py-1.5 text-[8px] truncate max-w-[60px]">${fOther}</td>
+                        <td class="border border-black px-1 py-1.5 text-center">${f15}</td>
+                        <td class="border border-black px-1 py-1.5 text-center">${f2}</td>
+                        <td class="border border-black px-1 py-1.5 text-center">${f3}</td>
+                        <td class="border border-black px-1 py-1.5 text-center">${f5}</td>
+                        <td class="border border-black px-1 py-1.5 text-center font-bold bg-slate-100">${row.totalFeed || ''}</td>
+                        
+                        <td class="border border-black px-1 py-1.5 text-center font-medium">${row.waterExchange || ''}</td>
+                        
+                        <td class="border border-black px-1 py-1.5 text-center">${env.t0 || ''}</td>
+                        <td class="border border-black px-1 py-1.5 text-center">${env.phS || ''}</td>
+                        <td class="border border-black px-1 py-1.5 text-center">${env.phC || ''}</td>
+                        <td class="border border-black px-1 py-1.5 text-center">${env.o2S || ''}</td>
+                        <td class="border border-black px-1 py-1.5 text-center">${env.o2C || ''}</td>
+                        <td class="border border-black px-1 py-1.5 text-center">${env.nh3 || ''}</td>
+                        <td class="border border-black px-1 py-1.5 text-center text-[8px] truncate max-w-[40px]">${env.h2sKh || ''}</td>
+                        
+                        <td class="border border-black px-1 py-1.5 text-[8px] truncate max-w-[70px]">${med.name || ''}</td>
+                        <td class="border border-black px-1 py-1.5 text-[8px] truncate max-w-[40px] text-center">${med.batch || ''}</td>
+                        <td class="border border-black px-1 py-1.5 text-center font-medium">${med.qty || ''}</td>
+                        
+                        <td class="border border-black px-1 py-1.5 text-center bg-slate-100 font-medium">${dead.count || ''}</td>
+                        <td class="border border-black px-1 py-1.5 text-center bg-slate-100 font-medium">${dead.weight || ''}</td>
+                        
+                        <td class="border border-black px-1 py-1.5 text-[8px] truncate max-w-[80px]">${row.symptoms || ''}</td>
+                        <td class="border border-black px-1 py-1.5 text-center font-bold">${row.avgWeight || ''}</td>
+                    </tr>
+                `;
+            });
+
+            const content = `
+                <style>
+                    @media print { 
+                        @page { size: A4 landscape !important; margin: 10mm; } 
+                        #reportModal > div { max-width: none !important; width: 100% !important; border-radius: 0; box-shadow: none; }
+                        .modal-content-wrapper { padding: 0 !important; overflow: hidden !important; }
+                        body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+                    }
+                </style>
+                <div class="p-4 w-[277mm] mx-auto bg-white text-black font-sans relative">
+                    
+                    <!-- HEADER -->
+                    <table class="w-full border-collapse border border-black mb-2 text-[10px]">
+                        <tr>
+                            <td class="w-[12%] p-2 text-center align-middle border-r border-black">
+                                <img src="https://i.postimg.cc/k47Mnt9M/idi-logo.png" alt="IDI Logo" class="h-10 mx-auto" onerror="this.style.display='none'">
+                            </td>
+                            <td class="w-[68%] p-2 text-center border-r border-black">
+                                <h2 class="font-bold text-sm uppercase">CÔNG TY CP ĐẦU TƯ & PHÁT TRIỂN ĐA QUỐC GIA</h2>
+                                <h3 class="font-bold text-xs uppercase mt-1">XÍ NGHIỆP PHÁT TRIỂN NGUYÊN LIỆU</h3>
+                                <p class="mt-1 text-[9px]">Địa chỉ: QL 80, cụm CN Vàm Cống - Lấp Vò - Đồng Tháp</p>
+                            </td>
+                            <td class="w-[20%] p-2 align-top text-[9px] leading-tight">
+                                <div>Mã hiệu: <span class="font-bold">XN/NK-BM3</span></div>
+                                <div>Lần ban hành: <span class="font-bold">01</span></div>
+                                <div>Lần sửa đổi: <span class="font-bold">00</span></div>
+                                <div>Ngày hiệu lực: <span class="font-bold">01/06/2023</span></div>
+                            </td>
+                        </tr>
+                    </table>
+
+                    <!-- TITLE -->
+                    <div class="text-center my-3 border-b border-black pb-2">
+                        <h1 class="text-lg font-black uppercase text-red-600 tracking-wider">NHẬT KÝ AO NUÔI</h1>
+                    </div>
+
+                    <!-- POND INFO -->
+                    <div class="text-[11px] font-bold leading-relaxed mb-4 grid grid-cols-2">
+                        <div>
+                            <div class="flex"><span class="w-32 uppercase">HỌ VÀ TÊN CHỦ AO</span><span>: ${farmerName}</span></div>
+                            <div class="flex"><span class="w-32 uppercase">MÃ SỐ AO</span><span>: ${pondCode}</span></div>
+                        </div>
+                        <div>
+                            <div class="flex"><span class="w-24 uppercase">DIỆN TÍCH AO</span><span>: ${pondArea}</span></div>
+                            <div class="flex"><span class="w-24 uppercase">NV GIÁM SÁT</span><span>: ${supervisor}</span></div>
+                        </div>
+                    </div>
+
+                    <!-- LOG TABLE -->
+                    <table class="w-full border-collapse border border-black text-[9px] text-center mb-6">
+                        <thead class="bg-slate-50 font-bold">
+                            <tr>
+                                <th class="border border-black p-1 w-10" rowspan="2">Ngày/<br>tháng</th>
+                                <th class="border border-black p-1" colspan="6">Thức ăn</th>
+                                <th class="border border-black p-1 w-10" rowspan="2">Thay<br>nước<br>(m3)</th>
+                                <th class="border border-black p-1" colspan="7">Môi Trường</th>
+                                <th class="border border-black p-1" colspan="3">Thuốc/Hóa chất</th>
+                                <th class="border border-black p-1" colspan="2">Cá Hao</th>
+                                <th class="border border-black p-1 w-16" rowspan="2">Triệu<br>chứng<br>bệnh</th>
+                                <th class="border border-black p-1 w-10" rowspan="2">TLBQ<br>(g)</th>
+                            </tr>
+                            <tr>
+                                <th class="border border-black p-1 w-16">NHÀ CUNG<br>CẤP / KHÁC</th>
+                                <th class="border border-black p-1 w-8">1,5mm</th>
+                                <th class="border border-black p-1 w-8">2mm</th>
+                                <th class="border border-black p-1 w-8">3mm</th>
+                                <th class="border border-black p-1 w-8">5mm</th>
+                                <th class="border border-black p-1 w-10 bg-slate-200">Tổng</th>
+                                
+                                <th class="border border-black p-1 w-8">T0</th>
+                                <th class="border border-black p-0 m-0">
+                                    <div class="border-b border-black pb-0.5 mb-0.5">pH</div>
+                                    <div class="flex"><div class="w-1/2 border-r border-black">Sáng</div><div class="w-1/2">Chiều</div></div>
+                                </th>
+                                <th class="border border-black p-0 m-0 hidden">pH Chiều</th>
+                                <th class="border border-black p-0 m-0">
+                                    <div class="border-b border-black pb-0.5 mb-0.5">O2</div>
+                                    <div class="flex"><div class="w-1/2 border-r border-black">Sáng</div><div class="w-1/2">Chiều</div></div>
+                                </th>
+                                <th class="border border-black p-0 m-0 hidden">O2 Chiều</th>
+                                <th class="border border-black p-1 w-8">NH3</th>
+                                <th class="border border-black p-1 w-10">H2S / Kh</th>
+                                
+                                <th class="border border-black p-1 w-20">Tên</th>
+                                <th class="border border-black p-1 w-10">Mã số<br>lô</th>
+                                <th class="border border-black p-1 w-10">Số lượng</th>
+                                
+                                <th class="border border-black p-1 w-10 bg-slate-200">Số con</th>
+                                <th class="border border-black p-1 w-10 bg-slate-200">Số Kg</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${tbodyHtml}
+                        </tbody>
+                    </table>
+
+                    <!-- SIGNATURES -->
+                    <div class="flex justify-between px-16 text-center page-break-avoid mt-8 pb-8">
+                        <div>
+                            <p class="font-bold uppercase text-[11px]">CHỦ AO / KHÁCH HÀNG</p>
+                            <p class="italic text-[10px] text-slate-600">(Ký & ghi rõ họ tên)</p>
+                        </div>
+                        <div>
+                            <p class="font-bold uppercase text-[11px]">NHÂN VIÊN GIÁM SÁT</p>
+                            <p class="italic text-[10px] text-slate-600">(Ký & ghi rõ họ tên)</p>
+                            <div class="mt-16 font-bold uppercase text-[11px]">${supervisor}</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('modalContent').innerHTML = content;
+            
+            const btnLoad = document.getElementById('btnLoadForm');
+            if(btnLoad) btnLoad.classList.add('hidden');
+
+            document.getElementById('reportModal').classList.remove('hidden');
         };
 
         window.openPrintListModal = () => {
@@ -3507,7 +4253,7 @@
                 if(hasPlans) return window.showToast("Không thể xóa Ao đang có Kế hoạch! Vui lòng xóa Kế hoạch trước.", "error");
             }
 
-            deleteAction = { type: `prod_${type}`, id }; 
+            deleteAction = { type: type === 'log' ? 'prod_log' : `prod_${type}`, id }; 
             document.getElementById('confirmCode').innerText = displayName; 
             document.getElementById('confirmModal').classList.remove('hidden');
         };
@@ -3522,8 +4268,12 @@
                     await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'app_users', deleteAction.id));
                     window.showToast("Đã xóa người dùng!");
                 } else if (deleteAction.type.startsWith('prod_')) {
-                    const colName = deleteAction.type === 'prod_farmer' ? 'prod_farmers' : 
-                                    deleteAction.type === 'prod_pond' ? 'prod_ponds' : 'prod_plans';
+                    let colName = 'prod_plans'; // default fallback
+                    if (deleteAction.type === 'prod_farmer') colName = 'prod_farmers';
+                    else if (deleteAction.type === 'prod_pond') colName = 'prod_ponds';
+                    else if (deleteAction.type === 'prod_log') colName = 'prod_logs';
+                    else if (deleteAction.type === 'prod_harvest') colName = 'prod_harvests';
+
                     await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', colName, deleteAction.id));
                     window.showToast("Đã xóa dữ liệu thành công!");
                 }
@@ -3535,6 +4285,11 @@
             const newConfirmBtn = confirmBtn.cloneNode(true);
             confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
             newConfirmBtn.addEventListener('click', originalConfirmDeleteHandler);
+        }
+
+        window.closeConfirm = () => {
+            document.getElementById('confirmModal').classList.add('hidden');
+            deleteAction = null;
         }
 
         // ==========================================
