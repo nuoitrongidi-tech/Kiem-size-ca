@@ -169,7 +169,7 @@
                     </div>
                     <div>
                         <h1 class="text-lg font-black uppercase tracking-tight leading-none">Production Management</h1>
-                        <p class="text-[10px] text-emerald-400 font-bold uppercase tracking-widest mt-1">Quản lý Sản lượng đầu tư IDI</p>
+                        <p class="text-[10px] text-emerald-400 font-bold uppercase tracking-widest mt-1">Quản lý Sản lượng đầu tư IDI PANDA 4.1</p>
                     </div>
                 </div>
                 <div class="flex gap-2 items-center">
@@ -187,6 +187,8 @@
                     <button onclick="window.switchProdSection('farmers')" id="tab-farmers" class="prod-tab inactive px-6 py-3 text-xs font-black uppercase whitespace-nowrap border-b-4 border-transparent transition-colors">Hộ nuôi (Khách hàng)</button>
                     <button onclick="window.switchProdSection('harvest')" id="tab-harvest" class="prod-tab inactive px-6 py-3 text-xs font-black uppercase whitespace-nowrap border-b-4 border-transparent transition-colors">Nhật ký thu hoạch</button>
                     <button onclick="window.switchProdSection('logs')" id="tab-logs" class="prod-tab inactive px-6 py-3 text-xs font-black uppercase whitespace-nowrap border-b-4 border-transparent transition-colors">Nhật ký ao nuôi</button>
+                    <button onclick="window.switchProdSection('inventory')" id="tab-inventory" class="prod-tab inactive px-6 py-3 text-xs font-black uppercase whitespace-nowrap border-b-4 border-transparent transition-colors">Kho thức ăn</button>
+                    <button onclick="window.switchProdSection('settlement')" id="tab-settlement" class="prod-tab inactive px-6 py-3 text-xs font-black uppercase whitespace-nowrap border-b-4 border-transparent transition-colors">Quyết toán ao</button>
                 </div>
             </div>
         </header>
@@ -374,11 +376,11 @@
                                     <th class="p-3 text-right">Giá HĐ<br>(đ/kg)</th>
                                     <th class="p-3 text-center">Mã Ao</th>
                                     <th class="p-3 text-right text-indigo-600">Size thu<br>(g/c)</th>
-                                    <th class="p-3 text-right text-emerald-600">Sản lượng<br>(Tấn)</th>
-                                    <th class="p-3 text-right text-amber-600">Thức ăn<br>(Tấn)</th>
+                                    <th class="p-3 text-right text-emerald-600">Sản lượng<br>(kg)</th>
+                                    <th class="p-3 text-right text-amber-600">Thức ăn<br>(kg)</th>
                                     <th class="p-3 text-center text-rose-600">FCR</th>
                                     <th class="p-3 text-center">T.Gian<br>Nuôi</th>
-                                    <th class="p-3 text-center text-blue-600">Tỷ lệ sống<br>(%)</th>
+                                    <th class="p-3 text-center text-blue-600">Tỷ lệ hao hụt<br>(%)</th>
                                     <th class="p-3">Ghi chú</th>
                                     <th class="p-3 text-right">Thao tác</th>
                                 </tr>
@@ -425,6 +427,93 @@
                     </div>
                 </div>
             </div>
+
+            <!-- SECTION: KHO THỨC ĂN -->
+            <div id="sec-inventory" class="hidden space-y-4">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                    <h2 class="text-xl font-black text-slate-800 uppercase tracking-tight">Bảng Tổng Hợp Nhập Kho Thức Ăn</h2>
+                    <div class="flex items-center gap-2 w-full sm:w-auto">
+                        <select id="filterInvFarmerId" onchange="window.renderInventoryTable()" class="w-full sm:w-64 p-2.5 bg-white border border-slate-200 rounded-xl text-xs font-bold focus:border-indigo-500 outline-none shadow-sm">
+                            <option value="">-- Tất cả Hộ nuôi (Kho) --</option>
+                        </select>
+                        <button id="btn-inventory-report" onclick="window.openInventoryReportModal()" class="bg-teal-600 hover:bg-teal-700 text-white px-5 py-2.5 rounded-xl font-bold transition-all shadow-md active:scale-95 text-xs flex items-center justify-center gap-2 whitespace-nowrap">
+                            <i class="fas fa-file-invoice"></i> XUẤT - TỒN
+                        </button>
+                        <button id="btn-add-inventory" onclick="window.openInventoryModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl font-bold transition-all shadow-md active:scale-95 text-xs flex items-center justify-center gap-2 whitespace-nowrap">
+                            <i class="fas fa-plus"></i> NHẬP LÔ MỚI
+                        </button>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-3xl shadow-sm border border-slate-200 p-5">
+                    <div class="mb-4 grid grid-cols-1 md:grid-cols-3 gap-4 text-[11px] font-bold text-slate-600 border-b border-slate-100 pb-4">
+                        <div class="flex items-center gap-2 uppercase"><span class="w-32">Họ và tên hộ nuôi:</span> <span id="invDisplayFarmer" class="text-indigo-700 border-b border-dotted border-slate-400 flex-1 h-4"></span></div>
+                        <div class="flex items-center gap-2 uppercase"><span class="w-24">Địa chỉ kho:</span> <span id="invDisplayAddress" class="text-indigo-700 border-b border-dotted border-slate-400 flex-1 h-4 truncate"></span></div>
+                        <div class="flex items-center gap-2 uppercase"><span class="w-32">Nhân viên giám sát:</span> <span id="invDisplaySupervisor" class="text-indigo-700 border-b border-dotted border-slate-400 flex-1 h-4"></span></div>
+                    </div>
+
+                    <div class="overflow-x-auto custom-scroll">
+                        <table class="w-full text-xs text-center border-collapse">
+                            <thead class="bg-slate-100 border border-slate-300 text-[9px] font-black text-slate-700 uppercase align-middle">
+                                <tr>
+                                    <th class="p-2 border border-slate-300 w-24">Ngày nhập</th>
+                                    <th class="p-2 border border-slate-300 w-24 text-indigo-700">Số phiếu</th>
+                                    <th class="p-2 border border-slate-300">Nhà cung cấp</th>
+                                    <th class="p-2 border border-slate-300 w-24 text-amber-700">Mã số lô</th>
+                                    <th class="p-2 border border-slate-300 w-24">Loại thức ăn<br>(Kg/Bao)</th>
+                                    <th class="p-2 border border-slate-300 w-20">Quy cách</th>
+                                    <th class="p-2 border border-slate-300 w-20">Số lượng<br>(Bao)</th>
+                                    <th class="p-2 border border-slate-300 w-24 text-emerald-700">Khối lượng<br>(Kg)</th>
+                                    <th class="p-2 border border-slate-300 w-24">Đơn giá<br>(VNĐ/Kg)</th>
+                                    <th class="p-2 border border-slate-300 w-28 text-rose-700">Thành tiền<br>(VNĐ)</th>
+                                    <th class="p-2 border border-slate-300 w-32">Ghi chú</th>
+                                    <th class="p-2 border border-slate-300 w-20 text-emerald-700">Đã quyết<br>toán</th>
+                                    <th class="p-2 border border-slate-300 w-32">Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody id="inventoryTableBody" class="bg-white"></tbody>
+                            <tfoot id="inventoryTableFoot" class="bg-slate-50 font-black"></tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION: QUYẾT TOÁN AO -->
+            <div id="sec-settlement" class="hidden space-y-4">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                    <h2 class="text-xl font-black text-slate-800 uppercase tracking-tight">Danh Sách Ao Nuôi Quyết Toán</h2>
+                    <div class="relative w-full sm:w-72">
+                        <i class="fas fa-search absolute left-3 top-2.5 text-slate-400 text-xs"></i>
+                        <input type="text" id="searchSettlementInput" oninput="window.renderSettlementTable()" placeholder="Tìm Hộ nuôi, Mã ao..." class="w-full pl-8 p-2 text-xs bg-white border border-slate-200 rounded-lg outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition-all font-medium text-slate-700 shadow-sm">
+                    </div>
+                </div>
+                
+                <div class="bg-white shadow-sm overflow-hidden">
+                    <div class="overflow-x-auto custom-scroll">
+                        <table class="w-full text-xs text-center border-collapse">
+                            <thead class="bg-slate-100 border border-slate-300 text-[9px] font-black text-slate-700 uppercase align-middle">
+                                <tr>
+                                    <th class="p-2 border border-slate-300 w-10">STT</th>
+                                    <th class="p-2 border border-slate-300">HỌ VÀ TÊN HỘ NUÔI</th>
+                                    <th class="p-2 border border-slate-300 w-20">MÃ SỐ AO</th>
+                                    <th class="p-2 border border-slate-300 w-20">SỐ HĐ</th>
+                                    <th class="p-2 border border-slate-300 w-20">NGÀY THU<br>HOẠCH</th>
+                                    <th class="p-2 border border-slate-300 w-24">SẢN LƯỢNG<br>CÁ THU HOẠCH<br>(KG)</th>
+                                    <th class="p-2 border border-slate-300 w-24">ĐƠN GIÁ<br>(VNĐ/KG)</th>
+                                    <th class="p-2 border border-slate-300 w-28 text-blue-700">THÀNH TIỀN<br>LƯỢNG CÁ THU<br>HOẠCH (VNĐ)</th>
+                                    <th class="p-2 border border-slate-300 w-24">LƯỢNG<br>THỨC ĂN<br>(KG)</th>
+                                    <th class="p-2 border border-slate-300 w-28 text-rose-700">THÀNH TIỀN<br>LƯỢNG THỨC ĂN<br>(VNĐ)</th>
+                                    <th class="p-2 border border-slate-300 w-24 text-amber-700">LÃI THỨC ĂN<br>(VNĐ)</th>
+                                    <th class="p-2 border border-slate-300 w-24 text-rose-700">PHÍ KIỂM KS<br>(VNĐ)</th>
+                                    <th class="p-2 border border-slate-300 w-28 text-indigo-700">KHÁCH HÀNG<br>THỰC NHẬN<br>(VNĐ)</th>
+                                    <th class="p-2 border border-slate-300 w-32">THAO TÁC</th>
+                                </tr>
+                            </thead>
+                            <tbody id="settlementTableBody" class="bg-white"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
         </main>
     </div>
 
@@ -461,40 +550,95 @@
     </div>
 
     <!-- Modal: Ao Nuôi -->
-    <div id="modalPond" class="fixed inset-0 z-[200] hidden flex items-center justify-center p-4">
-        <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" onclick="window.closeProdModal('modalPond')"></div>
-        <div class="bg-white rounded-3xl shadow-2xl relative z-10 w-full max-w-md p-6 animate-in border border-slate-200">
-            <h3 id="modalPondTitle" class="text-lg font-black uppercase text-slate-800 mb-5 border-b pb-2">Thêm Ao Nuôi</h3>
-            <form onsubmit="window.savePond(event)" class="space-y-4">
+    <div id="modalPond" class="fixed inset-0 z-[200] hidden flex items-center justify-center p-4 overflow-y-auto">
+        <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm fixed" onclick="window.closeProdModal('modalPond')"></div>
+        <div class="bg-white rounded-3xl shadow-2xl relative z-10 w-full max-w-4xl p-6 animate-in border border-slate-200 my-auto max-h-[95vh] flex flex-col">
+            <div class="flex justify-between items-center mb-5 border-b pb-2">
+                <h3 id="modalPondTitle" class="text-lg font-black uppercase text-blue-600 flex items-center gap-2"><i class="fas fa-water"></i> Thêm Ao Nuôi</h3>
+                <button onclick="window.closeProdModal('modalPond')" class="text-slate-400 hover:text-red-500"><i class="fas fa-times text-xl"></i></button>
+            </div>
+            <form onsubmit="window.savePond(event)" class="space-y-6 flex-1 overflow-y-auto custom-scroll pr-2">
                 <input type="hidden" id="pondDocId">
-                <div>
-                    <label class="block text-[10px] font-black text-slate-500 uppercase mb-1">Thuộc Hộ Nuôi</label>
-                    <select id="pondFarmerId" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold focus:border-blue-500 outline-none transition-all" required></select>
-                </div>
-                <div>
-                    <label class="block text-[10px] font-black text-slate-500 uppercase mb-1">Mã Ao</label>
-                    <input type="text" id="pondCodeInput" placeholder="VD: A01" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold focus:border-blue-500 outline-none transition-all uppercase" required>
-                </div>
-                <div class="grid grid-cols-2 gap-3">
-                    <div>
-                        <label class="block text-[10px] font-black text-slate-500 uppercase mb-1">Diện tích (m2)</label>
-                        <input type="number" id="pondArea" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold focus:border-blue-500 outline-none transition-all" required>
+                
+                <!-- 1. THÔNG TIN AO NUÔI -->
+                <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                    <h4 class="text-xs font-black text-slate-700 uppercase mb-3 border-b pb-1">1. Thông tin Ao nuôi</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        <div class="md:col-span-1">
+                            <label class="block text-[10px] font-black text-slate-500 uppercase mb-1">Thuộc Hộ Nuôi</label>
+                            <select id="pondFarmerId" class="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-sm font-bold focus:border-blue-500 outline-none transition-all" required></select>
+                        </div>
+                        <div class="md:col-span-1">
+                            <label class="block text-[10px] font-black text-slate-500 uppercase mb-1">Mã Ao</label>
+                            <input type="text" id="pondCodeInput" placeholder="VD: A01" class="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-sm font-bold focus:border-blue-500 outline-none transition-all uppercase" required>
+                        </div>
+                        <div class="md:col-span-1">
+                            <label class="block text-[10px] font-black text-slate-500 uppercase mb-1">Trạng thái</label>
+                            <select id="pondStatus" class="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-sm font-bold focus:border-blue-500 outline-none transition-all">
+                                <option value="active">Đang Nuôi / Sẵn Sàng</option>
+                                <option value="inactive">Đang Cải Tạo / Nghỉ</option>
+                            </select>
+                        </div>
+                        <div class="md:col-span-1">
+                            <label class="block text-[10px] font-black text-slate-500 uppercase mb-1">Diện tích (m2)</label>
+                            <input type="number" id="pondArea" class="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-sm font-bold focus:border-blue-500 outline-none transition-all" required>
+                        </div>
+                        <div class="md:col-span-1">
+                            <label class="block text-[10px] font-black text-slate-500 uppercase mb-1">Sức chứa (Tấn)</label>
+                            <input type="number" step="0.1" id="pondCapacity" class="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-sm font-bold focus:border-blue-500 outline-none transition-all" required>
+                        </div>
                     </div>
-                    <div>
-                        <label class="block text-[10px] font-black text-slate-500 uppercase mb-1">Sức chứa (Tấn)</label>
-                        <input type="number" step="0.1" id="pondCapacity" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold focus:border-blue-500 outline-none transition-all" required>
+                </div>
+
+                <!-- 2. THÔNG TIN THẢ GIỐNG -->
+                <div class="bg-teal-50 p-4 rounded-2xl border border-teal-100">
+                    <h4 class="text-xs font-black text-teal-800 uppercase mb-3 border-b border-teal-200 pb-1">2. Thông tin Thả giống</h4>
+                    <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
+                        <div class="md:col-span-1">
+                            <label class="block text-[10px] font-black text-teal-700 uppercase mb-1">Ngày thả giống</label>
+                            <input type="date" id="pondSeedDate" class="w-full p-2.5 bg-white border border-teal-200 rounded-xl text-sm font-bold focus:border-teal-500 outline-none transition-all">
+                        </div>
+                        <div class="md:col-span-1">
+                            <label class="block text-[10px] font-black text-teal-700 uppercase mb-1">Size (g/con)</label>
+                            <input type="number" step="0.1" id="pondSeedSize" class="w-full p-2.5 bg-white border border-teal-200 rounded-xl text-sm font-bold focus:border-teal-500 outline-none transition-all">
+                        </div>
+                        <div class="md:col-span-1">
+                            <label class="block text-[10px] font-black text-teal-700 uppercase mb-1">Số lượng (con)</label>
+                            <input type="number" id="pondSeedQty" class="w-full p-2.5 bg-white border border-teal-200 rounded-xl text-sm font-bold focus:border-teal-500 outline-none transition-all">
+                        </div>
+                        <div class="md:col-span-1">
+                            <label class="block text-[10px] font-black text-teal-700 uppercase mb-1">Khối lượng (kg)</label>
+                            <input type="number" step="0.1" id="pondSeedWeight" class="w-full p-2.5 bg-white border border-teal-200 rounded-xl text-sm font-bold focus:border-teal-500 outline-none transition-all">
+                        </div>
+                        <div class="md:col-span-1">
+                            <label class="block text-[10px] font-black text-teal-700 uppercase mb-1">Giá giống (đ/kg)</label>
+                            <input type="number" id="pondSeedPrice" class="w-full p-2.5 bg-white border border-teal-200 rounded-xl text-sm font-bold focus:border-teal-500 outline-none transition-all">
+                        </div>
                     </div>
                 </div>
-                <div>
-                    <label class="block text-[10px] font-black text-slate-500 uppercase mb-1">Trạng thái</label>
-                    <select id="pondStatus" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold focus:border-blue-500 outline-none transition-all">
-                        <option value="active">Đang Nuôi / Sẵn Sàng</option>
-                        <option value="inactive">Đang Cải Tạo / Nghỉ</option>
-                    </select>
+
+                <!-- 3. THÔNG TIN HỢP ĐỒNG -->
+                <div class="bg-amber-50 p-4 rounded-2xl border border-amber-100">
+                    <h4 class="text-xs font-black text-amber-800 uppercase mb-3 border-b border-amber-200 pb-1">3. Thông tin Hợp đồng Liên kết</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        <div>
+                            <label class="block text-[10px] font-black text-amber-700 uppercase mb-1">Số Hợp Đồng</label>
+                            <input type="text" id="pondContractNo" class="w-full p-2.5 bg-white border border-amber-200 rounded-xl text-sm font-bold focus:border-amber-500 outline-none transition-all uppercase">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-black text-amber-700 uppercase mb-1">Ngày Ký</label>
+                            <input type="date" id="pondContractDate" class="w-full p-2.5 bg-white border border-amber-200 rounded-xl text-sm font-bold focus:border-amber-500 outline-none transition-all">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-black text-amber-700 uppercase mb-1">Giá Ký (VNĐ/kg)</label>
+                            <input type="number" id="pondContractPrice" class="w-full p-2.5 bg-white border border-amber-200 rounded-xl text-sm font-bold focus:border-amber-500 outline-none transition-all">
+                        </div>
+                    </div>
                 </div>
+
                 <div class="flex gap-3 pt-2">
-                    <button type="button" onclick="window.closeProdModal('modalPond')" class="flex-1 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-bold transition-all text-sm">Hủy</button>
-                    <button type="submit" class="flex-1 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold transition-all shadow-md text-sm">Lưu Dữ Liệu</button>
+                    <button type="button" onclick="window.closeProdModal('modalPond')" class="w-1/3 py-3.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-bold transition-all text-sm">Hủy</button>
+                    <button type="submit" class="w-2/3 py-3.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-black transition-all shadow-md text-sm uppercase tracking-wider">Lưu Cập Nhật Ao</button>
                 </div>
             </form>
         </div>
@@ -633,7 +777,7 @@
                         <input type="date" id="harvestDate" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold focus:border-rose-500 outline-none transition-all" required>
                     </div>
                     <div>
-                        <label class="block text-[10px] font-black text-slate-500 uppercase mb-1">Sản lượng TT (Tấn)</label>
+                        <label class="block text-[10px] font-black text-slate-500 uppercase mb-1">Sản lượng TT (kg)</label>
                         <input type="number" step="0.1" id="harvestYield" class="w-full p-3 bg-white border border-slate-200 rounded-xl text-sm font-black text-emerald-600 focus:border-rose-500 outline-none transition-all" required>
                     </div>
                 </div>
@@ -643,7 +787,7 @@
                         <input type="number" step="0.1" id="harvestSize" class="w-full p-3 bg-white border border-slate-200 rounded-xl text-sm font-black text-indigo-600 focus:border-rose-500 outline-none transition-all" required>
                     </div>
                     <div>
-                        <label class="block text-[10px] font-black text-slate-500 uppercase mb-1">Thức ăn (Tấn)</label>
+                        <label class="block text-[10px] font-black text-slate-500 uppercase mb-1">Thức ăn (kg)</label>
                         <input type="number" step="0.1" id="harvestFeed" class="w-full p-3 bg-white border border-slate-200 rounded-xl text-sm font-black text-amber-600 focus:border-rose-500 outline-none transition-all" required>
                     </div>
                 </div>
@@ -685,7 +829,7 @@
                         <div>
                             <label class="block text-[10px] font-black text-slate-500 uppercase mb-1">TLBQ (Size cá hiện tại - tự động)</label>
                             <div class="relative">
-                                <input type="number" id="logAvgWeight" class="w-full p-2.5 bg-slate-200 border border-slate-300 rounded-xl text-sm font-black text-slate-600 outline-none cursor-not-allowed" readonly>
+                                <input type="number" step="0.1" id="logAvgWeight" class="w-full p-2.5 bg-slate-200 border border-slate-300 rounded-xl text-sm font-black text-slate-600 outline-none cursor-not-allowed" readonly>
                                 <span class="absolute right-3 top-2.5 text-xs font-bold text-slate-400">g/con</span>
                             </div>
                         </div>
@@ -699,7 +843,11 @@
                             <h4 class="text-xs font-black text-amber-800 uppercase">2. Thức ăn</h4>
                             <button type="button" onclick="window.addLogFeedRow()" class="text-[10px] bg-amber-600 text-white px-2 py-1 rounded shadow-sm hover:bg-amber-700 font-bold"><i class="fas fa-plus"></i> Thêm loại</button>
                         </div>
-                        <div id="logFeedsContainer" class="space-y-2">
+                        <div class="grid grid-cols-2 gap-2 mb-2">
+                            <input type="text" id="logFeedSupplier" placeholder="Nhà cung cấp" class="p-2 bg-white border border-amber-200 rounded-lg text-xs font-bold outline-none">
+                            <input type="text" id="logFeedBatch" placeholder="Mã lô thức ăn" class="p-2 bg-white border border-amber-200 rounded-lg text-xs font-bold outline-none">
+                        </div>
+                        <div id="logFeedsContainer" class="space-y-2 border-t border-amber-200 pt-2">
                             <!-- Dynamic feed rows -->
                         </div>
                     </div>
@@ -716,7 +864,7 @@
                 <!-- MÔI TRƯỜNG -->
                 <div class="bg-emerald-50 p-4 rounded-2xl border border-emerald-100">
                     <h4 class="text-xs font-black text-emerald-800 uppercase mb-3 border-b border-emerald-200 pb-1">4. Môi trường</h4>
-                    <div class="grid grid-cols-2 md:grid-cols-7 gap-3">
+                    <div class="grid grid-cols-2 md:grid-cols-8 gap-3">
                         <div class="md:col-span-1">
                             <label class="block text-[10px] font-black text-emerald-700 uppercase mb-1">T0</label>
                             <input type="text" id="logEnvT0" class="w-full p-2 bg-white border border-emerald-200 rounded-lg text-sm font-bold focus:border-emerald-500 outline-none">
@@ -742,8 +890,12 @@
                             <input type="text" id="logEnvNH3" class="w-full p-2 bg-white border border-emerald-200 rounded-lg text-sm font-bold focus:border-emerald-500 outline-none">
                         </div>
                         <div class="md:col-span-1">
-                            <label class="block text-[10px] font-black text-emerald-700 uppercase mb-1">H2S / Kh</label>
-                            <input type="text" id="logEnvH2SKh" placeholder="H2S - Kh" class="w-full p-2 bg-white border border-emerald-200 rounded-lg text-sm font-bold focus:border-emerald-500 outline-none">
+                            <label class="block text-[10px] font-black text-emerald-700 uppercase mb-1">H2S</label>
+                            <input type="text" id="logEnvH2S" class="w-full p-2 bg-white border border-emerald-200 rounded-lg text-sm font-bold focus:border-emerald-500 outline-none">
+                        </div>
+                        <div class="md:col-span-1">
+                            <label class="block text-[10px] font-black text-emerald-700 uppercase mb-1">Kh</label>
+                            <input type="text" id="logEnvKh" class="w-full p-2 bg-white border border-emerald-200 rounded-lg text-sm font-bold focus:border-emerald-500 outline-none">
                         </div>
                     </div>
                 </div>
@@ -784,6 +936,119 @@
                     <button type="submit" class="w-2/3 py-3.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-black transition-all shadow-md text-sm uppercase tracking-wider">Lưu Nhật Ký</button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <!-- Modal: Nhập Kho Thức Ăn -->
+    <div id="modalInventory" class="fixed inset-0 z-[200] hidden flex items-center justify-center p-4 overflow-y-auto">
+        <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm fixed" onclick="window.closeProdModal('modalInventory')"></div>
+        <div class="bg-white rounded-3xl shadow-2xl relative z-10 w-full max-w-3xl p-6 animate-in border border-slate-200 my-auto max-h-[95vh] flex flex-col">
+            <h3 id="modalInventoryTitle" class="text-lg font-black uppercase text-indigo-700 mb-5 border-b pb-2"><i class="fas fa-boxes mr-2"></i> Phiếu Nhập Kho Thức Ăn</h3>
+            <form onsubmit="window.saveInventory(event)" class="space-y-4 flex-1 overflow-y-auto custom-scroll pr-2">
+                <input type="hidden" id="inventoryId">
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 bg-slate-50 p-4 rounded-xl border border-slate-100">
+                    <div class="md:col-span-1">
+                        <label class="block text-[10px] font-black text-slate-500 uppercase mb-1">Chọn Hộ Nuôi (Kho chứa)</label>
+                        <select id="invFarmerId" class="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-sm font-bold focus:border-indigo-500 outline-none transition-all" required></select>
+                    </div>
+                    <div class="md:col-span-1">
+                        <label class="block text-[10px] font-black text-slate-500 uppercase mb-1">Ngày nhập</label>
+                        <input type="date" id="invDate" class="w-full p-2.5 bg-white border border-slate-200 rounded-xl text-sm font-bold focus:border-indigo-500 outline-none transition-all" required>
+                    </div>
+                    <div class="md:col-span-1">
+                        <label class="block text-[10px] font-black text-indigo-600 uppercase mb-1">Số Phiếu</label>
+                        <input type="text" id="invVoucher" class="w-full p-2.5 bg-indigo-50 border border-indigo-200 rounded-xl text-sm font-black text-indigo-700 focus:border-indigo-500 outline-none transition-all uppercase" required>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-[10px] font-black text-slate-500 uppercase mb-1">Nhà cung cấp</label>
+                        <input type="text" id="invSupplier" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold focus:border-indigo-500 outline-none transition-all" required>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-black text-amber-600 uppercase mb-1">Mã Lô</label>
+                        <input type="text" id="invBatch" class="w-full p-2.5 bg-amber-50 border border-amber-200 rounded-xl text-sm font-black text-amber-700 focus:border-amber-500 outline-none transition-all uppercase" required>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3 bg-blue-50 p-4 rounded-xl border border-blue-100">
+                    <div class="col-span-1">
+                        <label class="block text-[10px] font-black text-blue-700 uppercase mb-1">Quy cách (Cỡ viên)</label>
+                        <input type="text" id="invSpec" placeholder="VD: 2mm, 3mm" class="w-full p-2.5 bg-white border border-blue-200 rounded-xl text-sm font-bold focus:border-blue-500 outline-none transition-all" required>
+                    </div>
+                    <div class="col-span-1">
+                        <label class="block text-[10px] font-black text-blue-700 uppercase mb-1">Loại bao (Kg/Bao)</label>
+                        <input type="number" step="0.1" id="invBagWeight" oninput="window.calcInventoryTotals()" placeholder="VD: 25 hoặc 40" class="w-full p-2.5 bg-white border border-blue-200 rounded-xl text-sm font-bold focus:border-blue-500 outline-none transition-all" required>
+                    </div>
+                    <div class="col-span-1">
+                        <label class="block text-[10px] font-black text-blue-700 uppercase mb-1">Số lượng (Bao)</label>
+                        <input type="number" step="0.5" id="invBagCount" oninput="window.calcInventoryTotals()" placeholder="Số bao" class="w-full p-2.5 bg-white border border-blue-200 rounded-xl text-sm font-bold focus:border-blue-500 outline-none transition-all" required>
+                    </div>
+                    <div class="col-span-1">
+                        <label class="block text-[10px] font-black text-emerald-700 uppercase mb-1">Khối lượng (Kg)</label>
+                        <input type="number" step="0.1" id="invTotalWeight" class="w-full p-2.5 bg-emerald-100 border border-emerald-300 rounded-xl text-sm font-black text-emerald-800 outline-none cursor-not-allowed" readonly required>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-[10px] font-black text-slate-500 uppercase mb-1">Đơn giá (VNĐ/Kg)</label>
+                        <input type="number" id="invUnitPrice" oninput="window.calcInventoryTotals()" placeholder="VD: 14000" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold focus:border-indigo-500 outline-none transition-all" required>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-black text-rose-600 uppercase mb-1">Thành tiền (VNĐ)</label>
+                        <input type="text" id="invTotalAmount" class="w-full p-2.5 bg-rose-50 border border-rose-200 rounded-xl text-sm font-black text-rose-700 outline-none cursor-not-allowed" readonly>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-[10px] font-black text-slate-500 uppercase mb-1">Ghi chú</label>
+                    <textarea id="invNote" rows="2" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:border-indigo-500 outline-none transition-all resize-none"></textarea>
+                </div>
+
+                <div class="flex gap-3 pt-4 border-t border-slate-100">
+                    <button type="button" onclick="window.closeProdModal('modalInventory')" class="w-1/3 py-3.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-bold transition-all text-sm">Hủy</button>
+                    <button type="submit" class="w-2/3 py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-black transition-all shadow-md text-sm uppercase">Lưu Lô Hàng</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Báo Cáo Xuất Tồn -->
+    <div id="modalInventoryReport" class="fixed inset-0 z-[200] hidden flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" onclick="window.closeProdModal('modalInventoryReport')"></div>
+        <div class="bg-white rounded-3xl shadow-2xl relative z-10 w-full max-w-5xl p-6 animate-in border border-slate-200 flex flex-col max-h-[90vh]">
+            <div class="flex justify-between items-center mb-5 border-b pb-2">
+                <h3 class="text-lg font-black uppercase text-teal-700 flex items-center gap-2"><i class="fas fa-file-invoice"></i> Báo Cáo Xuất - Tồn Kho Thức Ăn</h3>
+                <button onclick="window.closeProdModal('modalInventoryReport')" class="text-slate-400 hover:text-red-500 transition-colors"><i class="fas fa-times text-xl"></i></button>
+            </div>
+            
+            <div class="flex-1 overflow-y-auto custom-scroll border border-slate-200 rounded-xl bg-slate-50 relative">
+                <table class="w-full text-sm text-left">
+                    <thead class="bg-slate-200 text-[10px] font-black text-slate-600 uppercase sticky top-0 z-10 shadow-sm">
+                        <tr>
+                            <th class="p-3 text-center w-12">STT</th>
+                            <th class="p-3">Hộ Nuôi (Kho)</th>
+                            <th class="p-3 text-center">Quy Cách (Cỡ)</th>
+                            <th class="p-3 text-right text-blue-600">Tổng Nhập (Kg)</th>
+                            <th class="p-3 text-right text-rose-600">Tổng Xuất (Kg)</th>
+                            <th class="p-3 text-right text-emerald-600">Tồn Cuối (Kg)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="inventoryReportTableBody" class="divide-y divide-slate-200 bg-white">
+                        <!-- JS Injected -->
+                    </tbody>
+                    <tfoot id="inventoryReportTableFoot" class="bg-slate-50 font-black text-xs">
+                    </tfoot>
+                </table>
+            </div>
+
+            <div class="pt-4 border-t border-slate-100 mt-4 flex gap-3">
+                <button type="button" onclick="window.closeProdModal('modalInventoryReport')" class="flex-1 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-bold transition-all text-sm uppercase tracking-wider">Đóng Cửa Sổ</button>
+                <button type="button" onclick="window.printInventoryReport()" class="flex-1 py-3 bg-teal-600 hover:bg-teal-700 text-white rounded-xl font-bold transition-all shadow-md text-sm uppercase tracking-wider"><i class="fas fa-print"></i> In Báo Cáo</button>
+            </div>
         </div>
     </div>
 
@@ -879,6 +1144,143 @@
 
             <div class="pt-4 border-t border-slate-100 mt-4">
                 <button type="button" onclick="window.closeProdModal('modalSizeSummary')" class="w-full py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-bold transition-all text-sm uppercase tracking-wider">Đóng Cửa Sổ</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Lập Phiếu Quyết Toán -->
+    <div id="modalSettlement" class="fixed inset-0 z-[200] hidden flex items-center justify-center p-4 overflow-y-auto">
+        <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm fixed" onclick="window.closeProdModal('modalSettlement')"></div>
+        <div class="bg-white rounded-3xl shadow-2xl relative z-10 w-full max-w-5xl p-6 animate-in border border-slate-200 my-auto max-h-[95vh] flex flex-col">
+            <h3 class="text-lg font-black uppercase text-indigo-700 mb-5 border-b pb-2 flex items-center gap-2">
+                <i class="fas fa-file-invoice-dollar"></i> Nhập Thông Tin Quyết Toán Khách Hàng
+            </h3>
+            
+            <form onsubmit="window.saveSettlement(event)" class="space-y-4 flex-1 overflow-y-auto custom-scroll pr-2">
+                <input type="hidden" id="setHarvestId">
+                
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 bg-slate-50 p-4 rounded-xl border border-slate-100 mb-4">
+                    <div>
+                        <label class="block text-[10px] font-black text-slate-500 uppercase mb-1">Chủ Ao / Khách hàng</label>
+                        <div id="setFarmerName" class="font-bold text-sm text-slate-800 uppercase">---</div>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-black text-slate-500 uppercase mb-1">Mã Ao</label>
+                        <div id="setPondCode" class="font-bold text-sm text-blue-600 uppercase">---</div>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-black text-slate-500 uppercase mb-1">Số Hợp Đồng</label>
+                        <div id="setContractNo" class="font-bold text-sm text-amber-600 uppercase">---</div>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-black text-slate-500 uppercase mb-1">Ngày Thu Hoạch</label>
+                        <div id="setHarvestDate" class="font-bold text-sm text-slate-800">---</div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- DOANH THU -->
+                    <div class="space-y-4 bg-blue-50/50 p-4 rounded-xl border border-blue-100">
+                        <h4 class="font-black text-blue-800 uppercase text-xs border-b border-blue-200 pb-2">1. Khoản Thu (Doanh thu bán cá)</h4>
+                        <div>
+                            <label class="block text-[10px] font-black text-slate-500 uppercase mb-1">Sản lượng cá thu hoạch (Kg)</label>
+                            <input type="number" step="0.1" id="setYield" oninput="window.calcSettlementTotals()" class="w-full p-2.5 bg-white border border-slate-200 rounded-lg text-sm font-black text-slate-800 outline-none readonly" readonly>
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-black text-slate-500 uppercase mb-1">Đơn giá bán thực tế (VNĐ/Kg)</label>
+                            <input type="number" id="setSellPrice" oninput="window.calcSettlementTotals()" class="w-full p-2.5 bg-white border border-blue-300 rounded-lg text-sm font-bold focus:border-blue-500 outline-none transition-all" required placeholder="Nhập giá bán chốt cuối cùng">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-black text-blue-700 uppercase mb-1">THÀNH TIỀN LƯỢNG CÁ THU HOẠCH (VNĐ)</label>
+                            <input type="text" id="setRevenue" class="w-full p-2.5 bg-blue-100 border border-blue-300 rounded-lg text-lg font-black text-blue-800 outline-none readonly" readonly>
+                        </div>
+                    </div>
+
+                    <!-- CHI PHÍ -->
+                    <div class="space-y-4 bg-rose-50/50 p-4 rounded-xl border border-rose-100">
+                        <h4 class="font-black text-rose-800 uppercase text-xs border-b border-rose-200 pb-2">2. Các Khoản Khấu Trừ</h4>
+                        <div class="grid grid-cols-1 gap-3">
+                            <div>
+                                <label class="block text-[10px] font-black text-slate-500 uppercase mb-1">Lượng thức ăn (Kg)</label>
+                                <div class="flex items-center gap-2">
+                                    <input type="number" id="setFeedQty" class="w-full p-2.5 bg-slate-200 border border-slate-300 rounded-lg text-sm font-bold outline-none cursor-not-allowed" readonly placeholder="0">
+                                    <button type="button" onclick="window.openSelectInventoryModal()" class="bg-indigo-100 text-indigo-700 hover:bg-indigo-600 hover:text-white border border-indigo-200 px-4 py-2.5 rounded-lg transition-all font-black text-[10px] whitespace-nowrap shadow-sm" title="Chọn phiếu nhập kho">
+                                        <i class="fas fa-list-check mr-1"></i> CHỌN PHIẾU
+                                    </button>
+                                </div>
+                                <input type="hidden" id="setLinkedInventoryIds" value="[]">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-black text-slate-500 uppercase mb-1">Thành tiền thức ăn (VNĐ)</label>
+                                <input type="number" id="setFeedCost" class="w-full p-2.5 bg-slate-200 border border-slate-300 rounded-lg text-sm font-bold outline-none transition-all cursor-not-allowed" readonly placeholder="Tự động tính từ phiếu xuất kho">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-black text-slate-500 uppercase mb-1">Lãi thức ăn (VNĐ)</label>
+                            <input type="number" id="setFeedInterest" oninput="window.calcSettlementTotals()" class="w-full p-2.5 bg-white border border-amber-300 rounded-lg text-sm font-bold focus:border-amber-500 outline-none transition-all" value="0" required placeholder="Tiền lãi thức ăn">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-black text-slate-500 uppercase mb-1">Phí kiểm KS (Kháng sinh) (VNĐ)</label>
+                            <input type="number" id="setKsFee" oninput="window.calcSettlementTotals()" class="w-full p-2.5 bg-white border border-slate-300 rounded-lg text-sm font-bold focus:border-rose-500 outline-none transition-all" value="0" required placeholder="Phí kiểm kháng sinh">
+                        </div>
+                        <div class="hidden">
+                            <input type="text" id="setTotalCost" class="hidden">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-indigo-50 p-5 rounded-xl border border-indigo-200 text-center">
+                    <label class="block text-xs font-black text-indigo-700 uppercase mb-2 tracking-widest">KHÁCH HÀNG THỰC NHẬN (VNĐ)</label>
+                    <input type="text" id="setProfit" class="w-full bg-transparent text-3xl font-black text-indigo-800 text-center outline-none readonly" readonly>
+                </div>
+
+                <div class="flex gap-3 pt-4 border-t border-slate-100">
+                    <button type="button" onclick="window.closeProdModal('modalSettlement')" class="flex-1 py-3.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-bold transition-all text-sm uppercase">Hủy Bỏ</button>
+                    <button type="submit" class="w-2/3 py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-black transition-all shadow-md text-sm uppercase tracking-wider">Lưu Thông Tin</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Chọn Phiếu Nhập Kho Quyết Toán -->
+    <div id="modalSelectInventory" class="fixed inset-0 z-[250] hidden flex items-center justify-center p-4 overflow-y-auto">
+        <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm fixed" onclick="document.getElementById('modalSelectInventory').classList.add('hidden')"></div>
+        <div class="bg-white rounded-3xl shadow-2xl relative z-10 w-full max-w-5xl p-6 animate-in border border-slate-200 my-auto max-h-[95vh] flex flex-col">
+            <h3 class="text-lg font-black uppercase text-indigo-700 mb-2 border-b pb-2 flex items-center gap-2">
+                <i class="fas fa-check-square"></i> Chọn Phiếu Nhập Kho Thức Ăn (<span id="selectInvFarmerName" class="text-slate-600">---</span>)
+            </h3>
+            <p class="text-[10px] text-slate-500 mb-4 italic">Tick chọn các hóa đơn phiếu nhập kho thức ăn mà khách hàng đã nhận để đưa vào quyết toán.</p>
+            
+            <div class="flex-1 overflow-y-auto custom-scroll border border-slate-200 rounded-xl bg-slate-50 relative">
+                <table class="w-full text-xs text-left border-collapse">
+                    <thead class="bg-slate-200 text-[10px] font-black text-slate-600 uppercase sticky top-0 z-10 shadow-sm">
+                        <tr>
+                            <th class="p-3 text-center w-12">Chọn</th>
+                            <th class="p-3">Ngày nhập</th>
+                            <th class="p-3 text-indigo-700">Số phiếu</th>
+                            <th class="p-3 text-amber-700">Mã Lô</th>
+                            <th class="p-3">Quy cách</th>
+                            <th class="p-3 text-right text-emerald-700">Khối lượng (Kg)</th>
+                            <th class="p-3 text-right">Đơn giá (VNĐ)</th>
+                            <th class="p-3 text-right text-rose-700">Thành tiền (VNĐ)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="selectInventoryTableBody" class="divide-y divide-slate-200 bg-white">
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="flex justify-between items-center bg-slate-100 p-4 mt-4 rounded-xl border border-slate-200 font-black uppercase text-xs">
+                <span>Tạm tính đã chọn:</span>
+                <div class="flex gap-6">
+                    <div>Tổng KL: <span id="tempSelectedWeight" class="text-emerald-600 ml-1 text-sm">0</span> Kg</div>
+                    <div>Tổng Tiền: <span id="tempSelectedAmount" class="text-rose-600 ml-1 text-sm">0</span> VNĐ</div>
+                </div>
+            </div>
+
+            <div class="flex gap-3 pt-4 mt-2">
+                <button type="button" onclick="document.getElementById('modalSelectInventory').classList.add('hidden')" class="flex-1 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-bold transition-all text-sm uppercase">Đóng / Hủy Chọn</button>
+                <button type="button" onclick="window.confirmInventorySelection()" class="w-2/3 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-black transition-all shadow-md text-sm uppercase tracking-wider">Xác Nhận & Đưa Vào Quyết Toán</button>
             </div>
         </div>
     </div>
@@ -1273,7 +1675,7 @@
                                 <thead class="bg-slate-100 border-b border-slate-200 text-[10px] font-black text-slate-500 uppercase tracking-wider text-center align-middle">
                                     <tr>
                                         <th class="p-3 w-56 border border-slate-200" rowspan="2">Tài khoản</th>
-                                        <th class="p-3 border border-slate-200 text-emerald-700 bg-emerald-50/50" colspan="3">Phân hệ Sản Lượng</th>
+                                        <th class="p-3 border border-slate-200 text-emerald-700 bg-emerald-50/50" colspan="4">Phân hệ Sản Lượng</th>
                                         <th class="p-3 border border-slate-200 text-blue-700 bg-blue-50/50" colspan="3">Phân hệ KCS (Chất lượng)</th>
                                         <th class="p-3 border border-slate-200 text-indigo-700 bg-indigo-50/50" colspan="2">Quyền Hệ Thống</th>
                                     </tr>
@@ -1281,6 +1683,7 @@
                                         <th class="p-2 border border-slate-200 bg-emerald-50/50" title="Truy cập Phân hệ Sản lượng">Truy cập</th>
                                         <th class="p-2 border border-slate-200 bg-emerald-50/50" title="Thêm/Sửa/Xóa Danh mục Hộ, Ao">QL Danh mục<br>(Hộ, Ao)</th>
                                         <th class="p-2 border border-slate-200 bg-emerald-50/50" title="Thả giống, Nhập HĐ, Kế hoạch">QL Kế hoạch<br>(HĐ, Thả giống)</th>
+                                        <th class="p-2 border border-slate-200 bg-emerald-50/50" title="Quyết toán thanh lý ao nuôi">Quyết toán<br>(Lãi/Lỗ)</th>
                                         
                                         <th class="p-2 border border-slate-200 bg-blue-50/50" title="Truy cập Phân hệ Chất lượng">Truy cập</th>
                                         <th class="p-2 border border-slate-200 bg-blue-50/50" title="Lập và Lưu Phiếu Kiểm Tra Mới">Lập phiếu</th>
@@ -1353,6 +1756,7 @@
         let prodPlans = [];
         let prodHarvests = [];
         let prodLogs = []; // Thêm mảng lưu log
+        let prodInventory = []; // Mảng lưu kho
         
         // Tracking IDs
         let editingReportId = null;
@@ -1362,6 +1766,7 @@
         let editingPondId = null;
         let editingPlanId = null;
         let editingHarvestId = null;
+        let editingInventoryId = null;
 
         let unsubscribeUsers = null;
         let unsubscribeReports = null;
@@ -1370,6 +1775,7 @@
         let unsubscribeProdPlans = null;
         let unsubscribeProdHarvests = null;
         let unsubscribeProdLogs = null; // Thêm unsubscribe cho log
+        let unsubscribeProdInventory = null;
 
         const usersColRef = collection(db, 'artifacts', appId, 'public', 'data', 'app_users');
         const reportsColRef = collection(db, 'artifacts', appId, 'public', 'data', 'reports');
@@ -1378,6 +1784,7 @@
         const plansColRef = collection(db, 'artifacts', appId, 'public', 'data', 'prod_plans');
         const harvestsColRef = collection(db, 'artifacts', appId, 'public', 'data', 'prod_harvests');
         const logsColRef = collection(db, 'artifacts', appId, 'public', 'data', 'prod_logs'); // Thêm collection log
+        const inventoryColRef = collection(db, 'artifacts', appId, 'public', 'data', 'prod_inventory');
 
         // ==========================================
         // UI HELPERS
@@ -1436,6 +1843,7 @@
             const p_prod_view = p.prod_view ?? p.prod ?? true;
             const p_prod_master = p.prod_master ?? p.prod ?? true;
             const p_prod_plan = p.prod_plan ?? p.prod ?? true;
+            const p_prod_settlement = p.prod_settlement === true || p.admin === true || appCurrentUser.role === 'admin';
             const p_qc_view = p.qc_view ?? p.qc ?? true;
             const p_qc_add = p.qc_add ?? p.qc ?? true;
             const p_admin = p.admin ?? (appCurrentUser.role === 'admin');
@@ -1462,6 +1870,8 @@
             toggleHidden('btn-contract', !p_prod_plan);
             toggleHidden('btn-add-harvest', !p_prod_plan);
             toggleHidden('btn-add-log', !p_prod_plan); // Check quyền ghi log
+            toggleHidden('btn-add-inventory', !p_prod_plan); 
+            toggleHidden('tab-settlement', !p_prod_settlement); // Ẩn tab Quyết toán nếu không có quyền
 
             toggleHidden('btnSaveCloud', !p_qc_add);
         };
@@ -1487,7 +1897,7 @@
                             appUsers = [{ 
                                 id: 'local_admin', username: 'admin', password: '123', fullName: 'Admin (Chế độ Offline)', 
                                 jobTitle: 'Hệ thống', role: 'admin', 
-                                permissions: { prod_view: true, prod_master: true, prod_plan: true, qc_view: true, qc_add: true, qc_delete: true, view_all: true, admin: true }, 
+                                permissions: { prod_view: true, prod_master: true, prod_plan: true, prod_settlement: true, qc_view: true, qc_add: true, qc_delete: true, view_all: true, admin: true }, 
                                 createdAt: Timestamp.now() 
                             }];
                             window.showToast("Mạng chậm hoặc bị chặn. Đã bật chế độ Offline", "error");
@@ -1500,7 +1910,7 @@
                 appUsers = [{ 
                     id: 'local_admin', username: 'admin', password: '123', fullName: 'Admin (Chế độ Offline)', 
                     jobTitle: 'Hệ thống', role: 'admin', 
-                    permissions: { prod_view: true, prod_master: true, prod_plan: true, qc_view: true, qc_add: true, qc_delete: true, view_all: true, admin: true }, 
+                    permissions: { prod_view: true, prod_master: true, prod_plan: true, prod_settlement: true, qc_view: true, qc_add: true, qc_delete: true, view_all: true, admin: true }, 
                     createdAt: Timestamp.now() 
                 }];
                 document.getElementById('loginLoading').innerHTML = `
@@ -1547,8 +1957,11 @@
                             if(window.renderPlansTable) window.renderPlansTable();
                             if(window.renderProdSummary) window.renderProdSummary();
                             if(window.renderLogsTable) window.renderLogsTable();
+                            if(window.renderInventoryTable) window.renderInventoryTable();
+                            if(window.renderSettlementTable) window.renderSettlementTable();
                             if(window.updatePondFarmerDropdown) window.updatePondFarmerDropdown();
                             if(window.updateStockingContractPondDropdowns) window.updateStockingContractPondDropdowns();
+                            if(window.updateInventoryFarmerDropdowns) window.updateInventoryFarmerDropdowns();
                         }
                     }
                     if(window.renderUserTable) window.renderUserTable();
@@ -1570,6 +1983,7 @@
                 if(window.renderFarmersTable) window.renderFarmersTable();
                 if(window.updatePondFarmerDropdown) window.updatePondFarmerDropdown();
                 if(window.renderProdSummary) window.renderProdSummary();
+                if(window.updateInventoryFarmerDropdowns) window.updateInventoryFarmerDropdowns();
             }, (err) => console.error(err));
 
             unsubscribeProdPonds = onSnapshot(query(pondsColRef), (snapshot) => {
@@ -1595,6 +2009,7 @@
                 snapshot.forEach(doc => prodHarvests.push({ id: doc.id, ...doc.data() }));
                 prodHarvests.sort((a,b) => new Date(b.date) - new Date(a.date));
                 if(window.renderHarvestsTable) window.renderHarvestsTable();
+                if(window.renderSettlementTable) window.renderSettlementTable();
             }, (err) => console.error(err));
 
             unsubscribeProdLogs = onSnapshot(query(logsColRef), (snapshot) => {
@@ -1603,6 +2018,13 @@
                 prodLogs.sort((a,b) => new Date(b.date) - new Date(a.date));
                 if(window.renderLogsTable) window.renderLogsTable();
             }, (err) => console.error(err));
+
+            unsubscribeProdInventory = onSnapshot(query(inventoryColRef), (snapshot) => {
+                prodInventory = [];
+                snapshot.forEach(doc => prodInventory.push({ id: doc.id, ...doc.data() }));
+                prodInventory.sort((a,b) => (b.updatedAt?.seconds || 0) - (a.updatedAt?.seconds || 0));
+                if(window.renderInventoryTable) window.renderInventoryTable();
+            }, (err) => console.error(err));
         };
 
         const seedDefaultAdmin = async () => {
@@ -1610,7 +2032,7 @@
                 await addDoc(usersColRef, { 
                     username: 'admin', password: '123', fullName: 'Quản trị viên', jobTitle: 'Quản lý Hệ thống', 
                     role: 'admin', 
-                    permissions: { prod_view: true, prod_master: true, prod_plan: true, qc_view: true, qc_add: true, qc_delete: true, view_all: true, admin: true }, 
+                    permissions: { prod_view: true, prod_master: true, prod_plan: true, prod_settlement: true, qc_view: true, qc_add: true, qc_delete: true, view_all: true, admin: true }, 
                     createdAt: Timestamp.now() 
                 });
             } catch (err) {}
@@ -1650,8 +2072,10 @@
                 if(window.renderProdSummary) window.renderProdSummary();
                 if(window.renderHarvestsTable) window.renderHarvestsTable();
                 if(window.renderLogsTable) window.renderLogsTable();
+                if(window.renderInventoryTable) window.renderInventoryTable();
                 if(window.updatePondFarmerDropdown) window.updatePondFarmerDropdown();
                 if(window.updateStockingContractPondDropdowns) window.updateStockingContractPondDropdowns();
+                if(window.updateInventoryFarmerDropdowns) window.updateInventoryFarmerDropdowns();
             } else {
                 window.showToast("Sai tên đăng nhập hoặc mật khẩu!", "error");
             }
@@ -1685,17 +2109,29 @@
         };
 
         window.switchProdSection = (section) => {
-            ['summary', 'plans', 'ponds', 'farmers', 'harvest', 'logs'].forEach(s => {
+            const p = appCurrentUser?.permissions || {};
+            const p_prod_settlement = p.prod_settlement === true || p.admin === true || appCurrentUser?.role === 'admin';
+
+            if (section === 'settlement' && !p_prod_settlement) {
+                window.showToast("Bạn không có quyền truy cập chức năng này!", "error");
+                return;
+            }
+
+            ['summary', 'plans', 'ponds', 'farmers', 'harvest', 'logs', 'inventory', 'settlement'].forEach(s => {
                 const tab = document.getElementById(`tab-${s}`);
                 const sec = document.getElementById(`sec-${s}`);
+                
+                let isHidden = false;
+                if (s === 'settlement' && !p_prod_settlement) isHidden = true;
+
                 if(s === section) {
-                    if(tab) tab.className = "prod-tab active px-6 py-3 text-xs font-black uppercase whitespace-nowrap border-b-4 transition-colors border-emerald-600";
+                    if(tab) tab.className = `prod-tab active px-6 py-3 text-xs font-black uppercase whitespace-nowrap border-b-4 transition-colors border-emerald-600 ${isHidden ? 'hidden' : ''}`;
                     if(sec) {
                         sec.classList.remove('hidden');
                         sec.classList.add('block', 'animate-in');
                     }
                 } else {
-                    if(tab) tab.className = "prod-tab inactive px-6 py-3 text-xs font-black uppercase whitespace-nowrap border-b-4 border-transparent transition-colors";
+                    if(tab) tab.className = `prod-tab inactive px-6 py-3 text-xs font-black uppercase whitespace-nowrap border-b-4 border-transparent transition-colors ${isHidden ? 'hidden' : ''}`;
                     if(sec) {
                         sec.classList.add('hidden');
                         sec.classList.remove('block', 'animate-in');
@@ -2717,12 +3153,23 @@
             if (id) {
                 const p = prodPonds.find(x => x.id === id);
                 if (p) {
-                    document.getElementById('pondFarmerId').value = p.farmerId;
-                    document.getElementById('pondCodeInput').value = p.code;
-                    document.getElementById('pondArea').value = p.area;
-                    document.getElementById('pondCapacity').value = p.capacity;
-                    document.getElementById('pondStatus').value = p.status;
-                    document.getElementById('modalPondTitle').innerText = "Cập nhật Ao Nuôi";
+                    document.getElementById('pondFarmerId').value = p.farmerId || '';
+                    document.getElementById('pondCodeInput').value = p.code || '';
+                    document.getElementById('pondArea').value = p.area || '';
+                    document.getElementById('pondCapacity').value = p.capacity || '';
+                    document.getElementById('pondStatus').value = p.status || 'active';
+                    
+                    document.getElementById('pondSeedDate').value = p.seedDate || '';
+                    document.getElementById('pondSeedSize').value = p.seedSize || '';
+                    document.getElementById('pondSeedQty').value = p.seedQty || '';
+                    document.getElementById('pondSeedWeight').value = p.seedWeight || '';
+                    document.getElementById('pondSeedPrice').value = p.seedPrice || '';
+                    
+                    document.getElementById('pondContractNo').value = p.contractNo || '';
+                    document.getElementById('pondContractDate').value = p.contractDate || '';
+                    document.getElementById('pondContractPrice').value = p.contractPrice || '';
+
+                    document.getElementById('modalPondTitle').innerHTML = '<i class="fas fa-edit"></i> Cập nhật Thông tin Ao Nuôi';
                 }
             } else {
                 document.getElementById('pondFarmerId').value = '';
@@ -2730,7 +3177,18 @@
                 document.getElementById('pondArea').value = '';
                 document.getElementById('pondCapacity').value = '';
                 document.getElementById('pondStatus').value = 'active';
-                document.getElementById('modalPondTitle').innerText = "Thêm Ao Nuôi";
+                
+                document.getElementById('pondSeedDate').value = '';
+                document.getElementById('pondSeedSize').value = '';
+                document.getElementById('pondSeedQty').value = '';
+                document.getElementById('pondSeedWeight').value = '';
+                document.getElementById('pondSeedPrice').value = '';
+                
+                document.getElementById('pondContractNo').value = '';
+                document.getElementById('pondContractDate').value = '';
+                document.getElementById('pondContractPrice').value = '';
+
+                document.getElementById('modalPondTitle').innerHTML = '<i class="fas fa-plus-circle"></i> Thêm Ao Nuôi Mới';
             }
             document.getElementById('modalPond').classList.remove('hidden');
         };
@@ -2746,14 +3204,40 @@
                 area: parseFloat(document.getElementById('pondArea').value) || 0,
                 capacity: parseFloat(document.getElementById('pondCapacity').value) || 0,
                 status: document.getElementById('pondStatus').value,
+                
+                seedDate: document.getElementById('pondSeedDate').value,
+                seedSize: parseFloat(document.getElementById('pondSeedSize').value) || 0,
+                seedQty: parseInt(document.getElementById('pondSeedQty').value) || 0,
+                seedWeight: parseFloat(document.getElementById('pondSeedWeight').value) || 0,
+                seedPrice: parseInt(document.getElementById('pondSeedPrice').value) || 0,
+                
+                contractNo: document.getElementById('pondContractNo').value.trim().toUpperCase(),
+                contractDate: document.getElementById('pondContractDate').value,
+                contractPrice: parseInt(document.getElementById('pondContractPrice').value) || 0,
+
                 updatedAt: Timestamp.now(),
                 updatedBy: appCurrentUser?.username
             };
 
+            // Đảm bảo đồng bộ thông tin số lượng và size hiện tại nếu không có
+            if (editingPondId) {
+                const existingPond = prodPonds.find(p => p.id === editingPondId);
+                if(existingPond) {
+                    payload.currentSize = existingPond.currentSize || payload.seedSize;
+                    payload.currentQty = existingPond.currentQty || payload.seedQty;
+                }
+            } else {
+                payload.currentSize = payload.seedSize;
+                payload.currentQty = payload.seedQty;
+            }
+
             try {
                 if (editingPondId) {
+                    const dup = prodPonds.find(p => p.code === payload.code && p.farmerId === payload.farmerId && p.id !== editingPondId);
+                    if(dup) return window.showToast("Mã ao này đã tồn tại trong Hộ nuôi được chọn!", "error");
+
                     await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'prod_ponds', editingPondId), payload);
-                    window.showToast("Đã cập nhật ao nuôi!");
+                    window.showToast("Đã cập nhật toàn bộ thông tin ao nuôi!");
                 } else {
                     if(prodPonds.some(p => p.code === payload.code && p.farmerId === payload.farmerId)) {
                         return window.showToast("Mã ao này đã tồn tại trong Hộ nuôi được chọn!", "error");
@@ -3485,18 +3969,34 @@
             const dateStr = document.getElementById('harvestDate').value;
             const note = document.getElementById('harvestNote').value.trim();
 
+            const pond = prodPonds.find(p => p.id === pondId);
+            const farmer = pond ? prodFarmers.find(f => f.id === pond.farmerId) : null;
+            const activePlan = prodPlans.find(pl => pl.pondId === pondId && (pl.status === 'planning' || pl.status === 'ongoing'));
+
             let seedQty = 0;
             let startDate = null;
+            let seedPriceVal = 0;
+            let contractPriceVal = 0;
+            let contractNoVal = '';
+            let farmerNameVal = farmer ? farmer.name : '';
+            let pondCodeVal = pond ? pond.code : '';
 
             if (editingHarvestId) {
                 const existingH = prodHarvests.find(x => x.id === editingHarvestId);
                 seedQty = existingH ? existingH.seedQtyAtHarvest : 0;
                 startDate = existingH ? existingH.startDate : null;
+                seedPriceVal = existingH ? (existingH.seedPrice || 0) : 0;
+                contractPriceVal = existingH ? (existingH.contractPrice || 0) : 0;
+                contractNoVal = existingH ? (existingH.contractNo || '') : '';
+                // Giữ nguyên tên nếu đã có, nếu không thì lấy mới
+                farmerNameVal = (existingH && existingH.farmerName) ? existingH.farmerName : farmerNameVal;
+                pondCodeVal = (existingH && existingH.pondCode) ? existingH.pondCode : pondCodeVal;
             } else {
-                const pond = prodPonds.find(p => p.id === pondId);
-                const activePlan = prodPlans.find(pl => pl.pondId === pondId && (pl.status === 'planning' || pl.status === 'ongoing'));
                 seedQty = pond ? (pond.seedQty || 0) : 0;
                 startDate = pond ? pond.seedDate : (activePlan ? activePlan.startDate : null);
+                seedPriceVal = pond ? (pond.seedPrice || 0) : 0;
+                contractPriceVal = pond ? (pond.contractPrice || 0) : 0;
+                contractNoVal = pond ? (pond.contractNo || '') : '';
             }
 
             let fcr = 0;
@@ -3504,7 +4004,8 @@
 
             let survivalRate = 0;
             if (sizeVal > 0 && seedQty > 0) {
-                const harvestedFishCount = (yieldVal * 1000 * 1000) / sizeVal;
+                // Sản lượng giờ là kg, quy ra gram là * 1000
+                const harvestedFishCount = (yieldVal * 1000) / sizeVal;
                 survivalRate = ((harvestedFishCount - seedQty) / seedQty) * 100;
             }
 
@@ -3522,6 +4023,8 @@
 
             const harvestPayload = {
                 pondId: pondId,
+                farmerName: farmerNameVal,
+                pondCode: pondCodeVal,
                 date: dateStr,
                 yield: yieldVal,
                 size: sizeVal,
@@ -3531,10 +4034,20 @@
                 rearingMonths: parseFloat(rearingMonths),
                 seedQtyAtHarvest: seedQty,
                 startDate: startDate,
+                seedPrice: seedPriceVal,
+                contractPrice: contractPriceVal,
+                contractNo: contractNoVal,
                 note: note,
+                isSettled: editingHarvestId ? undefined : false, // Maintain state if editing
                 updatedAt: Timestamp.now(),
                 updatedBy: appCurrentUser?.username
             };
+            
+            // Do not override isSettled if editing an already settled harvest
+            if(editingHarvestId) {
+                const existingH = prodHarvests.find(x => x.id === editingHarvestId);
+                if(existingH) harvestPayload.isSettled = existingH.isSettled || false;
+            }
 
             try {
                 if (editingHarvestId) {
@@ -3588,12 +4101,14 @@
             tbody.innerHTML = visibleHarvests.map(h => {
                 const pond = prodPonds.find(p => p.id === h.pondId);
                 const farmer = pond ? prodFarmers.find(f => f.id === pond.farmerId) : null;
-                const farmerName = farmer ? farmer.name : 'Ao đã bị xóa';
-                const pondCode = pond ? pond.code : '---';
+                
+                // Lấy trực tiếp từ phiếu thu hoạch nếu có
+                const farmerName = h.farmerName || (farmer ? farmer.name : 'Ao đã bị xóa');
+                const pondCode = h.pondCode || (pond ? pond.code : '---');
                 const address = farmer && farmer.address ? farmer.address : '---';
                 
-                const contractNo = pond && pond.contractNo ? pond.contractNo : '---';
-                const contractPrice = pond && pond.contractPrice ? window.formatNumber(pond.contractPrice) : '---';
+                const contractNo = h.contractNo || (pond && pond.contractNo ? pond.contractNo : '---');
+                const contractPrice = h.contractPrice ? window.formatNumber(h.contractPrice) : (pond && pond.contractPrice ? window.formatNumber(pond.contractPrice) : '---');
 
                 const rearingTime = (h.rearingMonths !== undefined && h.rearingMonths !== null && h.rearingMonths > 0) ? h.rearingMonths + ' tháng' : '---';
                 const fcrStr = h.fcr ? h.fcr.toFixed(2) : '---';
@@ -3655,7 +4170,7 @@
             const row = document.createElement('div');
             row.className = 'flex gap-2 log-feed-row';
             row.innerHTML = `
-                <input type="text" value="${feedType}" placeholder="Tên / Loại (VD: 2mm, 3mm)" class="log-feed-type w-1/2 p-2 bg-white border border-amber-200 rounded-lg text-xs font-bold outline-none">
+                <input type="text" value="${feedType}" placeholder="Cỡ viên (VD: 1.5mm, 2mm)" class="log-feed-type w-1/2 p-2 bg-white border border-amber-200 rounded-lg text-xs font-bold outline-none">
                 <input type="number" step="0.1" value="${feedQty}" placeholder="Kg" class="log-feed-qty w-1/3 p-2 bg-white border border-amber-200 rounded-lg text-xs font-bold outline-none">
                 <button type="button" onclick="this.parentElement.remove()" class="w-1/6 bg-red-50 text-red-500 rounded-lg hover:bg-red-500 hover:text-white transition-colors"><i class="fas fa-trash"></i></button>
             `;
@@ -3677,6 +4192,8 @@
             document.getElementById('logDate').value = new Date().toISOString().split('T')[0];
             document.getElementById('logAvgWeight').value = '';
             
+            document.getElementById('logFeedSupplier').value = '';
+            document.getElementById('logFeedBatch').value = '';
             document.getElementById('logFeedsContainer').innerHTML = '';
             window.addLogFeedRow(); // Add one empty row by default
 
@@ -3687,7 +4204,8 @@
             document.getElementById('logEnvO2S').value = '';
             document.getElementById('logEnvO2C').value = '';
             document.getElementById('logEnvNH3').value = '';
-            document.getElementById('logEnvH2SKh').value = '';
+            document.getElementById('logEnvH2S').value = '';
+            document.getElementById('logEnvKh').value = '';
 
             document.getElementById('logMedName').value = '';
             document.getElementById('logMedBatch').value = '';
@@ -3723,10 +4241,20 @@
                 }
             });
 
+            // Determine general category for table view summary
+            let primaryCategory = 'Khác';
+            if (totalFeed > 0) primaryCategory = 'Thức ăn';
+            else if (document.getElementById('logWater').value) primaryCategory = 'Cấp/Thay nước';
+            else if (document.getElementById('logMedName').value) primaryCategory = 'Thuốc/Hóa chất';
+            else if (document.getElementById('logDeadCount').value) primaryCategory = 'Vớt cá chết';
+
             const payload = {
                 pondId,
                 date: dateStr,
+                category: primaryCategory,
                 avgWeight: parseFloat(document.getElementById('logAvgWeight').value) || 0,
+                feedSupplier: document.getElementById('logFeedSupplier').value.trim(),
+                feedBatch: document.getElementById('logFeedBatch').value.trim(),
                 feeds: feeds,
                 totalFeed: totalFeed,
                 waterExchange: parseFloat(document.getElementById('logWater').value) || 0,
@@ -3737,7 +4265,8 @@
                     o2S: document.getElementById('logEnvO2S').value.trim(),
                     o2C: document.getElementById('logEnvO2C').value.trim(),
                     nh3: document.getElementById('logEnvNH3').value.trim(),
-                    h2sKh: document.getElementById('logEnvH2SKh').value.trim()
+                    h2s: document.getElementById('logEnvH2S').value.trim(),
+                    kh: document.getElementById('logEnvKh').value.trim()
                 },
                 meds: {
                     name: document.getElementById('logMedName').value.trim(),
@@ -3866,9 +4395,54 @@
             const pondLogs = prodLogs.filter(l => l.pondId === pondId);
             pondLogs.sort((a,b) => new Date(a.date) - new Date(b.date));
 
+            // Merge logic: Put activities on the same row if they share the same date
+            const logsByDate = {};
+            pondLogs.forEach(log => {
+                if(!logsByDate[log.date]) logsByDate[log.date] = { 
+                    date: log.date, 
+                    feedSupplier: '', feedBatch: '', feedTotal: 0, f15: 0, f2: 0, f3: 0, f5: 0,
+                    water: '', medsName: '', medsBatch: '', medsQty: '', deadFishCount: '', deadFishKg: '', symp: '', env: {}, avgWeight: '' 
+                };
+                
+                // Aggregate Feeds
+                if (log.feedSupplier) logsByDate[log.date].feedSupplier = log.feedSupplier;
+                if (log.feedBatch) logsByDate[log.date].feedBatch = log.feedBatch;
+                if (log.totalFeed) logsByDate[log.date].feedTotal += log.totalFeed;
+                if (log.feeds) {
+                    log.feeds.forEach(f => {
+                        const t = f.type.toLowerCase();
+                        if (t.includes('1.5') || t.includes('1,5')) logsByDate[log.date].f15 += f.qty;
+                        else if (t.includes('2')) logsByDate[log.date].f2 += f.qty;
+                        else if (t.includes('3')) logsByDate[log.date].f3 += f.qty;
+                        else if (t.includes('5')) logsByDate[log.date].f5 += f.qty;
+                    });
+                }
+
+                if (log.waterExchange) logsByDate[log.date].water = log.waterExchange;
+                
+                if (log.meds && log.meds.name) {
+                    logsByDate[log.date].medsName = log.meds.name;
+                    logsByDate[log.date].medsBatch = log.meds.batch || '';
+                    logsByDate[log.date].medsQty = log.meds.qty || '';
+                }
+
+                if (log.deadFish && log.deadFish.count) {
+                    logsByDate[log.date].deadFishCount = log.deadFish.count;
+                    logsByDate[log.date].deadFishKg = log.deadFish.weight || '';
+                }
+
+                if (log.symptoms) logsByDate[log.date].symp = log.symptoms;
+                if (log.avgWeight) logsByDate[log.date].avgWeight = log.avgWeight;
+
+                if (log.environment) {
+                    logsByDate[log.date].env = { ...logsByDate[log.date].env, ...log.environment };
+                }
+            });
+
+            const tableData = Object.values(logsByDate);
+            
             // Pad with empty rows to make it a printable full sheet (minimum 20 rows)
             const minRows = 20;
-            const tableData = [...pondLogs];
             const emptyRowsNeeded = minRows - tableData.length;
             for(let i=0; i < emptyRowsNeeded; i++) {
                 tableData.push({ isEmpty: true });
@@ -3890,41 +4464,27 @@
                             <td class="border border-black px-1 py-1.5"></td><td class="border border-black px-1 py-1.5"></td>
                             <td class="border border-black px-1 py-1.5"></td><td class="border border-black px-1 py-1.5"></td>
                             <td class="border border-black px-1 py-1.5"></td><td class="border border-black px-1 py-1.5"></td>
+                            <td class="border border-black px-1 py-1.5"></td><td class="border border-black px-1 py-1.5"></td>
                         </tr>
                     `;
                     return;
                 }
 
                 const dateDisplay = row.date ? window.formatDateOnly(row.date).substring(0, 5) : ''; 
-                
-                // Parse Feeds
-                let f15 = '', f2 = '', f3 = '', f5 = '', fOther = '';
-                if(row.feeds && row.feeds.length > 0) {
-                    row.feeds.forEach(f => {
-                        const t = f.type.toLowerCase();
-                        if (t.includes('1.5')) f15 = (parseFloat(f15||0) + f.qty).toString();
-                        else if (t.includes('2')) f2 = (parseFloat(f2||0) + f.qty).toString();
-                        else if (t.includes('3')) f3 = (parseFloat(f3||0) + f.qty).toString();
-                        else if (t.includes('5')) f5 = (parseFloat(f5||0) + f.qty).toString();
-                        else fOther += `${f.type}: ${f.qty}kg `;
-                    });
-                }
-
-                const env = row.environment || {};
-                const med = row.meds || {};
-                const dead = row.deadFish || {};
+                const env = row.env || {};
 
                 tbodyHtml += `
                     <tr>
                         <td class="border border-black px-1 py-1.5 font-medium whitespace-nowrap text-center">${dateDisplay}</td>
-                        <td class="border border-black px-1 py-1.5 text-[8px] truncate max-w-[60px]">${fOther}</td>
-                        <td class="border border-black px-1 py-1.5 text-center">${f15}</td>
-                        <td class="border border-black px-1 py-1.5 text-center">${f2}</td>
-                        <td class="border border-black px-1 py-1.5 text-center">${f3}</td>
-                        <td class="border border-black px-1 py-1.5 text-center">${f5}</td>
-                        <td class="border border-black px-1 py-1.5 text-center font-bold bg-slate-100">${row.totalFeed || ''}</td>
+                        <td class="border border-black px-1 py-1.5 text-[8px] truncate max-w-[80px] text-center">${row.feedSupplier || ''}</td>
+                        <td class="border border-black px-1 py-1.5 text-[8px] truncate max-w-[60px] text-center">${row.feedBatch || ''}</td>
+                        <td class="border border-black px-1 py-1.5 text-center">${row.f15 ? window.formatNumber(row.f15) : ''}</td>
+                        <td class="border border-black px-1 py-1.5 text-center">${row.f2 ? window.formatNumber(row.f2) : ''}</td>
+                        <td class="border border-black px-1 py-1.5 text-center">${row.f3 ? window.formatNumber(row.f3) : ''}</td>
+                        <td class="border border-black px-1 py-1.5 text-center">${row.f5 ? window.formatNumber(row.f5) : ''}</td>
+                        <td class="border border-black px-1 py-1.5 text-center font-bold bg-slate-100">${row.feedTotal ? window.formatNumber(row.feedTotal) : ''}</td>
                         
-                        <td class="border border-black px-1 py-1.5 text-center font-medium">${row.waterExchange || ''}</td>
+                        <td class="border border-black px-1 py-1.5 text-center font-medium">${row.water || ''}</td>
                         
                         <td class="border border-black px-1 py-1.5 text-center">${env.t0 || ''}</td>
                         <td class="border border-black px-1 py-1.5 text-center">${env.phS || ''}</td>
@@ -3932,16 +4492,17 @@
                         <td class="border border-black px-1 py-1.5 text-center">${env.o2S || ''}</td>
                         <td class="border border-black px-1 py-1.5 text-center">${env.o2C || ''}</td>
                         <td class="border border-black px-1 py-1.5 text-center">${env.nh3 || ''}</td>
-                        <td class="border border-black px-1 py-1.5 text-center text-[8px] truncate max-w-[40px]">${env.h2sKh || ''}</td>
+                        <td class="border border-black px-1 py-1.5 text-center">${env.h2s || ''}</td>
+                        <td class="border border-black px-1 py-1.5 text-center">${env.kh || ''}</td>
                         
-                        <td class="border border-black px-1 py-1.5 text-[8px] truncate max-w-[70px]">${med.name || ''}</td>
-                        <td class="border border-black px-1 py-1.5 text-[8px] truncate max-w-[40px] text-center">${med.batch || ''}</td>
-                        <td class="border border-black px-1 py-1.5 text-center font-medium">${med.qty || ''}</td>
+                        <td class="border border-black px-1 py-1.5 text-[8px] truncate max-w-[70px] text-center">${row.medsName || ''}</td>
+                        <td class="border border-black px-1 py-1.5 text-[8px] truncate max-w-[40px] text-center">${row.medsBatch || ''}</td>
+                        <td class="border border-black px-1 py-1.5 text-center font-medium">${row.medsQty || ''}</td>
                         
-                        <td class="border border-black px-1 py-1.5 text-center bg-slate-100 font-medium">${dead.count || ''}</td>
-                        <td class="border border-black px-1 py-1.5 text-center bg-slate-100 font-medium">${dead.weight || ''}</td>
+                        <td class="border border-black px-1 py-1.5 text-center bg-slate-100 font-medium">${row.deadFishCount || ''}</td>
+                        <td class="border border-black px-1 py-1.5 text-center bg-slate-100 font-medium">${row.deadFishKg || ''}</td>
                         
-                        <td class="border border-black px-1 py-1.5 text-[8px] truncate max-w-[80px]">${row.symptoms || ''}</td>
+                        <td class="border border-black px-1 py-1.5 text-[8px] truncate max-w-[80px]">${row.symp || ''}</td>
                         <td class="border border-black px-1 py-1.5 text-center font-bold">${row.avgWeight || ''}</td>
                     </tr>
                 `;
@@ -3987,7 +4548,7 @@
                     <div class="text-[11px] font-bold leading-relaxed mb-4 grid grid-cols-2">
                         <div>
                             <div class="flex"><span class="w-32 uppercase">HỌ VÀ TÊN CHỦ AO</span><span>: ${farmerName}</span></div>
-                            <div class="flex"><span class="w-32 uppercase">MÃ SỐ AO</span><span>: ${pondCode}</span></div>
+                            <div class="flex"><span class="w-32 uppercase">Mã SỐ AO</span><span>: ${pondCode}</span></div>
                         </div>
                         <div>
                             <div class="flex"><span class="w-24 uppercase">DIỆN TÍCH AO</span><span>: ${pondArea}</span></div>
@@ -3999,43 +4560,43 @@
                     <table class="w-full border-collapse border border-black text-[9px] text-center mb-6">
                         <thead class="bg-slate-50 font-bold">
                             <tr>
-                                <th class="border border-black p-1 w-10" rowspan="2">Ngày/<br>tháng</th>
-                                <th class="border border-black p-1" colspan="6">Thức ăn</th>
-                                <th class="border border-black p-1 w-10" rowspan="2">Thay<br>nước<br>(m3)</th>
-                                <th class="border border-black p-1" colspan="7">Môi Trường</th>
+                                <th class="border border-black p-1 w-10" rowspan="3">Ngày/<br>tháng</th>
+                                <th class="border border-black p-1" colspan="7">Thức ăn</th>
+                                <th class="border border-black p-1 w-10" rowspan="3">Thay<br>nước<br>(m3)</th>
+                                <th class="border border-black p-1" colspan="8">Môi Trường</th>
                                 <th class="border border-black p-1" colspan="3">Thuốc/Hóa chất</th>
                                 <th class="border border-black p-1" colspan="2">Cá Hao</th>
-                                <th class="border border-black p-1 w-16" rowspan="2">Triệu<br>chứng<br>bệnh</th>
-                                <th class="border border-black p-1 w-10" rowspan="2">TLBQ<br>(g)</th>
+                                <th class="border border-black p-1 w-16" rowspan="3">Triệu<br>chứng<br>bệnh</th>
+                                <th class="border border-black p-1 w-10" rowspan="3">TLBQ<br>(g)</th>
                             </tr>
                             <tr>
-                                <th class="border border-black p-1 w-16">NHÀ CUNG<br>CẤP / KHÁC</th>
-                                <th class="border border-black p-1 w-8">1,5mm</th>
-                                <th class="border border-black p-1 w-8">2mm</th>
-                                <th class="border border-black p-1 w-8">3mm</th>
-                                <th class="border border-black p-1 w-8">5mm</th>
-                                <th class="border border-black p-1 w-10 bg-slate-200">Tổng</th>
+                                <th class="border border-black p-1" rowspan="2">NHÀ CUNG CẤP</th>
+                                <th class="border border-black p-1 w-12" rowspan="2">Mã lô</th>
+                                <th class="border border-black p-1 w-8" rowspan="2">1,5mm</th>
+                                <th class="border border-black p-1 w-8" rowspan="2">2mm</th>
+                                <th class="border border-black p-1 w-8" rowspan="2">3mm</th>
+                                <th class="border border-black p-1 w-8" rowspan="2">5mm</th>
+                                <th class="border border-black p-1 w-10 bg-slate-200" rowspan="2">Tổng</th>
                                 
-                                <th class="border border-black p-1 w-8">T0</th>
-                                <th class="border border-black p-0 m-0">
-                                    <div class="border-b border-black pb-0.5 mb-0.5">pH</div>
-                                    <div class="flex"><div class="w-1/2 border-r border-black">Sáng</div><div class="w-1/2">Chiều</div></div>
-                                </th>
-                                <th class="border border-black p-0 m-0 hidden">pH Chiều</th>
-                                <th class="border border-black p-0 m-0">
-                                    <div class="border-b border-black pb-0.5 mb-0.5">O2</div>
-                                    <div class="flex"><div class="w-1/2 border-r border-black">Sáng</div><div class="w-1/2">Chiều</div></div>
-                                </th>
-                                <th class="border border-black p-0 m-0 hidden">O2 Chiều</th>
-                                <th class="border border-black p-1 w-8">NH3</th>
-                                <th class="border border-black p-1 w-10">H2S / Kh</th>
+                                <th class="border border-black p-1 w-8" rowspan="2">T0</th>
+                                <th class="border border-black p-1" colspan="2">pH</th>
+                                <th class="border border-black p-1" colspan="2">O2</th>
+                                <th class="border border-black p-1 w-8" rowspan="2">NH3</th>
+                                <th class="border border-black p-1 w-8" rowspan="2">H2S</th>
+                                <th class="border border-black p-1 w-8" rowspan="2">Kh</th>
                                 
-                                <th class="border border-black p-1 w-20">Tên</th>
-                                <th class="border border-black p-1 w-10">Mã số<br>lô</th>
-                                <th class="border border-black p-1 w-10">Số lượng</th>
+                                <th class="border border-black p-1 w-16" rowspan="2">Tên</th>
+                                <th class="border border-black p-1 w-10" rowspan="2">Mã số<br>lô</th>
+                                <th class="border border-black p-1 w-10" rowspan="2">Số lượng</th>
                                 
-                                <th class="border border-black p-1 w-10 bg-slate-200">Số con</th>
-                                <th class="border border-black p-1 w-10 bg-slate-200">Số Kg</th>
+                                <th class="border border-black p-1 w-10 bg-slate-200" rowspan="2">Số con</th>
+                                <th class="border border-black p-1 w-10 bg-slate-200" rowspan="2">Số Kg</th>
+                            </tr>
+                            <tr>
+                                <th class="border border-black p-1 w-8">Sáng</th>
+                                <th class="border border-black p-1 w-8">Chiều</th>
+                                <th class="border border-black p-1 w-8">Sáng</th>
+                                <th class="border border-black p-1 w-8">Chiều</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -4066,73 +4627,1099 @@
             document.getElementById('reportModal').classList.remove('hidden');
         };
 
-        window.openPrintListModal = () => {
-            const today = new Date();
-            const firstDay = new Date(today.getFullYear(), today.getMonth(), 1); 
+        // ==========================================
+        // KHO THỨC ĂN (INVENTORY)
+        // ==========================================
+        window.openInventoryReportModal = () => {
+            window.renderInventoryReportTable();
+            document.getElementById('modalInventoryReport').classList.remove('hidden');
+        };
+
+        window.renderInventoryReportTable = () => {
+            const tbody = document.getElementById('inventoryReportTableBody');
+            const tfoot = document.getElementById('inventoryReportTableFoot');
+            if(!tbody || !tfoot) return;
             
-            const formatDateForInput = (d) => {
-                let month = '' + (d.getMonth() + 1), day = '' + d.getDate(), year = d.getFullYear();
-                if (month.length < 2) month = '0' + month;
-                if (day.length < 2) day = '0' + day;
-                return [year, month, day].join('-');
+            const filterFarmerId = document.getElementById('filterInvFarmerId').value;
+            const visibleFarmers = getVisibleFarmers();
+            const visibleFarmerIds = new Set(visibleFarmers.map(f => f.id));
+
+            const summary = {};
+
+            // Aggregate Inventory (Nhập)
+            prodInventory.forEach(inv => {
+                if (!visibleFarmerIds.has(inv.farmerId)) return;
+                if (filterFarmerId && inv.farmerId !== filterFarmerId) return;
+
+                const fId = inv.farmerId;
+                const specOrig = (inv.spec || inv.feedType || 'Khác').trim();
+                const specKey = specOrig.toLowerCase();
+                
+                if (!summary[fId]) summary[fId] = {};
+                if (!summary[fId][specKey]) summary[fId][specKey] = { spec: specOrig, nhap: 0, xuat: 0 };
+                summary[fId][specKey].nhap += (inv.totalWeight || 0);
+            });
+
+            // Aggregate Logs (Xuất)
+            prodLogs.forEach(log => {
+                if (log.feeds && log.feeds.length > 0) {
+                    const pond = prodPonds.find(p => p.id === log.pondId);
+                    if (pond) {
+                        const fId = pond.farmerId;
+                        if (!visibleFarmerIds.has(fId)) return;
+                        if (filterFarmerId && fId !== filterFarmerId) return;
+
+                        if (!summary[fId]) summary[fId] = {};
+                        log.feeds.forEach(f => {
+                            const specOrig = (f.type || 'Khác').trim();
+                            const specKey = specOrig.toLowerCase();
+                            if (!summary[fId][specKey]) summary[fId][specKey] = { spec: specOrig, nhap: 0, xuat: 0 };
+                            summary[fId][specKey].xuat += (f.qty || 0);
+                        });
+                    }
+                }
+            });
+
+            let html = '';
+            let stt = 1;
+            let sumTotalNhap = 0;
+            let sumTotalXuat = 0;
+            let sumTotalTon = 0;
+
+            let hasData = false;
+
+            Object.keys(summary).forEach(fId => {
+                const farmer = prodFarmers.find(f => f.id === fId);
+                const farmerName = farmer ? farmer.name : 'Unknown';
+                const specs = summary[fId];
+
+                Object.keys(specs).forEach(specKey => {
+                    const data = specs[specKey];
+                    const ton = data.nhap - data.xuat;
+                    
+                    sumTotalNhap += data.nhap;
+                    sumTotalXuat += data.xuat;
+                    sumTotalTon += ton;
+                    hasData = true;
+
+                    html += `
+                        <tr class="hover:bg-slate-50 transition-colors border-b border-slate-100 last:border-0">
+                            <td class="p-3 text-center font-medium">${stt++}</td>
+                            <td class="p-3 font-bold text-slate-800">${farmerName}</td>
+                            <td class="p-3 text-center font-black text-indigo-700">${data.spec}</td>
+                            <td class="p-3 text-right font-black text-blue-600">${window.formatNumber(data.nhap)}</td>
+                            <td class="p-3 text-right font-black text-rose-600">${window.formatNumber(data.xuat)}</td>
+                            <td class="p-3 text-right font-black text-emerald-600">${window.formatNumber(ton)}</td>
+                        </tr>
+                    `;
+                });
+            });
+
+            if (!hasData) {
+                tbody.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-slate-400 italic">Không có dữ liệu xuất nhập tồn.</td></tr>`;
+                tfoot.innerHTML = '';
+            } else {
+                tbody.innerHTML = html;
+                tfoot.innerHTML = `
+                    <tr>
+                        <td colspan="3" class="p-3 text-right uppercase text-slate-700">Cộng toàn bộ:</td>
+                        <td class="p-3 text-right text-blue-700">${window.formatNumber(sumTotalNhap)}</td>
+                        <td class="p-3 text-right text-rose-700">${window.formatNumber(sumTotalXuat)}</td>
+                        <td class="p-3 text-right text-emerald-700">${window.formatNumber(sumTotalTon)}</td>
+                    </tr>
+                `;
+            }
+        };
+
+        window.printInventoryReport = () => {
+            const filterFarmerId = document.getElementById('filterInvFarmerId').value;
+            const farmer = prodFarmers.find(f => f.id === filterFarmerId);
+            const titleText = farmer ? `BÁO CÁO XUẤT NHẬP TỒN - KHÁCH HÀNG: ${farmer.name.toUpperCase()}` : `BÁO CÁO XUẤT NHẬP TỒN TỔNG HỢP`;
+
+            const printDate = window.formatDateOnly(new Date().toISOString().split('T')[0]);
+            const printTime = String(new Date().getHours()).padStart(2, '0') + ':' + String(new Date().getMinutes()).padStart(2, '0');
+
+            const visibleFarmers = getVisibleFarmers();
+            const visibleFarmerIds = new Set(visibleFarmers.map(f => f.id));
+
+            const summary = {};
+
+            prodInventory.forEach(inv => {
+                if (!visibleFarmerIds.has(inv.farmerId)) return;
+                if (filterFarmerId && inv.farmerId !== filterFarmerId) return;
+
+                const fId = inv.farmerId;
+                const specOrig = (inv.spec || inv.feedType || 'Khác').trim();
+                const specKey = specOrig.toLowerCase();
+                
+                if (!summary[fId]) summary[fId] = {};
+                if (!summary[fId][specKey]) summary[fId][specKey] = { spec: specOrig, nhap: 0, xuat: 0 };
+                summary[fId][specKey].nhap += (inv.totalWeight || 0);
+            });
+
+            prodLogs.forEach(log => {
+                if (log.feeds && log.feeds.length > 0) {
+                    const pond = prodPonds.find(p => p.id === log.pondId);
+                    if (pond) {
+                        const fId = pond.farmerId;
+                        if (!visibleFarmerIds.has(fId)) return;
+                        if (filterFarmerId && fId !== filterFarmerId) return;
+
+                        if (!summary[fId]) summary[fId] = {};
+                        log.feeds.forEach(f => {
+                            const specOrig = (f.type || 'Khác').trim();
+                            const specKey = specOrig.toLowerCase();
+                            if (!summary[fId][specKey]) summary[fId][specKey] = { spec: specOrig, nhap: 0, xuat: 0 };
+                            summary[fId][specKey].xuat += (f.qty || 0);
+                        });
+                    }
+                }
+            });
+
+            let tbodyHtml = '';
+            let stt = 1;
+            let sumTotalNhap = 0;
+            let sumTotalXuat = 0;
+            let sumTotalTon = 0;
+
+            Object.keys(summary).forEach(fId => {
+                const farmerObj = prodFarmers.find(f => f.id === fId);
+                const farmerName = farmerObj ? farmerObj.name : 'Unknown';
+                const specs = summary[fId];
+
+                Object.keys(specs).forEach(specKey => {
+                    const data = specs[specKey];
+                    const ton = data.nhap - data.xuat;
+                    
+                    sumTotalNhap += data.nhap;
+                    sumTotalXuat += data.xuat;
+                    sumTotalTon += ton;
+
+                    tbodyHtml += `
+                        <tr>
+                            <td class="border border-black p-2 text-center">${stt++}</td>
+                            <td class="border border-black p-2 text-left">${farmerName}</td>
+                            <td class="border border-black p-2 text-center">${data.spec}</td>
+                            <td class="border border-black p-2 text-right">${window.formatNumber(data.nhap)}</td>
+                            <td class="border border-black p-2 text-right">${window.formatNumber(data.xuat)}</td>
+                            <td class="border border-black p-2 text-right font-bold">${window.formatNumber(ton)}</td>
+                        </tr>
+                    `;
+                });
+            });
+
+            if(stt === 1) {
+                tbodyHtml = `<tr><td colspan="6" class="border border-black p-4 text-center italic">Không có dữ liệu</td></tr>`;
             }
 
-            document.getElementById('printFromDate').value = formatDateForInput(firstDay);
-            document.getElementById('printToDate').value = formatDateForInput(today);
+            const tfootHtml = `
+                <tr class="font-bold bg-slate-50">
+                    <td colspan="3" class="border border-black p-2 text-right uppercase">Cộng toàn bộ:</td>
+                    <td class="border border-black p-2 text-right">${window.formatNumber(sumTotalNhap)}</td>
+                    <td class="border border-black p-2 text-right">${window.formatNumber(sumTotalXuat)}</td>
+                    <td class="border border-black p-2 text-right text-emerald-700">${window.formatNumber(sumTotalTon)}</td>
+                </tr>
+            `;
+
+            const content = `
+                <style>
+                    @media print { 
+                        @page { size: A4 portrait !important; margin: 10mm; } 
+                        #reportModal > div { max-width: none !important; width: 100% !important; border-radius: 0; box-shadow: none; }
+                        .modal-content-wrapper { padding: 0 !important; overflow: hidden !important; }
+                        body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+                    }
+                </style>
+                <div class="p-6 w-full h-full bg-white text-black font-sans relative text-xs">
+                    <table class="w-full mb-6 text-[10px]">
+                        <tr>
+                            <td class="w-[20%] text-center align-middle">
+                                <img src="https://i.postimg.cc/k47Mnt9M/idi-logo.png" alt="IDI Logo" class="h-10 mx-auto" onerror="this.style.display='none'">
+                            </td>
+                            <td class="w-[80%] text-center">
+                                <h2 class="font-bold text-sm uppercase">CÔNG TY CP ĐẦU TƯ & PHÁT TRIỂN ĐA QUỐC GIA (IDI)</h2>
+                                <h3 class="font-bold uppercase mt-1">${titleText}</h3>
+                            </td>
+                        </tr>
+                    </table>
+                    <div class="text-right italic text-[10px] mb-4">
+                        Ngày in: ${printTime} ${printDate}
+                    </div>
+                    
+                    <table class="w-full border-collapse border border-black text-center mb-6">
+                        <thead class="bg-slate-100 font-bold text-[10px]">
+                            <tr>
+                                <th class="border border-black p-2">STT</th>
+                                <th class="border border-black p-2">Hộ Nuôi (Kho)</th>
+                                <th class="border border-black p-2">Quy Cách (Cỡ)</th>
+                                <th class="border border-black p-2">Tổng Nhập (Kg)</th>
+                                <th class="border border-black p-2">Tổng Xuất (Kg)</th>
+                                <th class="border border-black p-2">Tồn Cuối (Kg)</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-[10px]">
+                            ${tbodyHtml}
+                        </tbody>
+                        <tfoot class="font-bold text-[10px]">
+                            ${tfootHtml}
+                        </tfoot>
+                    </table>
+
+                    <div class="flex justify-between px-10 text-center mt-8">
+                        <div>
+                            <p class="font-bold uppercase text-[10px]">Người lập biểu</p>
+                            <p class="italic text-[9px]">(Ký & ghi rõ họ tên)</p>
+                            <div class="mt-12 font-bold uppercase text-[10px]">${appCurrentUser?.fullName || ''}</div>
+                        </div>
+                        <div>
+                            <p class="font-bold uppercase text-[10px]">Xác nhận</p>
+                            <p class="italic text-[9px]">(Ký & duyệt)</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('modalContent').innerHTML = content;
+            
+            const btnLoad = document.getElementById('btnLoadForm');
+            if(btnLoad) btnLoad.classList.add('hidden');
+
+            window.closeProdModal('modalInventoryReport');
+            document.getElementById('reportModal').classList.remove('hidden');
+        };
+
+        window.updateInventoryFarmerDropdowns = () => {
+            const selectFilter = document.getElementById('filterInvFarmerId');
+            const selectForm = document.getElementById('invFarmerId');
+            if(!selectFilter || !selectForm) return;
+
+            const visibleFarmers = getVisibleFarmers();
+            const options = visibleFarmers.map(f => `<option value="${f.id}">${f.name}</option>`).join('');
+            
+            const currentFilterVal = selectFilter.value;
+            selectFilter.innerHTML = '<option value="">-- Tất cả Hộ nuôi (Kho) --</option>' + options;
+            selectFilter.value = currentFilterVal;
+
+            selectForm.innerHTML = '<option value="">-- Chọn Hộ Nuôi (Kho) --</option>' + options;
+        };
+
+        window.calcInventoryTotals = () => {
+            const bagW = parseFloat(document.getElementById('invBagWeight').value) || 0;
+            const bagC = parseFloat(document.getElementById('invBagCount').value) || 0;
+            const price = parseFloat(document.getElementById('invUnitPrice').value) || 0;
+            
+            const totalW = bagW * bagC;
+            const totalA = totalW * price;
+            
+            document.getElementById('invTotalWeight').value = totalW > 0 ? totalW : '';
+            document.getElementById('invTotalAmount').value = totalA > 0 ? window.formatNumber(totalA) : '';
+        };
+
+        window.openInventoryModal = (id = null) => {
+            editingInventoryId = id;
+            if (id) {
+                const item = prodInventory.find(x => x.id === id);
+                if (item) {
+                    document.getElementById('invFarmerId').value = item.farmerId || '';
+                    document.getElementById('invDate').value = item.date || '';
+                    document.getElementById('invVoucher').value = item.voucherNo || '';
+                    document.getElementById('invSupplier').value = item.supplier || '';
+                    document.getElementById('invBatch').value = item.batch || '';
+                    
+                    document.getElementById('invSpec').value = item.spec || '';
+                    document.getElementById('invBagWeight').value = item.bagWeight || '';
+                    document.getElementById('invBagCount').value = item.bagCount || '';
+                    document.getElementById('invUnitPrice').value = item.unitPrice || '';
+                    document.getElementById('invNote').value = item.note || '';
+                    
+                    window.calcInventoryTotals();
+                    document.getElementById('modalInventoryTitle').innerHTML = '<i class="fas fa-edit text-indigo-500 mr-2"></i> Cập Nhật Phiếu Nhập Kho';
+                }
+            } else {
+                document.getElementById('invFarmerId').value = document.getElementById('filterInvFarmerId').value || '';
+                document.getElementById('invDate').value = new Date().toISOString().split('T')[0];
+                document.getElementById('invVoucher').value = 'PN-' + Date.now().toString().slice(-6);
+                document.getElementById('invSupplier').value = '';
+                document.getElementById('invBatch').value = '';
+                
+                document.getElementById('invSpec').value = '';
+                document.getElementById('invBagWeight').value = '40';
+                document.getElementById('invBagCount').value = '';
+                document.getElementById('invUnitPrice').value = '';
+                document.getElementById('invNote').value = '';
+                
+                window.calcInventoryTotals();
+                document.getElementById('modalInventoryTitle').innerHTML = '<i class="fas fa-boxes text-indigo-500 mr-2"></i> Nhập Phiếu Kho Thức Ăn Mới';
+            }
+            document.getElementById('modalInventory').classList.remove('hidden');
+        };
+
+        window.saveInventory = async (e) => {
+            e.preventDefault();
+            const canPlan = appCurrentUser?.permissions?.prod_plan ?? appCurrentUser?.permissions?.prod ?? true;
+            if(!fbUser || !canPlan) return window.showToast("Bạn không có quyền thao tác kho!", "error");
+
+            const farmerId = document.getElementById('invFarmerId').value;
+            if (!farmerId) return window.showToast("Vui lòng chọn Hộ nuôi (Kho chứa)!", "error");
+
+            const bagWeight = parseFloat(document.getElementById('invBagWeight').value) || 0;
+            const bagCount = parseFloat(document.getElementById('invBagCount').value) || 0;
+            const totalWeight = bagWeight * bagCount;
+            const unitPrice = parseFloat(document.getElementById('invUnitPrice').value) || 0;
+            const totalAmount = totalWeight * unitPrice;
+
+            const payload = {
+                farmerId: farmerId,
+                date: document.getElementById('invDate').value,
+                voucherNo: document.getElementById('invVoucher').value.trim().toUpperCase(),
+                supplier: document.getElementById('invSupplier').value.trim(),
+                batch: document.getElementById('invBatch').value.trim().toUpperCase(),
+                spec: document.getElementById('invSpec').value.trim(),
+                bagWeight: bagWeight,
+                bagCount: bagCount,
+                totalWeight: totalWeight,
+                unitPrice: unitPrice,
+                totalAmount: totalAmount,
+                note: document.getElementById('invNote').value.trim(),
+                updatedAt: Timestamp.now(),
+                updatedBy: appCurrentUser?.username
+            };
+
+            try {
+                if (editingInventoryId) {
+                    await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'prod_inventory', editingInventoryId), payload);
+                    window.showToast("Đã cập nhật tồn kho!");
+                } else {
+                    payload.isSettled = false; // Mặc định phiếu mới chưa được quyết toán
+                    payload.createdAt = Timestamp.now();
+                    payload.createdBy = appCurrentUser?.username;
+                    await addDoc(inventoryColRef, payload);
+                    window.showToast("Đã nhập kho thành công!");
+                }
+                window.closeProdModal('modalInventory');
+            } catch(err) { window.showToast("Lỗi lưu dữ liệu kho!", "error"); }
+        };
+
+        window.toggleInventorySettlement = async (id, isChecked) => {
+            const canSettlement = appCurrentUser?.permissions?.prod_settlement === true || appCurrentUser?.role === 'admin';
+            if(!fbUser || !canSettlement) {
+                window.renderInventoryTable(); // Rollback UI if not authorized
+                return window.showToast("Bạn không có quyền quyết toán!", "error");
+            }
+            try {
+                await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'prod_inventory', id), {
+                    isSettled: isChecked,
+                    updatedAt: Timestamp.now(),
+                    updatedBy: appCurrentUser?.username
+                });
+                window.showToast(isChecked ? "Đã xác nhận Quyết toán phiếu!" : "Đã hủy Quyết toán phiếu!");
+            } catch(err) {
+                console.error(err);
+                window.showToast("Lỗi khi cập nhật trạng thái quyết toán!", "error");
+                window.renderInventoryTable();
+            }
+        };
+
+        window.renderInventoryTable = () => {
+            const tbody = document.getElementById('inventoryTableBody');
+            const tfoot = document.getElementById('inventoryTableFoot');
+            if(!tbody || !tfoot) return;
+            
+            const canPlan = appCurrentUser?.permissions?.prod_plan ?? appCurrentUser?.permissions?.prod ?? true;
+            const canSettlement = appCurrentUser?.permissions?.prod_settlement === true || appCurrentUser?.role === 'admin';
+            const canDelete = appCurrentUser?.role === 'admin' || appCurrentUser?.permissions?.admin;
+            const filterFarmerId = document.getElementById('filterInvFarmerId').value;
+            const visibleFarmers = getVisibleFarmers();
+            const visibleFarmerIds = new Set(visibleFarmers.map(f => f.id));
+
+            // Header Info Logic
+            const dFarmer = document.getElementById('invDisplayFarmer');
+            const dAddr = document.getElementById('invDisplayAddress');
+            const dSup = document.getElementById('invDisplaySupervisor');
+            
+            if (filterFarmerId) {
+                const f = visibleFarmers.find(x => x.id === filterFarmerId);
+                dFarmer.innerText = f ? f.name : '---';
+                dAddr.innerText = f ? (f.address || '---') : '---';
+                dSup.innerText = f ? (f.supervisor || '---') : '---';
+            } else {
+                dFarmer.innerText = 'TẤT CẢ HỘ NUÔI (KHO)';
+                dAddr.innerText = '---';
+                dSup.innerText = '---';
+            }
+
+            // Filter logic
+            let displayInv = prodInventory.filter(item => {
+                const isVisible = canViewAllData() ? true : visibleFarmerIds.has(item.farmerId);
+                if (!isVisible) return false;
+                if (filterFarmerId && item.farmerId !== filterFarmerId) return false;
+                return true;
+            });
+
+            if(displayInv.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="12" class="p-8 text-center text-slate-400 italic border border-slate-300">Không có dữ liệu nhập kho thức ăn.</td></tr>`;
+                tfoot.innerHTML = '';
+                return;
+            }
+
+            // Sort by Date Descending
+            displayInv.sort((a,b) => new Date(b.date) - new Date(a.date));
+            
+            let sumBags = 0;
+            let sumWeight = 0;
+            let sumAmount = 0;
+
+            tbody.innerHTML = displayInv.map(item => {
+                sumBags += item.bagCount || 0;
+                sumWeight += item.totalWeight || 0;
+                sumAmount += item.totalAmount || 0;
+                
+                const isSettledCheck = item.isSettled ? 'checked' : '';
+                const rowBg = item.isSettled ? 'bg-slate-50 opacity-80' : 'bg-white hover:bg-indigo-50/30';
+
+                return `
+                <tr class="${rowBg} transition-colors border border-slate-300">
+                    <td class="p-2 border border-slate-300 font-bold whitespace-nowrap">${window.formatDateOnly(item.date)}</td>
+                    <td class="p-2 border border-slate-300 font-black text-indigo-700 uppercase whitespace-nowrap">${item.voucherNo || '---'}</td>
+                    <td class="p-2 border border-slate-300 font-medium whitespace-nowrap">${item.supplier || '---'}</td>
+                    <td class="p-2 border border-slate-300 font-black text-amber-700 uppercase whitespace-nowrap">${item.batch || '---'}</td>
+                    <td class="p-2 border border-slate-300 font-bold text-slate-800">${item.bagWeight || '---'}</td>
+                    <td class="p-2 border border-slate-300 font-bold">${item.spec || '---'}</td>
+                    <td class="p-2 border border-slate-300 font-black">${window.formatNumber(item.bagCount)}</td>
+                    <td class="p-2 border border-slate-300 font-black text-emerald-700">${window.formatNumber(item.totalWeight)}</td>
+                    <td class="p-2 border border-slate-300 font-bold">${window.formatNumber(item.unitPrice)}</td>
+                    <td class="p-2 border border-slate-300 font-black text-rose-700 text-right">${window.formatNumber(item.totalAmount)}</td>
+                    <td class="p-2 border border-slate-300 text-[10px] text-slate-500 truncate max-w-[120px]" title="${item.note || ''}">${item.note || ''}</td>
+                    
+                    <td class="p-2 border border-slate-300 text-center">
+                        <input type="checkbox" ${isSettledCheck} 
+                            ${canSettlement ? `onchange="window.toggleInventorySettlement('${item.id}', this.checked)"` : 'disabled'} 
+                            class="w-5 h-5 accent-emerald-600 cursor-pointer transition-transform active:scale-90 rounded">
+                    </td>
+                    
+                    <td class="p-1 border border-slate-300 text-center">
+                        ${canPlan ? `
+                        <div class="flex items-center justify-center gap-1">
+                            <button onclick="window.printInventoryReceipt('${item.id}')" class="w-6 h-6 rounded bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white flex items-center justify-center transition-all" title="In phiếu"><i class="fas fa-print text-[10px]"></i></button>
+                            <button onclick="window.openInventoryModal('${item.id}')" class="w-6 h-6 rounded bg-indigo-50 text-indigo-600 hover:bg-indigo-600 hover:text-white flex items-center justify-center transition-all" title="Sửa"><i class="fas fa-edit text-[10px]"></i></button>
+                            ${canDelete ? `
+                            <button onclick="window.confirmDeleteProd('inventory', '${item.id}', 'phiếu ${item.voucherNo}')" class="w-6 h-6 rounded bg-red-50 text-red-500 hover:bg-red-500 hover:text-white flex items-center justify-center transition-all" title="Xóa"><i class="fas fa-trash-alt text-[10px]"></i></button>
+                            ` : ''}
+                        </div>
+                        ` : `<span class="text-[10px] text-slate-400 italic">Chỉ xem</span>`}
+                    </td>
+                </tr>
+                `;
+            }).join('');
+
+            tfoot.innerHTML = `
+                <tr>
+                    <td colspan="6" class="p-2 border border-slate-300 text-right uppercase text-slate-700">Cộng:</td>
+                    <td class="p-2 border border-slate-300 text-center text-slate-900">${window.formatNumber(sumBags)}</td>
+                    <td class="p-2 border border-slate-300 text-center text-emerald-700">${window.formatNumber(sumWeight)}</td>
+                    <td class="p-2 border border-slate-300"></td>
+                    <td class="p-2 border border-slate-300 text-right text-rose-700">${window.formatNumber(sumAmount)}</td>
+                    <td colspan="3" class="p-2 border border-slate-300"></td>
+                </tr>
+            `;
+        };
+
+        window.printInventoryReceipt = (id) => {
+            const item = prodInventory.find(x => x.id === id);
+            if (!item) return window.showToast("Không tìm thấy phiếu!", "error");
+            
+            const farmer = prodFarmers.find(f => f.id === item.farmerId);
+            const farmerName = farmer ? farmer.name : '---';
+            const address = farmer ? (farmer.address || '---') : '---';
+            const supervisor = farmer ? (farmer.supervisor || '---') : '---';
+
+            const printDate = window.formatDateOnly(item.date);
+            const printTime = String(new Date().getHours()).padStart(2, '0') + ':' + String(new Date().getMinutes()).padStart(2, '0');
+
+            const content = `
+                <style>
+                    @media print { 
+                        @page { size: A5 landscape !important; margin: 10mm; } 
+                        #reportModal > div { max-width: none !important; width: 100% !important; border-radius: 0; box-shadow: none; }
+                        .modal-content-wrapper { padding: 0 !important; overflow: hidden !important; }
+                        body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+                    }
+                </style>
+                <div class="p-4 w-full h-full bg-white text-black font-sans relative text-xs">
+                    
+                    <table class="w-full mb-4 text-[10px]">
+                        <tr>
+                            <td class="w-[20%] text-center align-middle">
+                                <img src="https://i.postimg.cc/k47Mnt9M/idi-logo.png" alt="IDI Logo" class="h-10 mx-auto" onerror="this.style.display='none'">
+                            </td>
+                            <td class="w-[80%] text-center">
+                                <h2 class="font-bold text-sm uppercase">CÔNG TY CP ĐẦU TƯ & PHÁT TRIỂN ĐA QUỐC GIA (IDI)</h2>
+                                <h3 class="font-bold uppercase mt-1">PHIẾU NHẬP KHO THỨC ĂN</h3>
+                            </td>
+                        </tr>
+                    </table>
+
+                    <div class="text-right italic text-[10px] mb-4">
+                        Ngày in: ${printTime} ${printDate} - Số phiếu: <span class="font-bold uppercase text-red-600">${item.voucherNo}</span>
+                    </div>
+
+                    <div class="mb-4 leading-relaxed">
+                        <div class="flex"><span class="w-32 font-bold uppercase">Hộ nuôi (Kho):</span> <span class="uppercase">${farmerName}</span></div>
+                        <div class="flex"><span class="w-32 font-bold uppercase">Địa chỉ kho:</span> <span>${address}</span></div>
+                        <div class="flex"><span class="w-32 font-bold uppercase">NV Giám sát:</span> <span>${supervisor}</span></div>
+                    </div>
+
+                    <table class="w-full border-collapse border border-black text-center mb-6">
+                        <thead class="bg-slate-100 font-bold text-[10px]">
+                            <tr>
+                                <th class="border border-black p-2 w-10">STT</th>
+                                <th class="border border-black p-2">Tên vật tư / Thức ăn</th>
+                                <th class="border border-black p-2">Nhà CC</th>
+                                <th class="border border-black p-2">Mã lô</th>
+                                <th class="border border-black p-2">Quy cách<br>(Cỡ / Kg)</th>
+                                <th class="border border-black p-2">Số lượng<br>(Bao)</th>
+                                <th class="border border-black p-2">Khối lượng<br>(Kg)</th>
+                                <th class="border border-black p-2">Đơn giá</th>
+                                <th class="border border-black p-2">Thành tiền</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="border border-black p-2">1</td>
+                                <td class="border border-black p-2 font-bold uppercase">${item.spec ? `Thức ăn cỡ ${item.spec}` : 'Thức ăn cá'}</td>
+                                <td class="border border-black p-2">${item.supplier || ''}</td>
+                                <td class="border border-black p-2 font-bold uppercase">${item.batch || ''}</td>
+                                <td class="border border-black p-2">${item.spec || ''} / ${item.bagWeight || ''}kg</td>
+                                <td class="border border-black p-2 font-black">${window.formatNumber(item.bagCount)}</td>
+                                <td class="border border-black p-2 font-black">${window.formatNumber(item.totalWeight)}</td>
+                                <td class="border border-black p-2">${window.formatNumber(item.unitPrice)}</td>
+                                <td class="border border-black p-2 font-black text-right pr-2">${window.formatNumber(item.totalAmount)}</td>
+                            </tr>
+                        </tbody>
+                        <tfoot>
+                            <tr class="font-bold">
+                                <td colspan="5" class="border border-black p-2 text-right uppercase">Tổng cộng:</td>
+                                <td class="border border-black p-2">${window.formatNumber(item.bagCount)}</td>
+                                <td class="border border-black p-2">${window.formatNumber(item.totalWeight)}</td>
+                                <td class="border border-black p-2"></td>
+                                <td class="border border-black p-2 text-right pr-2">${window.formatNumber(item.totalAmount)}</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+
+                    <div class="mb-6"><span class="font-bold">Ghi chú:</span> <span class="italic">${item.note || '........................................................................'}</span></div>
+
+                    <div class="flex justify-between px-10 text-center mt-8">
+                        <div>
+                            <p class="font-bold uppercase text-[10px]">Người giao hàng</p>
+                            <p class="italic text-[9px]">(Ký & ghi rõ họ tên)</p>
+                        </div>
+                        <div>
+                            <p class="font-bold uppercase text-[10px]">Thủ kho / Chủ ao</p>
+                            <p class="italic text-[9px]">(Ký & ghi rõ họ tên)</p>
+                        </div>
+                        <div>
+                            <p class="font-bold uppercase text-[10px]">Nhân viên Giám sát</p>
+                            <p class="italic text-[9px]">(Ký & ghi rõ họ tên)</p>
+                            <div class="mt-12 font-bold uppercase text-[10px]">${supervisor}</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('modalContent').innerHTML = content;
+            
+            const btnLoad = document.getElementById('btnLoadForm');
+            if(btnLoad) btnLoad.classList.add('hidden');
+
+            document.getElementById('reportModal').classList.remove('hidden');
+        };
+
+        // ==========================================
+        // QUYẾT TOÁN AO (SETTLEMENT)
+        // ==========================================
+        window.renderSettlementTable = () => {
+            const tbody = document.getElementById('settlementTableBody');
+            if(!tbody) return;
+
+            const canSettlement = appCurrentUser?.permissions?.prod_settlement === true || appCurrentUser?.role === 'admin';
+            const searchTerm = (document.getElementById('searchSettlementInput')?.value || '').toLowerCase().trim();
+            
+            const visibleFarmers = getVisibleFarmers();
+            const visibleFarmerIds = new Set(visibleFarmers.map(f => f.id));
+
+            let displayHarvests = prodHarvests.filter(h => {
+                if (!canViewAllData() && !visibleFarmerIds.has(prodPonds.find(p => p.id === h.pondId)?.farmerId)) return false;
+                
+                if (searchTerm) {
+                    const pond = prodPonds.find(p => p.id === h.pondId);
+                    const farmerName = (h.farmerName || (pond ? (prodFarmers.find(f => f.id === pond.farmerId)?.name || '') : '')).toLowerCase();
+                    const pondCode = (h.pondCode || pond?.code || '').toLowerCase();
+                    return farmerName.includes(searchTerm) || pondCode.includes(searchTerm);
+                }
+                return true;
+            });
+
+            if(displayHarvests.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="14" class="p-8 text-center text-slate-400 italic border border-slate-200">Không có dữ liệu thu hoạch để quyết toán.</td></tr>`;
+                return;
+            }
+
+            let stt = 1;
+            tbody.innerHTML = displayHarvests.map(h => {
+                const pond = prodPonds.find(p => p.id === h.pondId);
+                const farmer = pond ? prodFarmers.find(f => f.id === pond.farmerId) : null;
+                
+                // Lấy thông tin chốt từ phiếu thu hoạch
+                const farmerName = h.farmerName || (farmer ? farmer.name : '---');
+                const pondCode = h.pondCode || (pond ? pond.code : '---');
+                
+                const isSettled = h.isSettled === true;
+                const sData = h.settlement || {};
+                
+                return `
+                <tr class="${isSettled ? 'bg-indigo-50/20' : 'bg-white'} hover:bg-slate-50 transition-colors border-b border-slate-300">
+                    <td class="p-2 border border-slate-300 text-center font-medium">${stt++}</td>
+                    <td class="p-2 border border-slate-300 font-bold text-slate-800">${farmerName}</td>
+                    <td class="p-2 border border-slate-300 text-center font-black text-blue-700">${pondCode}</td>
+                    <td class="p-2 border border-slate-300 text-center font-bold text-slate-600">${h.contractNo || ''}</td>
+                    <td class="p-2 border border-slate-300 text-center font-bold text-slate-700 whitespace-nowrap">${window.formatDateOnly(h.date)}</td>
+                    <td class="p-2 border border-slate-300 text-right font-black text-emerald-600">${window.formatNumber(h.yield)}</td>
+                    <td class="p-2 border border-slate-300 text-right font-bold">${isSettled ? window.formatNumber(sData.sellPrice) : ''}</td>
+                    <td class="p-2 border border-slate-300 text-right font-black text-blue-700">${isSettled ? window.formatNumber(sData.revenue) : ''}</td>
+                    <td class="p-2 border border-slate-300 text-right font-bold text-amber-700">${window.formatNumber(h.feed)}</td>
+                    <td class="p-2 border border-slate-300 text-right font-bold text-rose-600">${isSettled ? window.formatNumber(sData.feedCost) : ''}</td>
+                    <td class="p-2 border border-slate-300 text-right font-bold text-amber-600">${isSettled ? window.formatNumber(sData.feedInterest) : ''}</td>
+                    <td class="p-2 border border-slate-300 text-right font-bold text-rose-500">${isSettled ? window.formatNumber(sData.ksFee) : ''}</td>
+                    <td class="p-2 border border-slate-300 text-right font-black text-indigo-700">${isSettled ? window.formatNumber(sData.profit) : ''}</td>
+                    <td class="p-2 border border-slate-300 text-center whitespace-nowrap align-middle">
+                        ${canSettlement ? (isSettled ? 
+                            `<div class="flex items-center justify-center gap-1">
+                                <button onclick="window.printSettlementReport('${h.id}')" class="px-2 py-1.5 bg-emerald-50 text-emerald-700 hover:bg-emerald-600 hover:text-white border border-emerald-200 rounded text-[9px] font-black transition-all shadow-sm">BẢN QUYẾT TOÁN</button>
+                                <button onclick="window.openSettlementModal('${h.id}')" class="px-2 py-1.5 bg-blue-50 text-blue-700 hover:bg-blue-600 hover:text-white border border-blue-200 rounded text-[9px] font-black transition-all shadow-sm" title="Sửa">SỬA</button>
+                            </div>` : 
+                            `<button onclick="window.openSettlementModal('${h.id}')" class="px-3 py-1.5 bg-indigo-600 text-white hover:bg-indigo-700 rounded text-[9px] font-black transition-all shadow-sm">NHẬP THÔNG TIN</button>`
+                        ) : `<span class="text-[10px] text-slate-400 italic">Chỉ xem</span>`}
+                    </td>
+                </tr>
+                `;
+            }).join('');
+        };
+
+        window.openSettlementModal = (harvestId) => {
+            const canSettlement = appCurrentUser?.permissions?.prod_settlement === true || appCurrentUser?.role === 'admin';
+            if(!canSettlement) return window.showToast("Bạn không có quyền quyết toán!", "error");
+
+            const h = prodHarvests.find(x => x.id === harvestId);
+            if (!h) return window.showToast("Không tìm thấy dữ liệu thu hoạch!", "error");
+
+            document.getElementById('setHarvestId').value = harvestId;
+            
+            const pond = prodPonds.find(p => p.id === h.pondId);
+            const farmer = pond ? prodFarmers.find(f => f.id === pond.farmerId) : null;
+
+            // Load chốt từ nhật ký thu hoạch
+            document.getElementById('setFarmerName').innerText = h.farmerName || (farmer ? farmer.name : '---');
+            document.getElementById('setPondCode').innerText = h.pondCode || (pond ? pond.code : '---');
+            document.getElementById('setContractNo').innerText = h.contractNo || '---';
+            document.getElementById('setHarvestDate').innerText = window.formatDateOnly(h.date);
+            
+            document.getElementById('setYield').value = h.yield || 0;
+
+            if (h.isSettled && h.settlement) {
+                const s = h.settlement;
+                document.getElementById('setSellPrice').value = s.sellPrice || '';
+                document.getElementById('setFeedQty').value = s.feedQtyFromInventory || h.feed || '';
+                document.getElementById('setFeedCost').value = s.feedCost || '';
+                document.getElementById('setFeedInterest').value = s.feedInterest || 0;
+                document.getElementById('setKsFee').value = s.ksFee || 0;
+                document.getElementById('setLinkedInventoryIds').value = JSON.stringify(s.linkedInventoryIds || []);
+            } else {
+                document.getElementById('setSellPrice').value = h.contractPrice || '';
+                document.getElementById('setFeedQty').value = '';
+                document.getElementById('setFeedCost').value = '';
+                document.getElementById('setFeedInterest').value = 0;
+                document.getElementById('setKsFee').value = 0;
+                document.getElementById('setLinkedInventoryIds').value = '[]';
+            }
+
+            window.calcSettlementTotals();
+            document.getElementById('modalSettlement').classList.remove('hidden');
+        };
+
+        window.openSelectInventoryModal = () => {
+            const harvestId = document.getElementById('setHarvestId').value;
+            const h = prodHarvests.find(x => x.id === harvestId);
+            if (!h) return window.showToast("Vui lòng lưu thông tin ao trước!", "error");
+            
+            const pond = prodPonds.find(p => p.id === h.pondId);
+            if (!pond) return;
+            const farmerId = pond.farmerId;
+            const farmerName = h.farmerName || (prodFarmers.find(f => f.id === farmerId)?.name || '---');
+            document.getElementById('selectInvFarmerName').innerText = farmerName;
+            
+            const linkedIds = JSON.parse(document.getElementById('setLinkedInventoryIds').value || '[]');
+            
+            // Lọc ra các phiếu chưa quyết toán HOẶC đã được quyết toán cho chính đợt này (có ID trong linkedIds)
+            const availableInv = prodInventory.filter(inv => inv.farmerId === farmerId && (!inv.isSettled || linkedIds.includes(inv.id)));
+            availableInv.sort((a,b) => new Date(b.date) - new Date(a.date));
+
+            const tbody = document.getElementById('selectInventoryTableBody');
+            if (availableInv.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="8" class="p-6 text-center text-slate-500 italic">Không có phiếu nhập kho nào chờ quyết toán cho Hộ nuôi này.</td></tr>`;
+            } else {
+                tbody.innerHTML = availableInv.map(inv => {
+                    const isChecked = linkedIds.includes(inv.id) ? 'checked' : '';
+                    return `
+                        <tr class="border-b border-slate-100 hover:bg-slate-50 transition-colors">
+                            <td class="p-3 text-center">
+                                <input type="checkbox" class="inv-checkbox w-5 h-5 accent-indigo-600 cursor-pointer" 
+                                    onchange="window.calcTempInventorySelection()"
+                                    value="${inv.id}" 
+                                    data-weight="${inv.totalWeight || 0}" 
+                                    data-amount="${inv.totalAmount || 0}" 
+                                    ${isChecked}>
+                            </td>
+                            <td class="p-3 font-bold text-slate-800">${window.formatDateOnly(inv.date)}</td>
+                            <td class="p-3 font-black text-indigo-700 uppercase">${inv.voucherNo || '---'}</td>
+                            <td class="p-3 font-bold text-amber-700 uppercase">${inv.batch || '---'}</td>
+                            <td class="p-3">${inv.spec || '---'}</td>
+                            <td class="p-3 text-right font-black text-emerald-600">${window.formatNumber(inv.totalWeight)}</td>
+                            <td class="p-3 text-right font-bold text-slate-700">${window.formatNumber(inv.unitPrice)}</td>
+                            <td class="p-3 text-right font-black text-rose-600">${window.formatNumber(inv.totalAmount)}</td>
+                        </tr>
+                    `;
+                }).join('');
+            }
+            
+            window.calcTempInventorySelection();
+            document.getElementById('modalSelectInventory').classList.remove('hidden');
+        };
+
+        window.calcTempInventorySelection = () => {
+            const checkboxes = document.querySelectorAll('.inv-checkbox:checked');
+            let tempW = 0;
+            let tempA = 0;
+            checkboxes.forEach(cb => {
+                tempW += parseFloat(cb.getAttribute('data-weight')) || 0;
+                tempA += parseFloat(cb.getAttribute('data-amount')) || 0;
+            });
+            document.getElementById('tempSelectedWeight').innerText = window.formatNumber(tempW);
+            document.getElementById('tempSelectedAmount').innerText = window.formatNumber(tempA);
+        };
+
+        window.confirmInventorySelection = () => {
+            const checkboxes = document.querySelectorAll('.inv-checkbox:checked');
+            let totalW = 0;
+            let totalA = 0;
+            const selectedIds = [];
+            
+            checkboxes.forEach(cb => {
+                selectedIds.push(cb.value);
+                totalW += parseFloat(cb.getAttribute('data-weight')) || 0;
+                totalA += parseFloat(cb.getAttribute('data-amount')) || 0;
+            });
+            
+            document.getElementById('setLinkedInventoryIds').value = JSON.stringify(selectedIds);
+            document.getElementById('setFeedQty').value = totalW > 0 ? totalW : '';
+            document.getElementById('setFeedCost').value = totalA > 0 ? totalA : '';
+            
+            window.calcSettlementTotals();
+            document.getElementById('modalSelectInventory').classList.add('hidden');
+            window.showToast(`Đã chọn ${selectedIds.length} phiếu nhập kho!`);
+        };
+
+        window.calcSettlementTotals = () => {
+            const yieldKg = parseFloat(document.getElementById('setYield').value) || 0;
+            const sellPrice = parseFloat(document.getElementById('setSellPrice').value) || 0;
+            
+            const revenue = yieldKg * sellPrice;
+            document.getElementById('setRevenue').value = window.formatNumber(revenue);
+
+            const feedCost = parseFloat(document.getElementById('setFeedCost').value) || 0;
+            const feedInterest = parseFloat(document.getElementById('setFeedInterest').value) || 0;
+            const ksFee = parseFloat(document.getElementById('setKsFee').value) || 0;
+            
+            const totalDeduction = feedCost + feedInterest + ksFee;
+            document.getElementById('setTotalCost').value = window.formatNumber(totalDeduction);
+
+            const profit = revenue - totalDeduction;
+            const pInput = document.getElementById('setProfit');
+            pInput.value = window.formatNumber(profit);
+            pInput.className = `w-full bg-transparent text-3xl font-black text-center outline-none readonly ${profit >= 0 ? 'text-indigo-700' : 'text-rose-600'}`;
+        };
+
+        window.saveSettlement = async (e) => {
+            e.preventDefault();
+            const canSettlement = appCurrentUser?.permissions?.prod_settlement === true || appCurrentUser?.role === 'admin';
+            if(!fbUser || !canSettlement) return window.showToast("Bạn không có quyền quyết toán!", "error");
+
+            const harvestId = document.getElementById('setHarvestId').value;
+            const sellPrice = parseFloat(document.getElementById('setSellPrice').value) || 0;
+            
+            const feedQtyFromInventory = parseFloat(document.getElementById('setFeedQty').value) || 0;
+            const feedCost = parseFloat(document.getElementById('setFeedCost').value) || 0;
+            const feedInterest = parseFloat(document.getElementById('setFeedInterest').value) || 0;
+            const ksFee = parseFloat(document.getElementById('setKsFee').value) || 0;
+
+            const yieldKg = parseFloat(document.getElementById('setYield').value) || 0;
+            const revenue = yieldKg * sellPrice;
+            const totalCost = feedCost + feedInterest + ksFee; 
+            const profit = revenue - totalCost; 
+            
+            const newLinkedIds = JSON.parse(document.getElementById('setLinkedInventoryIds').value || '[]');
+            const existingH = prodHarvests.find(x => x.id === harvestId);
+            const oldLinkedIds = (existingH && existingH.settlement && existingH.settlement.linkedInventoryIds) ? existingH.settlement.linkedInventoryIds : [];
+
+            const settlementData = {
+                sellPrice,
+                feedQtyFromInventory,
+                feedCost,
+                feedInterest,
+                ksFee,
+                revenue,
+                totalCost,
+                profit,
+                linkedInventoryIds: newLinkedIds,
+                settledAt: Timestamp.now(),
+                settledBy: appCurrentUser?.username
+            };
+
+            const btn = document.querySelector('#modalSettlement button[type="submit"]');
+            const ogText = btn.innerHTML;
+            btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang xử lý...';
+
+            try {
+                // 1. Lưu dữ liệu quyết toán vào phiếu Thu Hoạch
+                await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'prod_harvests', harvestId), {
+                    isSettled: true,
+                    settlement: settlementData,
+                    updatedAt: Timestamp.now(),
+                    updatedBy: appCurrentUser?.username
+                });
+
+                // 2. Cập nhật trạng thái isSettled cho các phiếu nhập kho
+                const idsToSettle = newLinkedIds.filter(id => !oldLinkedIds.includes(id));
+                const idsToUnsettle = oldLinkedIds.filter(id => !newLinkedIds.includes(id));
+                
+                const updatePromises = [];
+                for (const id of idsToSettle) {
+                    updatePromises.push(updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'prod_inventory', id), { isSettled: true, updatedAt: Timestamp.now(), updatedBy: appCurrentUser?.username }));
+                }
+                for (const id of idsToUnsettle) {
+                    updatePromises.push(updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'prod_inventory', id), { isSettled: false, updatedAt: Timestamp.now(), updatedBy: appCurrentUser?.username }));
+                }
+                if (updatePromises.length > 0) {
+                    await Promise.all(updatePromises);
+                }
+
+                window.showToast("Đã lưu Quyết toán & Đồng bộ kho thành công!");
+                window.closeProdModal('modalSettlement');
+            } catch(err) {
+                window.showToast("Lỗi lưu dữ liệu quyết toán!", "error");
+            } finally {
+                btn.disabled = false; btn.innerHTML = ogText;
+            }
+        };
+
+        window.printSettlementReport = (harvestId) => {
+            const canSettlement = appCurrentUser?.permissions?.prod_settlement === true || appCurrentUser?.role === 'admin';
+            if(!canSettlement) return window.showToast("Bạn không có quyền xem/in quyết toán!", "error");
+
+            const h = prodHarvests.find(x => x.id === harvestId);
+            if (!h || !h.isSettled || !h.settlement) return window.showToast("Dữ liệu quyết toán chưa hoàn thiện!", "error");
+
+            const pond = prodPonds.find(p => p.id === h.pondId);
+            const farmer = pond ? prodFarmers.find(f => f.id === pond.farmerId) : null;
+            const s = h.settlement;
+            
+            const farmerName = h.farmerName || (farmer ? farmer.name : '---');
+            const pondCode = h.pondCode || (pond ? pond.code : '---');
+
+            const printDate = window.formatDateOnly(new Date().toISOString().split('T')[0]);
+            const printTime = String(new Date().getHours()).padStart(2, '0') + ':' + String(new Date().getMinutes()).padStart(2, '0');
+
+            const content = `
+                <style>
+                    @media print { 
+                        @page { size: A4 portrait !important; margin: 15mm; } 
+                        #reportModal > div { max-width: none !important; width: 100% !important; border-radius: 0; box-shadow: none; }
+                        .modal-content-wrapper { padding: 0 !important; overflow: hidden !important; }
+                        body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+                    }
+                </style>
+                <div class="p-8 w-full h-full bg-white text-black font-sans relative text-sm leading-relaxed">
+                    
+                    <div class="flex justify-between items-center mb-8 border-b-2 border-slate-900 pb-4">
+                        <div class="w-1/4">
+                            <img src="https://i.postimg.cc/k47Mnt9M/idi-logo.png" alt="IDI Logo" class="h-12" onerror="this.style.display='none'">
+                        </div>
+                        <div class="w-3/4 text-right">
+                            <h2 class="font-black text-lg uppercase text-slate-800">CÔNG TY CP ĐẦU TƯ & PHÁT TRIỂN ĐA QUỐC GIA (IDI)</h2>
+                            <p class="text-xs font-bold text-slate-600 mt-1">QL 80, cụm CN Vàm Cống - Lấp Vò - Đồng Tháp</p>
+                        </div>
+                    </div>
+
+                    <div class="text-center mb-8">
+                        <h1 class="text-2xl font-black uppercase text-indigo-700 tracking-wider">PHIẾU BẢN QUYẾT TOÁN AO NUÔI</h1>
+                        <p class="italic text-xs text-slate-500 mt-2">Ngày in: ${printTime} ${printDate} - Phiếu số: QT-${h.id.substring(0,6).toUpperCase()}</p>
+                    </div>
+
+                    <h3 class="font-black uppercase text-sm mb-3 text-slate-800 border-b border-slate-300 pb-1">I. Thông Tin Chung</h3>
+                    <div class="grid grid-cols-2 gap-4 mb-6 text-sm">
+                        <div>
+                            <p class="mb-2"><span class="font-bold w-32 inline-block">Khách hàng:</span> <span class="uppercase font-black">${farmerName}</span></p>
+                            <p class="mb-2"><span class="font-bold w-32 inline-block">Khu vực:</span> ${farmer ? farmer.address : '---'}</p>
+                            <p class="mb-2"><span class="font-bold w-32 inline-block">Mã Ao:</span> <span class="uppercase font-black text-blue-700">${pondCode}</span></p>
+                        </div>
+                        <div>
+                            <p class="mb-2"><span class="font-bold w-32 inline-block">Số Hợp Đồng:</span> <span class="uppercase font-bold">${h.contractNo || '---'}</span></p>
+                            <p class="mb-2"><span class="font-bold w-32 inline-block">Ngày thu hoạch:</span> ${window.formatDateOnly(h.date)}</p>
+                        </div>
+                    </div>
+
+                    <h3 class="font-black uppercase text-sm mb-3 text-slate-800 border-b border-slate-300 pb-1 mt-6">II. Chi Tiết Quyết Toán</h3>
+                    <table class="w-full border-collapse border border-slate-400 mb-8">
+                        <thead class="bg-slate-100 font-bold text-xs uppercase">
+                            <tr>
+                                <th class="border border-slate-400 p-3 w-12 text-center">STT</th>
+                                <th class="border border-slate-400 p-3">Khoản Mục</th>
+                                <th class="border border-slate-400 p-3 text-center">ĐVT</th>
+                                <th class="border border-slate-400 p-3 text-right">Số Lượng</th>
+                                <th class="border border-slate-400 p-3 text-right">Đơn Giá</th>
+                                <th class="border border-slate-400 p-3 text-right text-indigo-700">Thành Tiền (VNĐ)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Doanh Thu -->
+                            <tr class="bg-blue-50/30">
+                                <td class="border border-slate-400 p-3 text-center font-bold">1</td>
+                                <td class="border border-slate-400 p-3 font-black text-blue-800">THÀNH TIỀN LƯỢNG CÁ THU HOẠCH</td>
+                                <td class="border border-slate-400 p-3 text-center">Kg</td>
+                                <td class="border border-slate-400 p-3 text-right">${window.formatNumber(h.yield)}</td>
+                                <td class="border border-slate-400 p-3 text-right">${window.formatNumber(s.sellPrice)}</td>
+                                <td class="border border-slate-400 p-3 text-right font-black text-blue-700">${window.formatNumber(s.revenue)}</td>
+                            </tr>
+                            <!-- Khấu Trừ -->
+                            <tr>
+                                <td class="border border-slate-400 p-3 text-center font-bold" rowspan="4">2</td>
+                                <td class="border border-slate-400 p-3 font-black text-rose-800 bg-rose-50/30" colspan="4">CÁC KHOẢN KHẤU TRỪ</td>
+                                <td class="border border-slate-400 p-3 text-right font-black text-rose-700 bg-rose-50/30">${window.formatNumber(s.totalCost)}</td>
+                            </tr>
+                            <tr>
+                                <td class="border border-slate-400 p-3 font-medium indent-4">- Thành tiền lượng thức ăn</td>
+                                <td class="border border-slate-400 p-3 text-center">Kg</td>
+                                <td class="border border-slate-400 p-3 text-right">${window.formatNumber(h.feed)}</td>
+                                <td class="border border-slate-400 p-3 text-center">-</td>
+                                <td class="border border-slate-400 p-3 text-right">${window.formatNumber(s.feedCost)}</td>
+                            </tr>
+                            <tr>
+                                <td class="border border-slate-400 p-3 font-medium indent-4">- Lãi thức ăn</td>
+                                <td class="border border-slate-400 p-3 text-center">-</td>
+                                <td class="border border-slate-400 p-3 text-center">-</td>
+                                <td class="border border-slate-400 p-3 text-center">-</td>
+                                <td class="border border-slate-400 p-3 text-right">${window.formatNumber(s.feedInterest)}</td>
+                            </tr>
+                            <tr>
+                                <td class="border border-slate-400 p-3 font-medium indent-4">- Phí kiểm Kháng sinh (KS)</td>
+                                <td class="border border-slate-400 p-3 text-center">-</td>
+                                <td class="border border-slate-400 p-3 text-center">-</td>
+                                <td class="border border-slate-400 p-3 text-center">-</td>
+                                <td class="border border-slate-400 p-3 text-right">${window.formatNumber(s.ksFee)}</td>
+                            </tr>
+                        </tbody>
+                        <tfoot>
+                            <tr class="bg-indigo-50">
+                                <td colspan="5" class="border border-slate-400 p-4 text-right font-black uppercase text-indigo-800 text-base">KHÁCH HÀNG THỰC NHẬN:</td>
+                                <td class="border border-slate-400 p-4 text-right font-black text-indigo-700 text-lg">${window.formatNumber(s.profit)}</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+
+                    <div class="flex justify-between px-10 text-center mt-16 page-break-avoid">
+                        <div>
+                            <p class="font-black uppercase text-sm">Chủ Ao / Khách hàng</p>
+                            <p class="italic text-xs text-slate-600 mt-1">(Ký & ghi rõ họ tên)</p>
+                        </div>
+                        <div>
+                            <p class="font-black uppercase text-sm">Người lập phiếu</p>
+                            <p class="italic text-xs text-slate-600 mt-1">(Ký & ghi rõ họ tên)</p>
+                            <div class="mt-20 font-bold uppercase text-sm">${appCurrentUser?.fullName || ''}</div>
+                        </div>
+                        <div>
+                            <p class="font-black uppercase text-sm">Giám đốc / Kế toán</p>
+                            <p class="italic text-xs text-slate-600 mt-1">(Ký & đóng dấu)</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('modalContent').innerHTML = content;
+            const btnLoad = document.getElementById('btnLoadForm');
+            if(btnLoad) btnLoad.classList.add('hidden');
+            document.getElementById('reportModal').classList.remove('hidden');
+        };
+
+        window.updateInventoryFarmerDropdowns = () => {
+            const selectFilter = document.getElementById('filterInvFarmerId');
+            const selectForm = document.getElementById('invFarmerId');
+            if(!selectFilter || !selectForm) return;
+
+            const visibleFarmers = getVisibleFarmers();
+            const options = visibleFarmers.map(f => `<option value="${f.id}">${f.name}</option>`).join('');
+            
+            const currentFilterVal = selectFilter.value;
+            selectFilter.innerHTML = '<option value="">-- Tất cả Hộ nuôi (Kho) --</option>' + options;
+            selectFilter.value = currentFilterVal;
+
+            selectForm.innerHTML = '<option value="">-- Chọn Hộ Nuôi (Kho) --</option>' + options;
+        };
+
+        window.openPrintListModal = () => {
             document.getElementById('printListModal').classList.remove('hidden');
+            document.getElementById('printFromDate').value = new Date().toISOString().split('T')[0];
+            document.getElementById('printToDate').value = new Date().toISOString().split('T')[0];
         };
 
         window.closePrintListModal = () => {
-            const m = document.getElementById('printListModal');
-            if(m) m.classList.add('hidden');
+            document.getElementById('printListModal').classList.add('hidden');
         };
 
         window.executePrintList = () => {
             const fromDateStr = document.getElementById('printFromDate').value;
             const toDateStr = document.getElementById('printToDate').value;
+            if (!fromDateStr || !toDateStr) return window.showToast("Vui lòng chọn khoảng thời gian!", "error");
             
-            if(!fromDateStr || !toDateStr) return window.showToast("Vui lòng chọn đầy đủ ngày!", "error");
+            const fromDate = new Date(fromDateStr);
+            fromDate.setHours(0, 0, 0, 0);
+            const toDate = new Date(toDateStr);
+            toDate.setHours(23, 59, 59, 999);
 
-            const fromDate = new Date(fromDateStr); fromDate.setHours(0,0,0,0);
-            const toDate = new Date(toDateStr); toDate.setHours(23,59,59,999);
-
-            if (fromDate > toDate) return window.showToast("Ngày bắt đầu không thể lớn hơn ngày kết thúc!", "error");
-
-            let displayReports = reports;
+            let filteredReports = reports;
             if (appCurrentUser?.role !== 'admin' && !appCurrentUser?.permissions?.admin && !appCurrentUser?.permissions?.view_all) {
-                displayReports = reports.filter(r => r.createdBy === appCurrentUser?.username);
+                filteredReports = reports.filter(r => r.createdBy === appCurrentUser?.username);
             }
 
-            const filteredList = displayReports.filter(r => {
-                if(!r.createdAt) return false;
-                const rDate = r.createdAt.toDate ? r.createdAt.toDate() : new Date(r.createdAt);
+            filteredReports = filteredReports.filter(r => {
+                const rDate = r.createdAt?.toDate ? r.createdAt.toDate() : new Date(r.createdAt);
                 return rDate >= fromDate && rDate <= toDate;
             });
 
-            if(filteredList.length === 0) return window.showToast("Không có báo cáo nào trong khoảng thời gian này!", "error");
-
-            filteredList.sort((a,b) => {
-                const da = a.createdAt?.seconds || 0;
-                const db = b.createdAt?.seconds || 0;
-                return da - db;
-            });
+            if (filteredReports.length === 0) return window.showToast("Không có dữ liệu trong khoảng thời gian này!", "error");
 
             let tableHTML = '';
             let totalYield = 0;
 
-            filteredList.forEach((r, idx) => {
-                let tCount = 0; let tWeight = 0;
+            filteredReports.forEach((r, idx) => {
+                let totalFish = 0;
+                let totalW = 0;
                 if (r.samples) {
                     r.samples.forEach(s => {
-                        tCount += s.count;
-                        tWeight += s.isQuick && s.totalW ? s.totalW : (s.weight * s.count);
+                        totalFish += s.count;
+                        totalW += s.isQuick ? s.totalW : (s.weight * s.count);
                     });
                 }
-                const foodWeightPerFish = r.foodWeight || 0;
-                const totalFoodW = foodWeightPerFish * tCount;
-                const netW = Math.max(0, tWeight - totalFoodW);
-                const avgSize = tCount > 0 ? Math.max(0, Math.round(netW / tCount)) : 0;
-                
+                const avgSize = totalFish > 0 ? Math.round((Math.max(0, totalW - (r.foodWeight || 0) * totalFish)) / totalFish) : 0;
                 totalYield += parseFloat(r.pondYield || 0);
 
                 const dateObj = r.createdAt?.toDate ? r.createdAt.toDate() : new Date(r.createdAt);
@@ -4253,7 +5840,11 @@
                 if(hasPlans) return window.showToast("Không thể xóa Ao đang có Kế hoạch! Vui lòng xóa Kế hoạch trước.", "error");
             }
 
-            deleteAction = { type: type === 'log' ? 'prod_log' : `prod_${type}`, id }; 
+            let typeMap = type;
+            if(type === 'log') typeMap = 'prod_log';
+            if(type === 'inventory') typeMap = 'prod_inventory';
+            
+            deleteAction = { type: typeMap.startsWith('prod_') ? typeMap : `prod_${typeMap}`, id }; 
             document.getElementById('confirmCode').innerText = displayName; 
             document.getElementById('confirmModal').classList.remove('hidden');
         };
@@ -4273,6 +5864,7 @@
                     else if (deleteAction.type === 'prod_pond') colName = 'prod_ponds';
                     else if (deleteAction.type === 'prod_log') colName = 'prod_logs';
                     else if (deleteAction.type === 'prod_harvest') colName = 'prod_harvests';
+                    else if (deleteAction.type === 'prod_inventory') colName = 'prod_inventory';
 
                     await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', colName, deleteAction.id));
                     window.showToast("Đã xóa dữ liệu thành công!");
@@ -4383,7 +5975,7 @@
                     if (appUsers.some(user => user.username === u)) return window.showToast("Tài khoản đã tồn tại!", "error");
                     await addDoc(usersColRef, { 
                         username: u, password: p, fullName: f, jobTitle: job, role: r,
-                        permissions: { prod_view: true, prod_master: true, prod_plan: true, qc_view: true, qc_add: true, qc_delete: false, view_all: false, admin: false }, 
+                        permissions: { prod_view: true, prod_master: true, prod_plan: true, prod_settlement: false, qc_view: true, qc_add: true, qc_delete: false, view_all: false, admin: false }, 
                         createdAt: Timestamp.now() 
                     });
                     window.showToast("Đã tạo tài khoản!"); 
@@ -4416,7 +6008,7 @@
             if(!tbody) return;
             tbody.innerHTML = appUsers.map(u => {
                 const isSuperAdmin = u.username === 'admin';
-                const perms = u.permissions || { prod_view: true, prod_master: true, prod_plan: true, qc_view: true, qc_add: true, qc_delete: u.role === 'admin', view_all: u.role === 'admin', admin: u.role === 'admin' };
+                const perms = u.permissions || { prod_view: true, prod_master: true, prod_plan: true, prod_settlement: u.role === 'admin', qc_view: true, qc_add: true, qc_delete: u.role === 'admin', view_all: u.role === 'admin', admin: u.role === 'admin' };
                 
                 const toggleHTML = (feature, checked, disabled) => `
                     <label class="relative inline-flex items-center ${disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}">
@@ -4434,6 +6026,7 @@
                     <td class="p-4 text-center border-r border-slate-100">${toggleHTML('prod_view', perms.prod_view, isSuperAdmin)}</td>
                     <td class="p-4 text-center border-r border-slate-100">${toggleHTML('prod_master', perms.prod_master, isSuperAdmin)}</td>
                     <td class="p-4 text-center border-r border-slate-100">${toggleHTML('prod_plan', perms.prod_plan, isSuperAdmin)}</td>
+                    <td class="p-4 text-center border-r border-slate-100">${toggleHTML('prod_settlement', perms.prod_settlement, isSuperAdmin)}</td>
                     
                     <td class="p-4 text-center border-r border-slate-100">${toggleHTML('qc_view', perms.qc_view, isSuperAdmin)}</td>
                     <td class="p-4 text-center border-r border-slate-100">${toggleHTML('qc_add', perms.qc_add, isSuperAdmin)}</td>
@@ -4451,7 +6044,7 @@
             const user = appUsers.find(u => u.id === userId);
             if(!user) return;
             
-            const currentPerms = user.permissions || { prod_view: true, prod_master: true, prod_plan: true, qc_view: true, qc_add: true, qc_delete: user.role === 'admin', view_all: user.role === 'admin', admin: user.role === 'admin' };
+            const currentPerms = user.permissions || { prod_view: true, prod_master: true, prod_plan: true, prod_settlement: user.role === 'admin', qc_view: true, qc_add: true, qc_delete: user.role === 'admin', view_all: user.role === 'admin', admin: user.role === 'admin' };
             currentPerms[feature] = value;
             
             try {
