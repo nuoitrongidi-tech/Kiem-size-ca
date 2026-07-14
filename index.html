@@ -123,8 +123,8 @@
         let checkins = [];
         let currentUser = null;
         let adminCurrentTab = 'map'; 
-        let autoUpdateInterval = null; // Biến giữ trình theo dõi thời gian thực
-        
+        let staffCurrentTab = 'dashboard'; // Tab cho Nhân viên
+        let autoUpdateInterval = null;
         let timekeepingView = 'monthly'; 
         let tkMonth = new Date().getMonth() + 1;
         let tkYear = new Date().getFullYear();
@@ -449,26 +449,37 @@
                 
                 if (!videoEl || !canvasEl) return;
 
+                // Thử với camera sau (di động)
                 let constraints = { video: { facingMode: 'environment' } };
+                
                 try {
                     stream = await navigator.mediaDevices.getUserMedia(constraints);
                     cameraAvailable = true;
                 } catch (e) {
-                    constraints = { video: true };
-                    stream = await navigator.mediaDevices.getUserMedia(constraints);
-                    cameraAvailable = true;
+                    // Nếu lỗi (ví dụ không có cam sau), thử với cam mặc định
+                    try {
+                        stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                        cameraAvailable = true;
+                    } catch (err) {
+                        // Nếu vẫn lỗi, ghi chú trạng thái và dừng lại mà không làm văng app
+                        cameraAvailable = false;
+                        console.info("Info: Không tìm thấy camera, chế độ chụp ảnh đã bị vô hiệu hóa.");
+                    }
                 }
                 
-                videoEl.srcObject = stream;
-                document.getElementById('camera-placeholder').classList.add('hidden');
-                videoEl.classList.remove('hidden');
-            } catch (err) {
-                console.error("Lỗi camera: ", err);
-                cameraAvailable = false;
-                const placeholder = document.getElementById('camera-placeholder');
-                if (placeholder) {
-                    placeholder.innerHTML = '<i class="fas fa-video-slash text-3xl mb-2 block text-red-400"></i><span class="text-sm text-red-500">Không tìm thấy Camera</span>';
+                if (cameraAvailable && stream) {
+                    videoEl.srcObject = stream;
+                    document.getElementById('camera-placeholder').classList.add('hidden');
+                    videoEl.classList.remove('hidden');
+                } else {
+                    // Cập nhật UI nếu không có camera
+                    const placeholder = document.getElementById('camera-placeholder');
+                    if (placeholder) {
+                        placeholder.innerHTML = '<i class="fas fa-video-slash text-3xl mb-2 block text-gray-400"></i><span class="text-sm text-gray-500">Camera không khả dụng</span>';
+                    }
                 }
+            } catch (err) {
+                cameraAvailable = false;
             }
         };
 
@@ -604,6 +615,11 @@
             renderApp();
         };
 
+        window.switchStaffTab = (tab) => {
+            staffCurrentTab = tab;
+            renderApp();
+        };
+
         window.toggleSidebar = () => {
             const sidebar = document.getElementById('admin-sidebar');
             if (!sidebar) return;
@@ -643,7 +659,6 @@
         const renderStaffDashboard = () => {
             const todayStr = new Date().toLocaleDateString();
             const todayHistory = checkins.filter(c => c.userId === currentUser.id && new Date(c.timestamp).toLocaleDateString() === todayStr).reverse();
-            
             const totalKm = todayHistory.reduce((sum, item) => sum + (item.distance || 0), 0).toFixed(2);
 
             let statusText = "Chưa Check-in";
@@ -653,25 +668,11 @@
             if (todayHistory.length > 0) {
                 const lastAction = todayHistory[0].type;
                 if (lastAction === 'in' || lastAction === 'update' || lastAction === 'auto') { 
-                    statusText = "Đang làm việc"; 
-                    statusColor = "text-green-600"; 
-                    isTracking = true;
-                }
-                else if (lastAction === 'out') { 
-                    statusText = "Đã Check-out"; 
-                    statusColor = "text-red-500"; 
-                }
+                    statusText = "Đang làm việc"; statusColor = "text-green-600"; isTracking = true;
+                } else if (lastAction === 'out') { statusText = "Đã Check-out"; statusColor = "text-red-500"; }
             }
 
-            return `
-                <nav class="bg-white shadow px-4 py-3 flex justify-between items-center z-10">
-                    <div class="font-bold text-lg text-blue-600"><i class="fas fa-route mr-2"></i>Staff Portal</div>
-                    <div class="flex items-center gap-3">
-                        <span class="font-medium text-sm flex items-center gap-1"><div class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div> ${currentUser.name}</span>
-                        <button onclick="logout()" class="text-gray-500 hover:text-red-500"><i class="fas fa-sign-out-alt"></i></button>
-                    </div>
-                </nav>
-
+            const dashboardContent = `
                 <div class="p-4 flex-grow overflow-y-auto max-w-md mx-auto w-full">
                     <div class="bg-white p-4 rounded-xl shadow-sm mb-4 flex justify-between items-center border border-gray-100">
                         <div>
@@ -706,37 +707,25 @@
                                 <i class="fas fa-sign-out-alt mb-1"></i> Chấm công RA
                             </button>
                             <button id="btn-update" onclick="handleAction('update')" class="col-span-2 bg-blue-500 text-white py-3 rounded-lg font-bold shadow hover:bg-blue-600 transition flex flex-col items-center justify-center">
-                                <i class="fas fa-map-marker-alt mb-1"></i> Cập nhật Vị trí (Thủ công)
+                                <i class="fas fa-map-marker-alt mb-1"></i> Cập nhật Vị trí
                             </button>
                         </div>
                     </div>
-
-                    <h3 class="font-bold text-gray-700 mb-3"><i class="fas fa-history mr-2"></i>Lịch sử hôm nay</h3>
-                    <div class="bg-white rounded-xl shadow-sm p-4 border border-gray-100">
-                        ${todayHistory.length === 0 ? '<p class="text-sm text-gray-500 text-center">Chưa có dữ liệu hôm nay.</p>' : ''}
-                        <ul class="relative border-l border-gray-200 ml-3">
-                            ${todayHistory.map(item => `
-                                <li class="mb-4 ml-6">
-                                    <span class="absolute flex items-center justify-center w-6 h-6 rounded-full -left-3 ring-4 ring-white
-                                        ${item.type === 'in' ? 'bg-green-100 text-green-600' : item.type === 'out' ? 'bg-red-100 text-red-600' : 'bg-blue-100 text-blue-600'}">
-                                        <i class="fas ${item.type === 'in' ? 'fa-arrow-right' : item.type === 'out' ? 'fa-arrow-left' : 'fa-map-pin'} text-xs"></i>
-                                    </span>
-                                    <div class="bg-gray-50 p-3 rounded-lg border border-gray-100 shadow-sm">
-                                        <div class="flex justify-between items-start mb-1">
-                                            <h3 class="font-semibold text-sm text-gray-800">
-                                                ${item.type === 'in' ? 'Giờ Vào' : item.type === 'out' ? 'Giờ Ra' : item.type === 'auto' ? 'Tự động định vị' : 'Cập nhật Vị trí'}
-                                            </h3>
-                                            <span class="text-xs font-normal text-gray-500">${new Date(item.timestamp).toLocaleTimeString('vi-VN')}</span>
-                                        </div>
-                                        <p class="text-xs text-gray-500 mb-2"><i class="fas fa-location-dot mr-1"></i> ${item.lat.toFixed(5)}, ${item.lng.toFixed(5)}</p>
-                                        ${item.distance > 0 ? `<p class="text-xs text-blue-500 mb-2 font-medium">+${item.distance.toFixed(2)} km</p>` : ''}
-                                        ${item.photo ? `<img src="${item.photo}" class="w-full h-24 object-cover rounded mt-2 border border-gray-200">` : ''}
-                                    </div>
-                                </li>
-                            `).join('')}
-                        </ul>
-                    </div>
                 </div>
+            `;
+
+            return `
+                <nav class="bg-white shadow px-4 py-3 flex justify-between items-center z-10">
+                    <div class="font-bold text-lg text-blue-600"><i class="fas fa-route mr-2"></i>Staff Portal</div>
+                    <div class="flex items-center gap-3">
+                        <button onclick="logout()" class="text-gray-500 hover:text-red-500"><i class="fas fa-sign-out-alt"></i></button>
+                    </div>
+                </nav>
+                <div class="flex bg-gray-100 p-2 gap-2 justify-center">
+                    <button onclick="switchStaffTab('dashboard')" class="px-4 py-2 rounded-lg font-bold text-sm ${staffCurrentTab === 'dashboard' ? 'bg-blue-600 text-white' : 'text-gray-600'}">Bảng Điều Khiển</button>
+                    <button onclick="switchStaffTab('map')" class="px-4 py-2 rounded-lg font-bold text-sm ${staffCurrentTab === 'map' ? 'bg-blue-600 text-white' : 'text-gray-600'}">Bản Đồ Di Chuyển</button>
+                </div>
+                ${staffCurrentTab === 'dashboard' ? dashboardContent : '<div class="flex-grow w-full h-full"><div id="map" class="w-full h-full"></div></div>'}
             `;
         };
 
@@ -1140,6 +1129,9 @@
                             <button onclick="switchAdminTab('timekeeping')" class="px-5 py-2 rounded-t-lg transition-colors border-b-2 ${adminCurrentTab === 'timekeeping' ? 'bg-gray-100 text-blue-800 font-bold border-blue-600' : 'hover:bg-blue-700 text-blue-100 border-transparent'}">
                                 <i class="fas fa-calendar-check mr-2"></i>Quản lý chấm công
                             </button>
+                            <button onclick="switchAdminTab('visit')" class="px-5 py-2 rounded-t-lg transition-colors border-b-2 ${adminCurrentTab === 'visit' ? 'bg-gray-100 text-blue-800 font-bold border-blue-600' : 'hover:bg-blue-700 text-blue-100 border-transparent'}">
+                                <i class="fas fa-handshake mr-2"></i>Viếng thăm khách hàng
+                            </button>
                             <button onclick="switchAdminTab('system')" class="px-5 py-2 rounded-t-lg transition-colors border-b-2 ${adminCurrentTab === 'system' ? 'bg-gray-100 text-blue-800 font-bold border-blue-600' : 'hover:bg-blue-700 text-blue-100 border-transparent'}">
                                 <i class="fas fa-cogs mr-2"></i>Quản trị hệ thống
                             </button>
@@ -1161,13 +1153,16 @@
                     <button onclick="switchAdminTab('timekeeping')" class="flex-1 py-3 flex flex-col items-center justify-center transition-colors border-l border-r border-blue-600 ${adminCurrentTab === 'timekeeping' ? 'bg-gray-100 text-blue-800' : 'hover:bg-blue-600'}">
                         <i class="fas fa-calendar-check mb-1 text-lg"></i> Chấm công
                     </button>
-                    <button onclick="switchAdminTab('system')" class="flex-1 py-3 flex flex-col items-center justify-center transition-colors ${adminCurrentTab === 'system' ? 'bg-gray-100 text-blue-800' : 'hover:bg-blue-600'}">
+                    <button onclick="switchAdminTab('visit')" class="flex-1 py-3 flex flex-col items-center justify-center transition-colors ${adminCurrentTab === 'visit' ? 'bg-gray-100 text-blue-800' : 'hover:bg-blue-600'}">
+                        <i class="fas fa-handshake mb-1 text-lg"></i> Viếng thăm
+                    </button>
+                    <button onclick="switchAdminTab('system')" class="flex-1 py-3 flex flex-col items-center justify-center transition-colors border-l border-blue-600 ${adminCurrentTab === 'system' ? 'bg-gray-100 text-blue-800' : 'hover:bg-blue-600'}">
                         <i class="fas fa-cogs mb-1 text-lg"></i> Hệ thống
                     </button>
                 </div>
 
                 <div class="flex-grow flex flex-col overflow-hidden bg-gray-50 w-full relative">
-                    ${adminCurrentTab === 'map' ? renderAdminMap() : adminCurrentTab === 'timekeeping' ? renderAdminTimekeeping() : renderAdminSystem()}
+                    ${adminCurrentTab === 'map' ? renderAdminMap() : adminCurrentTab === 'timekeeping' ? renderAdminTimekeeping() : adminCurrentTab === 'visit' ? renderAdminVisit() : renderAdminSystem()}
                 </div>
             `;
         };
@@ -1295,7 +1290,8 @@
             } else if (currentUser.role === 'staff') {
                 appDiv.innerHTML = renderStaffDashboard();
                 window.startCamera(); 
-                window.startAutoTracking(); // Bật tính năng chạy ngầm tự động định vị
+                window.startAutoTracking();
+                if (staffCurrentTab === 'map') setTimeout(() => { initMap(); showStaffPath(currentUser.id); }, 100);
             } else if (currentUser.role === 'admin') {
                 appDiv.innerHTML = renderAdminDashboard();
                 if (adminCurrentTab === 'map') {
