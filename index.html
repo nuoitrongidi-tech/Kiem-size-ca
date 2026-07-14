@@ -15,7 +15,7 @@
 
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f3f4f6; }
-        #map { height: 400px; width: 100%; border-radius: 0.5rem; z-index: 1; }
+        #map { height: 100%; width: 100%; z-index: 1; }
         .camera-container { position: relative; width: 100%; max-width: 400px; margin: 0 auto; border-radius: 0.5rem; overflow: hidden; background: #000; }
         video { width: 100%; height: auto; }
         canvas { display: none; }
@@ -49,7 +49,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // --- 1. FIREBASE SETUP & INIT ---
         const fallbackConfig = { 
@@ -77,16 +77,10 @@
 
         let firebaseUser = null;
         let unsubscribeCheckins = null;
+        let unsubscribeUsers = null;
 
-        // --- 2. MOCK DATA & STATE MANAGEMENT ---
-        let users = JSON.parse(localStorage.getItem('tracking_users')) || [
-            { id: 1, username: 'admin', password: '1', role: 'admin', name: 'Quản Trị Viên' },
-            { id: 2, username: 'nv1', password: '1', role: 'staff', name: 'Nguyễn Văn A' },
-            { id: 3, username: 'nv2', password: '1', role: 'staff', name: 'Trần Thị B' }
-        ];
-
-        const saveUsers = () => localStorage.setItem('tracking_users', JSON.stringify(users));
-
+        // --- 2. DATA & STATE MANAGEMENT (ĐÃ CHUYỂN LÊN ĐÁM MÂY) ---
+        let users = []; // Dữ liệu sẽ được đồng bộ từ Firestore
         let checkins = [];
         let currentUser = null;
         let adminCurrentTab = 'map'; // State quản lý tab của Admin
@@ -124,14 +118,54 @@
             return R * c;
         };
 
-        // --- HỆ THỐNG MODAL (QUẢN LÝ TÀI KHOẢN) ---
+        // --- HỆ THỐNG MODAL (QUẢN LÝ TÀI KHOẢN TRÊN FIREBASE) ---
         window.closeModal = () => {
             document.getElementById('modal-container').innerHTML = '';
         };
 
+        window.currentSelectedPhoto = null;
+
+        window.previewUserPhoto = (event) => {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    // Tự động nén ảnh avatar xuống kích thước nhỏ (tối đa 250px) để tối ưu dung lượng DB
+                    const img = new Image();
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        const MAX_SIZE = 250;
+                        let width = img.width;
+                        let height = img.height;
+                        if (width > height) {
+                            if (width > MAX_SIZE) { height *= MAX_SIZE / width; width = MAX_SIZE; }
+                        } else {
+                            if (height > MAX_SIZE) { width *= MAX_SIZE / height; height = MAX_SIZE; }
+                        }
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+                        
+                        window.currentSelectedPhoto = canvas.toDataURL('image/jpeg', 0.8);
+                        
+                        const preview = document.getElementById('photo-preview');
+                        const icon = document.getElementById('photo-icon');
+                        if(icon) icon.classList.add('hidden');
+                        preview.src = window.currentSelectedPhoto;
+                        preview.classList.remove('hidden');
+                    };
+                    img.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        };
+
         window.openUserModal = (userId = null) => {
-            const user = userId ? users.find(u => u.id === userId) : { id: Date.now(), username: '', password: '', role: 'staff', name: '' };
+            const user = userId ? users.find(u => u.id === userId) : { id: Date.now(), username: '', password: '', role: 'staff', name: '', photoURL: '' };
             const isEdit = !!userId;
+            
+            window.currentSelectedPhoto = user.photoURL || null;
 
             const modalHtml = `
                 <div class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
@@ -141,6 +175,15 @@
                             <button onclick="closeModal()" class="text-white hover:text-blue-200 transition"><i class="fas fa-times text-xl"></i></button>
                         </div>
                         <form onsubmit="saveUser(event, ${user.id}, ${isEdit})" class="p-6">
+                            <div class="mb-4">
+                                <label class="block text-gray-700 text-sm font-bold mb-2">Ảnh Đại Diện</label>
+                                <div class="flex items-center gap-4">
+                                    <div class="w-16 h-16 rounded-full bg-gray-100 border-2 border-dashed border-gray-300 flex items-center justify-center overflow-hidden shrink-0">
+                                        ${user.photoURL ? `<img src="${user.photoURL}" class="w-full h-full object-cover" id="photo-preview">` : `<i class="fas fa-camera text-gray-400" id="photo-icon"></i><img src="" class="hidden w-full h-full object-cover" id="photo-preview">`}
+                                    </div>
+                                    <input type="file" accept="image/*" onchange="previewUserPhoto(event)" class="text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 transition cursor-pointer w-full">
+                                </div>
+                            </div>
                             <div class="mb-4">
                                 <label class="block text-gray-700 text-sm font-bold mb-2">Họ và Tên</label>
                                 <input id="modal-name" type="text" class="w-full px-4 py-2 bg-gray-50 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition" value="${user.name}" required>
@@ -162,7 +205,7 @@
                             </div>
                             <div class="flex justify-end gap-3 mt-8">
                                 <button type="button" onclick="closeModal()" class="px-5 py-2.5 bg-gray-200 text-gray-700 rounded-lg font-bold hover:bg-gray-300 transition">Hủy</button>
-                                <button type="submit" class="px-5 py-2.5 bg-blue-600 text-white rounded-lg font-bold hover:bg-blue-700 shadow-md transition">Lưu Thông Tin</button>
+                                <button type="submit" id="btn-save-user" class="px-5 py-2.5 bg-blue-600 text-white rounded-lg font-bold hover:bg-blue-700 shadow-md transition">Lưu Thông Tin</button>
                             </div>
                         </form>
                     </div>
@@ -171,25 +214,43 @@
             document.getElementById('modal-container').innerHTML = modalHtml;
         };
 
-        window.saveUser = (e, id, isEdit) => {
+        window.saveUser = async (e, id, isEdit) => {
             e.preventDefault();
+            const actionBtn = document.getElementById('btn-save-user');
+            const originalText = actionBtn.innerHTML;
+            actionBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang lưu...';
+            actionBtn.disabled = true;
+
             const name = document.getElementById('modal-name').value;
             const username = document.getElementById('modal-username').value;
             const password = document.getElementById('modal-password').value;
             const role = document.getElementById('modal-role').value;
+            const photoURL = window.currentSelectedPhoto; // Lấy ảnh đã chọn
 
-            if (isEdit) {
-                const index = users.findIndex(u => u.id === id);
-                if(index !== -1) {
-                    users[index] = { ...users[index], name, username, password, role };
+            try {
+                if (!firebaseUser) throw new Error("Chưa kết nối đến máy chủ!");
+
+                if (isEdit) {
+                    const user = users.find(u => u.id === id);
+                    if (user && user.docId) {
+                        const userRef = doc(db, 'artifacts', appId, 'public', 'data', 'users', user.docId);
+                        await updateDoc(userRef, { name, username, password, role, photoURL });
+                    }
+                } else {
+                    const usersRef = collection(db, 'artifacts', appId, 'public', 'data', 'users');
+                    await addDoc(usersRef, { id: Date.now(), name, username, password, role, photoURL });
                 }
-            } else {
-                users.push({ id, name, username, password, role });
+                
+                closeModal();
+                showMessage(isEdit ? "Đã cập nhật thông tin tài khoản!" : "Đã thêm tài khoản mới!");
+            } catch (err) {
+                showMessage("Lỗi: " + err.message, "error");
+            } finally {
+                if(document.getElementById('btn-save-user')) {
+                    actionBtn.innerHTML = originalText;
+                    actionBtn.disabled = false;
+                }
             }
-            saveUsers();
-            closeModal();
-            showMessage(isEdit ? "Đã cập nhật thông tin tài khoản!" : "Đã thêm tài khoản mới!");
-            renderApp();
         };
 
         window.confirmDeleteUser = (userId) => {
@@ -204,7 +265,7 @@
                         <p class="text-gray-500 mb-6 leading-relaxed">Bạn sắp xóa tài khoản <b class="text-gray-800">${user.name}</b>. Hành động này không thể hoàn tác. Bạn có chắc chắn?</p>
                         <div class="flex gap-3">
                             <button onclick="closeModal()" class="flex-1 px-4 py-3 bg-gray-100 text-gray-700 rounded-xl font-bold hover:bg-gray-200 transition">Hủy bỏ</button>
-                            <button onclick="executeDeleteUser(${userId})" class="flex-1 px-4 py-3 bg-red-500 text-white rounded-xl font-bold hover:bg-red-600 shadow-md transition">Xóa vĩnh viễn</button>
+                            <button id="btn-delete-user" onclick="executeDeleteUser(${userId})" class="flex-1 px-4 py-3 bg-red-500 text-white rounded-xl font-bold hover:bg-red-600 shadow-md transition">Xóa vĩnh viễn</button>
                         </div>
                     </div>
                 </div>
@@ -212,12 +273,22 @@
             document.getElementById('modal-container').innerHTML = modalHtml;
         };
 
-        window.executeDeleteUser = (userId) => {
-            users = users.filter(u => u.id !== userId);
-            saveUsers();
-            closeModal();
-            showMessage("Đã xóa tài khoản thành công!");
-            renderApp();
+        window.executeDeleteUser = async (userId) => {
+            const actionBtn = document.getElementById('btn-delete-user');
+            actionBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang xóa...';
+            actionBtn.disabled = true;
+
+            try {
+                const user = users.find(u => u.id === userId);
+                if (user && user.docId) {
+                    const userRef = doc(db, 'artifacts', appId, 'public', 'data', 'users', user.docId);
+                    await deleteDoc(userRef);
+                }
+                closeModal();
+                showMessage("Đã xóa tài khoản thành công!");
+            } catch (err) {
+                showMessage("Lỗi khi xóa: " + err.message, "error");
+            }
         };
 
         // --- 4. HARDWARE ACCESS (CAMERA & GPS) ---
@@ -701,6 +772,7 @@
                                 <thead>
                                     <tr class="bg-white text-gray-500 uppercase text-xs leading-normal border-b border-gray-200">
                                         <th class="py-4 px-6 text-center w-16">ID</th>
+                                        <th class="py-4 px-6 text-center w-24">Ảnh</th>
                                         <th class="py-4 px-6">Họ Và Tên</th>
                                         <th class="py-4 px-6">Tài Khoản</th>
                                         <th class="py-4 px-6">Vai Trò (Role)</th>
@@ -711,14 +783,12 @@
                                     ${users.map(u => `
                                         <tr class="border-b border-gray-100 hover:bg-blue-50 transition-colors">
                                             <td class="py-3 px-6 text-center font-bold text-gray-800">#${u.id}</td>
-                                            <td class="py-3 px-6 font-bold text-gray-800">
-                                                <div class="flex items-center gap-3">
-                                                    <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-500 to-blue-300 text-white flex items-center justify-center font-bold text-xs uppercase shadow-sm">
-                                                        ${u.name.charAt(0)}
-                                                    </div>
-                                                    ${u.name}
+                                            <td class="py-3 px-6 text-center">
+                                                <div class="mx-auto w-10 h-10 rounded-full bg-gradient-to-tr from-blue-500 to-blue-300 text-white flex items-center justify-center font-bold text-sm uppercase shadow-sm border-2 border-white">
+                                                    ${u.photoURL ? `<img src="${u.photoURL}" class="w-full h-full object-cover rounded-full">` : u.name.charAt(0)}
                                                 </div>
                                             </td>
+                                            <td class="py-3 px-6 font-bold text-gray-800">${u.name}</td>
                                             <td class="py-3 px-6 font-medium text-gray-600">${u.username}</td>
                                             <td class="py-3 px-6">
                                                 <span class="px-3 py-1 rounded-full text-xs font-bold border ${u.role === 'admin' ? 'bg-purple-50 text-purple-700 border-purple-200' : 'bg-gray-100 text-gray-700 border-gray-300'}">
@@ -874,24 +944,42 @@
         // Cấu hình Listener lắng nghe sự thay đổi Database Real-time
         const setupFirestoreListener = () => {
             if (!firebaseUser || !db) return;
-            const checkinsRef = collection(db, 'artifacts', appId, 'public', 'data', 'checkins');
             
+            // 1. Đồng bộ Check-ins
+            const checkinsRef = collection(db, 'artifacts', appId, 'public', 'data', 'checkins');
             unsubscribeCheckins = onSnapshot(checkinsRef, (snapshot) => {
                 const data = [];
                 snapshot.forEach((doc) => {
                     data.push({ id: doc.id, ...doc.data() });
                 });
-                
-                // Sắp xếp dữ liệu theo thời gian thực tế
                 checkins = data.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
-                
-                // Chỉ render lại giao diện nếu có người đang đăng nhập
-                if (currentUser) {
-                    renderApp();
+                if (currentUser) renderApp();
+            }, (error) => console.error("Lỗi đồng bộ Checkins:", error));
+
+            // 2. Đồng bộ Tài khoản Users
+            const usersRef = collection(db, 'artifacts', appId, 'public', 'data', 'users');
+            
+            // Kiểm tra và khởi tạo người dùng mặc định nếu DB trống
+            getDocs(usersRef).then(snapshot => {
+                if (snapshot.empty) {
+                    const defaultUsers = [
+                        { id: 1, username: 'admin', password: '1', role: 'admin', name: 'Quản Trị Viên' },
+                        { id: 2, username: 'nv1', password: '1', role: 'staff', name: 'Nguyễn Văn A' },
+                        { id: 3, username: 'nv2', password: '1', role: 'staff', name: 'Trần Thị B' }
+                    ];
+                    defaultUsers.forEach(u => addDoc(usersRef, u));
                 }
-            }, (error) => {
-                console.error("Lỗi đồng bộ Firestore:", error);
             });
+
+            unsubscribeUsers = onSnapshot(usersRef, (snapshot) => {
+                const data = [];
+                snapshot.forEach((doc) => {
+                    data.push({ docId: doc.id, ...doc.data() });
+                });
+                // Sắp xếp theo ID để hiển thị ổn định
+                users = data.sort((a, b) => a.id - b.id);
+                if (currentUser) renderApp();
+            }, (error) => console.error("Lỗi đồng bộ Users:", error));
         };
 
         // Xác thực người dùng (Ẩn - Hệ thống tự cấp ID)
@@ -921,8 +1009,9 @@
             firebaseUser = user;
             if (user) {
                 setupFirestoreListener();
-            } else if (unsubscribeCheckins) {
-                unsubscribeCheckins();
+            } else {
+                if (unsubscribeCheckins) unsubscribeCheckins();
+                if (unsubscribeUsers) unsubscribeUsers();
             }
             // Nếu chưa có ai đăng nhập form UI, tự kích hoạt render màn hình login
             if(!currentUser) renderApp();
