@@ -2,8 +2,48 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Hệ Thống quản lý Nhân Viên Thị Trường</title>
+    
+    <!-- CẤU HÌNH PWA DÀNH CHO iOS / ANDROID -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Tracking NV">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#2563eb">
+    <!-- Icon hiển thị trên màn hình chính của iPhone -->
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/2776/2776067.png">
+
+    <!-- Tự động tạo Manifest và Service Worker để cài đặt App trên Android & iOS -->
+    <script>
+        const manifestData = {
+            "name": "Hệ Thống Tracking Nhân Viên",
+            "short_name": "Tracking NV",
+            "start_url": window.location.href,
+            "display": "standalone",
+            "background_color": "#f3f4f6",
+            "theme_color": "#2563eb",
+            "icons": [{
+                "src": "https://cdn-icons-png.flaticon.com/512/2776/2776067.png",
+                "sizes": "512x512",
+                "type": "image/png",
+                "purpose": "any maskable"
+            }]
+        };
+        const manifestBlob = new Blob([JSON.stringify(manifestData)], {type: 'application/json'});
+        const manifestLink = document.createElement('link');
+        manifestLink.rel = 'manifest';
+        manifestLink.href = URL.createObjectURL(manifestBlob);
+        document.head.appendChild(manifestLink);
+
+        const swCode = "self.addEventListener('fetch', function(e) { /* Bypass PWA cache requirement */ });";
+        const swBlob = new Blob([swCode], {type: 'application/javascript'});
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register(URL.createObjectURL(swBlob))
+                .catch(err => console.log('PWA SW Lỗi:', err));
+        }
+    </script>
+
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome Icons -->
@@ -62,7 +102,6 @@
             measurementId : "G-SBTDHD5DNE" 
         };
         
-        // Sử dụng cấu hình của bạn
         const firebaseConfig = fallbackConfig;
         const appId = 'tracking-app-demo';
         
@@ -79,13 +118,62 @@
         let unsubscribeCheckins = null;
         let unsubscribeUsers = null;
 
-        // --- 2. DATA & STATE MANAGEMENT (ĐÃ CHUYỂN LÊN ĐÁM MÂY) ---
-        let users = []; // Dữ liệu sẽ được đồng bộ từ Firestore
+        // --- 2. DATA & STATE MANAGEMENT ---
+        let users = []; 
         let checkins = [];
         let currentUser = null;
-        let adminCurrentTab = 'map'; // State quản lý tab của Admin
+        let adminCurrentTab = 'map'; 
+        let autoUpdateInterval = null; // Biến giữ trình theo dõi thời gian thực
         
-        // Trạng thái Camera & Map
+        let timekeepingView = 'monthly'; 
+        let tkMonth = new Date().getMonth() + 1;
+        let tkYear = new Date().getFullYear();
+
+        window.setTimekeepingView = (view) => {
+            timekeepingView = view;
+            renderApp();
+        };
+
+        window.changeTkMonth = (delta) => {
+            tkMonth += delta;
+            if (tkMonth > 12) { tkMonth = 1; tkYear++; }
+            if (tkMonth < 1) { tkMonth = 12; tkYear--; }
+            renderApp();
+        };
+
+        window.exportExcel = () => {
+            const table = document.querySelector('#app table');
+            if(!table) {
+                showMessage('Không tìm thấy dữ liệu để xuất!', 'error');
+                return;
+            }
+            
+            let csv = '\uFEFF';
+            for(let row of table.rows) {
+                let rowData = [];
+                for(let cell of row.cells) {
+                    let text = cell.innerText.replace(/\n/g, ' ').replace(/"/g, '""').trim();
+                    rowData.push('"' + text + '"');
+                }
+                csv += rowData.join(',') + '\n';
+            }
+            
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            
+            const fileName = timekeepingView === 'monthly' ? 'Bang_Cham_Cong' : timekeepingView === 'distance' ? 'Bang_Cu_Ly' : 'Nhat_Ky_He_Thong';
+            a.download = `${fileName}_${tkMonth}_${tkYear}.csv`;
+            
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            showMessage('Đã tải xuống file Excel thành công!');
+        };
+        
         let stream = null;
         let videoEl = null;
         let canvasEl = null;
@@ -108,7 +196,7 @@
         };
 
         const calculateDistance = (lat1, lon1, lat2, lon2) => {
-            const R = 6371; // Bán kính trái đất (km)
+            const R = 6371; 
             const dLat = (lat2 - lat1) * Math.PI / 180;
             const dLon = (lon2 - lon1) * Math.PI / 180;
             const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
@@ -118,7 +206,68 @@
             return R * c;
         };
 
-        // --- HỆ THỐNG MODAL (QUẢN LÝ TÀI KHOẢN TRÊN FIREBASE) ---
+        window.getTimeAgo = (dateString) => {
+            const diffMins = Math.floor((new Date() - new Date(dateString)) / 60000);
+            if (diffMins < 1) return 'Vừa xong';
+            if (diffMins < 60) return `${diffMins} phút trước`;
+            const diffHours = Math.floor(diffMins / 60);
+            if (diffHours < 24) return `${diffHours} giờ trước`;
+            return `${Math.floor(diffHours / 24)} ngày trước`;
+        };
+
+        // --- HỆ THỐNG THEO DÕI TỰ ĐỘNG (BACKGROUND TRACKING) ---
+        window.startAutoTracking = () => {
+            if (autoUpdateInterval) clearInterval(autoUpdateInterval);
+            
+            autoUpdateInterval = setInterval(async () => {
+                if (!currentUser || currentUser.role !== 'staff' || !firebaseUser) return;
+                
+                // Lọc để kiểm tra xem nhân viên có đang trong ca làm việc không
+                const todayStr = new Date().toLocaleDateString();
+                const userTodayCheckins = checkins.filter(c => c.userId === currentUser.id && new Date(c.timestamp).toLocaleDateString() === todayStr);
+                
+                // KHI NÀO THÌ THEO DÕI: Đã Check-in và chưa Check-out
+                if (userTodayCheckins.length === 0) return; 
+                const lastLog = userTodayCheckins[userTodayCheckins.length - 1];
+                if (lastLog.type === 'out') return; 
+
+                try {
+                    const coords = await getGPS();
+                    let distanceToLast = calculateDistance(lastLog.lat, lastLog.lng, coords.lat, coords.lng);
+                    
+                    // Lọc bỏ độ nhiễu tín hiệu GPS nếu vị trí nhảy dưới 5 mét (0.005 km)
+                    if (distanceToLast < 0.005) {
+                        distanceToLast = 0;
+                    }
+
+                    const record = {
+                        userId: currentUser.id,
+                        userName: currentUser.name,
+                        type: 'auto', // Đánh dấu đây là cập nhật ngầm định vị tự động
+                        timestamp: new Date().toISOString(),
+                        lat: coords.lat,
+                        lng: coords.lng,
+                        photo: null, // Không chụp ảnh để tiết kiệm dung lượng và không giật máy
+                        distance: distanceToLast
+                    };
+
+                    const checkinsRef = collection(db, 'artifacts', appId, 'public', 'data', 'checkins');
+                    await addDoc(checkinsRef, record);
+                    console.log("Đã cập nhật định vị ngầm tự động.");
+                } catch (err) {
+                    console.error("Lỗi tự cập nhật định vị: ", err);
+                }
+            }, 60000); // Kích hoạt 60,000 ms (đúng 1 phút/lần)
+        };
+
+        window.stopAutoTracking = () => {
+            if (autoUpdateInterval) {
+                clearInterval(autoUpdateInterval);
+                autoUpdateInterval = null;
+            }
+        };
+
+        // --- HỆ THỐNG MODAL ---
         window.closeModal = () => {
             document.getElementById('modal-container').innerHTML = '';
         };
@@ -130,7 +279,6 @@
             if (file) {
                 const reader = new FileReader();
                 reader.onload = (e) => {
-                    // Tự động nén ảnh avatar xuống kích thước nhỏ (tối đa 250px) để tối ưu dung lượng DB
                     const img = new Image();
                     img.onload = () => {
                         const canvas = document.createElement('canvas');
@@ -225,7 +373,7 @@
             const username = document.getElementById('modal-username').value;
             const password = document.getElementById('modal-password').value;
             const role = document.getElementById('modal-role').value;
-            const photoURL = window.currentSelectedPhoto; // Lấy ảnh đã chọn
+            const photoURL = window.currentSelectedPhoto;
 
             try {
                 if (!firebaseUser) throw new Error("Chưa kết nối đến máy chủ!");
@@ -303,11 +451,9 @@
 
                 let constraints = { video: { facingMode: 'environment' } };
                 try {
-                    // Cố gắng mở camera sau trước
                     stream = await navigator.mediaDevices.getUserMedia(constraints);
                     cameraAvailable = true;
                 } catch (e) {
-                    // Nếu không tìm thấy camera sau (ví dụ: trên laptop), mở camera mặc định
                     constraints = { video: true };
                     stream = await navigator.mediaDevices.getUserMedia(constraints);
                     cameraAvailable = true;
@@ -338,7 +484,6 @@
             if (!canvasEl) return null;
             
             if (!stream || !cameraAvailable) {
-                // Tạo ảnh giả (Mock photo) nếu không có camera để app vẫn hoạt động
                 canvasEl.width = 480;
                 canvasEl.height = 360;
                 const ctx = canvasEl.getContext('2d');
@@ -353,14 +498,13 @@
                 return canvasEl.toDataURL('image/jpeg', 0.6);
             }
 
-            // Nén ảnh thực tế
             const MAX_WIDTH = 480; 
             const scale = MAX_WIDTH / videoEl.videoWidth;
             canvasEl.width = MAX_WIDTH;
             canvasEl.height = videoEl.videoHeight * scale;
             const ctx = canvasEl.getContext('2d');
             ctx.drawImage(videoEl, 0, 0, canvasEl.width, canvasEl.height);
-            return canvasEl.toDataURL('image/jpeg', 0.6); // Chất lượng 60%
+            return canvasEl.toDataURL('image/jpeg', 0.6); 
         };
 
         const getGPS = () => {
@@ -376,7 +520,7 @@
             });
         };
 
-        // --- 5. CORE BUSINESS LOGIC (FIREBASE INTEGRATION) ---
+        // --- 5. CORE BUSINESS LOGIC ---
         window.handleAction = async (type) => { 
             const actionBtn = document.getElementById(`btn-${type}`);
             const originalText = actionBtn.innerHTML;
@@ -386,7 +530,6 @@
             try {
                 if (!firebaseUser) throw new Error("Chưa kết nối an toàn với máy chủ!");
 
-                // 1. Chụp ảnh (kể cả khi không có camera, hệ thống sẽ tạo ảnh giả)
                 if (!stream && !cameraAvailable) {
                     await window.startCamera();
                     if(cameraAvailable) await new Promise(r => setTimeout(r, 1000));
@@ -395,20 +538,16 @@
 
                 if (!photoData && type !== 'out') throw new Error("Không thể tạo hình ảnh ghi nhận!");
 
-                // 2. Lấy GPS
                 const coords = await getGPS();
-
-                // 3. Tính khoảng cách
                 let distanceToLast = 0;
                 const todayStr = new Date().toLocaleDateString();
                 const userTodayCheckins = checkins.filter(c => c.userId === currentUser.id && new Date(c.timestamp).toLocaleDateString() === todayStr);
                 
                 if (userTodayCheckins.length > 0) {
-                    const lastPoint = userTodayCheckins[userTodayCheckins.length - 1]; // Phần tử cuối vì đã sort tăng dần
+                    const lastPoint = userTodayCheckins[userTodayCheckins.length - 1]; 
                     distanceToLast = calculateDistance(lastPoint.lat, lastPoint.lng, coords.lat, coords.lng);
                 }
 
-                // 4. Lưu lên Firestore
                 const record = {
                     userId: currentUser.id,
                     userName: currentUser.name,
@@ -424,7 +563,6 @@
                 await addDoc(checkinsRef, record);
                 
                 showMessage(`Ghi nhận ${type === 'in' ? 'Giờ Vào' : type === 'out' ? 'Giờ Ra' : 'Vị Trí'} thành công!`);
-                // Lưu ý: Không cần gọi renderApp() ở đây vì onSnapshot sẽ tự động kích hoạt
 
             } catch (error) {
                 showMessage(error.message || error, "error");
@@ -456,6 +594,7 @@
         window.logout = () => {
             currentUser = null;
             stopCamera();
+            window.stopAutoTracking(); // Ngắt auto tracking khi đăng xuất
             adminCurrentTab = 'map'; 
             renderApp();
         };
@@ -468,15 +607,10 @@
         window.toggleSidebar = () => {
             const sidebar = document.getElementById('admin-sidebar');
             if (!sidebar) return;
-            
-            // Sử dụng hiệu ứng trượt mượt mà thay vì ẩn hiện đột ngột
             sidebar.classList.toggle('-translate-x-full');
-            
-            // Fix lại kích thước bản đồ
             setTimeout(() => { if (map) map.invalidateSize(); }, 300);
         };
 
-        // HTML Templates
         const TPL_LOGIN = `
             <div class="flex items-center justify-center h-full bg-blue-600">
                 <div class="bg-white p-8 rounded-lg shadow-xl w-96 max-w-[90%]">
@@ -508,17 +642,25 @@
 
         const renderStaffDashboard = () => {
             const todayStr = new Date().toLocaleDateString();
-            // Lọc dữ liệu cá nhân (vì danh sách đang từ cũ đến mới, dùng reverse để hiển thị Mới lên đầu)
             const todayHistory = checkins.filter(c => c.userId === currentUser.id && new Date(c.timestamp).toLocaleDateString() === todayStr).reverse();
             
             const totalKm = todayHistory.reduce((sum, item) => sum + (item.distance || 0), 0).toFixed(2);
 
             let statusText = "Chưa Check-in";
             let statusColor = "text-gray-500";
+            let isTracking = false;
+            
             if (todayHistory.length > 0) {
                 const lastAction = todayHistory[0].type;
-                if (lastAction === 'in' || lastAction === 'update') { statusText = "Đang làm việc"; statusColor = "text-green-600"; }
-                else if (lastAction === 'out') { statusText = "Đã Check-out"; statusColor = "text-red-500"; }
+                if (lastAction === 'in' || lastAction === 'update' || lastAction === 'auto') { 
+                    statusText = "Đang làm việc"; 
+                    statusColor = "text-green-600"; 
+                    isTracking = true;
+                }
+                else if (lastAction === 'out') { 
+                    statusText = "Đã Check-out"; 
+                    statusColor = "text-red-500"; 
+                }
             }
 
             return `
@@ -535,8 +677,9 @@
                         <div>
                             <p class="text-xs text-gray-500 uppercase tracking-wide">Trạng thái hôm nay</p>
                             <p class="font-bold text-lg ${statusColor}">${statusText}</p>
+                            ${isTracking ? '<div class="text-[10px] text-blue-500 mt-1 flex items-center gap-1 font-bold bg-blue-50 px-2 py-0.5 rounded border border-blue-100 w-max"><i class="fas fa-satellite-dish animate-pulse"></i> Tự động định vị (1 phút/lần)</div>' : ''}
                         </div>
-                        <div class="text-right">
+                        <div class="text-right shrink-0">
                             <p class="text-xs text-gray-500 uppercase tracking-wide">Quãng đường</p>
                             <p class="font-bold text-lg text-blue-600">${totalKm} km</p>
                         </div>
@@ -563,7 +706,7 @@
                                 <i class="fas fa-sign-out-alt mb-1"></i> Chấm công RA
                             </button>
                             <button id="btn-update" onclick="handleAction('update')" class="col-span-2 bg-blue-500 text-white py-3 rounded-lg font-bold shadow hover:bg-blue-600 transition flex flex-col items-center justify-center">
-                                <i class="fas fa-map-marker-alt mb-1"></i> Cập nhật Vị trí
+                                <i class="fas fa-map-marker-alt mb-1"></i> Cập nhật Vị trí (Thủ công)
                             </button>
                         </div>
                     </div>
@@ -581,7 +724,7 @@
                                     <div class="bg-gray-50 p-3 rounded-lg border border-gray-100 shadow-sm">
                                         <div class="flex justify-between items-start mb-1">
                                             <h3 class="font-semibold text-sm text-gray-800">
-                                                ${item.type === 'in' ? 'Giờ Vào' : item.type === 'out' ? 'Giờ Ra' : 'Vị trí'}
+                                                ${item.type === 'in' ? 'Giờ Vào' : item.type === 'out' ? 'Giờ Ra' : item.type === 'auto' ? 'Tự động định vị' : 'Cập nhật Vị trí'}
                                             </h3>
                                             <span class="text-xs font-normal text-gray-500">${new Date(item.timestamp).toLocaleTimeString('vi-VN')}</span>
                                         </div>
@@ -607,7 +750,7 @@
                 let checkInTime = "--:--";
                 let checkOutTime = "--:--";
                 const inLog = logs.find(l => l.type === 'in'); 
-                const outLog = logs.slice().reverse().find(l => l.type === 'out'); // Tìm check out cuối cùng
+                const outLog = logs.slice().reverse().find(l => l.type === 'out');
 
                 if(inLog) checkInTime = new Date(inLog.timestamp).toLocaleTimeString('vi-VN');
                 if(outLog) checkOutTime = new Date(outLog.timestamp).toLocaleTimeString('vi-VN');
@@ -617,17 +760,14 @@
 
             return `
                 <div class="relative w-full h-full overflow-hidden">
-                    <!-- Bản đồ Container (Luôn Full Màn Hình) -->
                     <div id="map-container" class="absolute inset-0 z-0 bg-gray-100">
                         <div id="map" class="w-full h-full"></div>
                     </div>
                     
-                    <!-- Nút Mở Sidebar (Nổi trên Map) -->
                     <button onclick="toggleSidebar()" class="absolute top-4 left-4 z-10 bg-white p-3 rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.15)] text-gray-700 hover:text-blue-600 focus:outline-none transition-colors border border-gray-200" title="Mở danh sách">
                         <i class="fas fa-bars text-xl"></i>
                     </button>
 
-                    <!-- Sidebar Nổi (Floating Sidebar) -->
                     <div id="admin-sidebar" class="absolute top-0 left-0 h-full w-full md:w-[400px] bg-white/95 backdrop-blur-md flex flex-col transition-transform duration-300 z-20 transform translate-x-0 shadow-[4px_0_24px_rgba(0,0,0,0.15)]">
                         <div class="flex justify-between items-center p-5 border-b border-gray-200/60 bg-white/50">
                             <h2 class="font-bold text-gray-800 uppercase text-sm tracking-wider"><i class="fas fa-list-ul mr-2 text-blue-600"></i>Tổng quan hôm nay</h2>
@@ -637,7 +777,6 @@
                         </div>
                         
                         <div class="flex-grow overflow-y-auto p-4 space-y-4">
-                            <!-- Danh sách nhân viên -->
                             <div class="space-y-3">
                                 ${staffStats.map(stat => `
                                     <div class="bg-white border border-gray-200 rounded-xl p-4 hover:shadow-lg hover:border-blue-300 transition cursor-pointer relative overflow-hidden" onclick="window.showStaffPath(${stat.id}); if(window.innerWidth < 768) window.toggleSidebar();">
@@ -656,7 +795,6 @@
                                 `).join('')}
                             </div>
 
-                            <!-- Lịch sử check-in -->
                             <div class="mt-6">
                                 <h2 class="font-bold text-gray-800 mb-3 text-sm">Điểm Check-in Mới Nhất</h2>
                                 <div class="space-y-2">
@@ -680,15 +818,164 @@
         const renderAdminTimekeeping = () => {
             const historyList = checkins.slice().reverse(); 
             
-            return `
-                <div class="p-6 h-full overflow-y-auto w-full max-w-7xl mx-auto">
-                    <div class="flex justify-between items-center mb-6">
-                        <h2 class="text-2xl font-bold text-gray-800"><i class="fas fa-calendar-check text-blue-600 mr-2"></i>Quản Lý Chấm Công</h2>
-                        <button class="bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded shadow-sm hover:bg-gray-50 transition text-sm font-medium">
-                            <i class="fas fa-download mr-2"></i>Xuất Excel
-                        </button>
+            const daysInMonth = new Date(tkYear, tkMonth, 0).getDate();
+            const staffList = users.filter(u => u.role === 'staff');
+            const dayNames = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
+
+            let timesheetHtml = '';
+            if (timekeepingView === 'monthly') {
+                timesheetHtml = `
+                    <div class="flex justify-between items-center mb-4 bg-white p-3 rounded-xl border border-gray-200 shadow-sm">
+                        <button onclick="changeTkMonth(-1)" class="px-4 py-2 hover:bg-gray-100 rounded-lg transition text-gray-600"><i class="fas fa-chevron-left"></i> Tháng trước</button>
+                        <h3 class="font-bold text-blue-800 text-lg uppercase tracking-wide">Tháng ${tkMonth} / ${tkYear}</h3>
+                        <button onclick="changeTkMonth(1)" class="px-4 py-2 hover:bg-gray-100 rounded-lg transition text-gray-600">Tháng sau <i class="fas fa-chevron-right"></i></button>
                     </div>
-                    
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden relative">
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse min-w-max">
+                                <thead>
+                                    <tr class="bg-gray-100 text-gray-600 text-[11px] uppercase tracking-wider border-b">
+                                        <th class="py-3 px-2 sticky left-0 bg-gray-100 z-30 w-12 min-w-[3rem] max-w-[3rem] border-r border-gray-300 text-center">STT</th>
+                                        <th class="py-3 px-4 sticky left-12 bg-gray-100 z-30 w-48 min-w-[12rem] max-w-[12rem] shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)] border-r border-gray-200">Nhân Viên</th>
+                                        ${Array.from({length: daysInMonth}, (_, i) => {
+                                            const dateObj = new Date(tkYear, tkMonth - 1, i + 1);
+                                            const dayName = dayNames[dateObj.getDay()];
+                                            const isWeekend = dateObj.getDay() === 0 || dateObj.getDay() === 6;
+                                            return `<th class="py-1 px-1 text-center border-r border-gray-200 w-10 min-w-[2.5rem] ${isWeekend ? 'bg-red-50 text-red-500' : ''}"><div class="flex flex-col leading-tight"><span class="text-[9px] opacity-70">${dayName}</span><span class="text-xs">${i+1}</span></div></th>`;
+                                        }).join('')}
+                                        <th class="py-3 px-4 text-center border-l border-gray-200 bg-blue-50 font-bold sticky right-0 shadow-[-2px_0_5px_-2px_rgba(0,0,0,0.1)] z-20 text-blue-800">Tổng Công</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="text-gray-600 text-sm font-light">
+                                    ${staffList.length === 0 ? '<tr><td colspan="' + (daysInMonth + 3) + '" class="py-8 text-center text-gray-400 font-medium">Chưa có nhân viên nào.</td></tr>' : ''}
+                                    ${staffList.map((staff, index) => {
+                                        let totalWorkDays = 0;
+                                        const daysHtml = Array.from({length: daysInMonth}, (_, i) => {
+                                            const day = i + 1;
+                                            const dateStr = new Date(tkYear, tkMonth - 1, day).toLocaleDateString();
+                                            const dateObj = new Date(tkYear, tkMonth - 1, day);
+                                            const isWeekend = dateObj.getDay() === 0 || dateObj.getDay() === 6;
+                                            const hasLog = checkins.some(c => c.userId === staff.id && new Date(c.timestamp).toLocaleDateString() === dateStr);
+                                            if(hasLog) totalWorkDays++;
+                                            
+                                            return `<td class="py-2 px-1 text-center border-l border-gray-100 ${hasLog ? 'bg-green-50/50' : (isWeekend ? 'bg-red-50/20' : '')}">
+                                                ${hasLog ? '<i class="fas fa-check-circle text-green-500 text-sm shadow-sm rounded-full bg-white"></i>' : '<span class="text-gray-200 text-xs">-</span>'}
+                                            </td>`;
+                                        }).join('');
+
+                                        return `
+                                        <tr class="border-b border-gray-100 hover:bg-blue-50/50 transition-colors">
+                                            <td class="py-2 px-2 text-center font-bold text-gray-500 sticky left-0 bg-white z-20 border-r border-gray-100">${index + 1}</td>
+                                            <td class="py-2 px-4 font-bold text-gray-800 sticky left-12 bg-white shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)] z-20 whitespace-nowrap border-r border-gray-100">
+                                                <div class="flex items-center gap-3">
+                                                    <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-500 to-blue-300 text-white flex items-center justify-center text-xs uppercase border border-gray-200 shadow-sm shrink-0">
+                                                        ${staff.photoURL ? `<img src="${staff.photoURL}" class="w-full h-full object-cover rounded-full">` : staff.name.charAt(0)}
+                                                    </div>
+                                                    <span class="truncate w-32" title="${staff.name}">${staff.name}</span>
+                                                </div>
+                                            </td>
+                                            ${daysHtml}
+                                            <td class="py-2 px-4 text-center font-black text-blue-700 bg-blue-50 sticky right-0 shadow-[-2px_0_5px_-2px_rgba(0,0,0,0.1)] z-10 text-base border-l border-gray-200">${totalWorkDays}</td>
+                                        </tr>`;
+                                    }).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                `;
+            }
+
+            let distanceHtml = '';
+            if (timekeepingView === 'distance') {
+                distanceHtml = `
+                    <div class="flex justify-between items-center mb-4 bg-white p-3 rounded-xl border border-gray-200 shadow-sm">
+                        <button onclick="changeTkMonth(-1)" class="px-4 py-2 hover:bg-gray-100 rounded-lg transition text-gray-600"><i class="fas fa-chevron-left"></i> Tháng trước</button>
+                        <h3 class="font-bold text-blue-800 text-lg uppercase tracking-wide">Bảng Cự Ly Tháng ${tkMonth} / ${tkYear}</h3>
+                        <button onclick="changeTkMonth(1)" class="px-4 py-2 hover:bg-gray-100 rounded-lg transition text-gray-600">Tháng sau <i class="fas fa-chevron-right"></i></button>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden relative">
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse min-w-max">
+                                <thead>
+                                    <tr class="bg-gray-100 text-gray-600 text-[11px] uppercase tracking-wider border-b border-gray-300">
+                                        <th class="py-3 px-2 sticky left-0 bg-gray-100 z-30 w-12 min-w-[3rem] max-w-[3rem] border-r border-gray-300 text-center">STT</th>
+                                        <th class="py-3 px-4 sticky left-12 bg-gray-100 z-30 w-48 min-w-[12rem] max-w-[12rem] border-r border-gray-300">Nhân Viên</th>
+                                        <th class="py-3 px-2 sticky left-60 bg-gray-100 z-30 w-16 min-w-[4rem] max-w-[4rem] border-r border-gray-300 text-center shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">Chỉ tiêu</th>
+                                        ${Array.from({length: daysInMonth}, (_, i) => {
+                                            const dateObj = new Date(tkYear, tkMonth - 1, i + 1);
+                                            const dayName = dayNames[dateObj.getDay()];
+                                            const isWeekend = dateObj.getDay() === 0 || dateObj.getDay() === 6;
+                                            return `<th class="py-1 px-1 text-center border-r border-gray-200 w-10 min-w-[2.5rem] ${isWeekend ? 'bg-red-50 text-red-500' : ''}"><div class="flex flex-col leading-tight"><span class="text-[9px] opacity-70">${dayName}</span><span class="text-xs">${i+1}</span></div></th>`;
+                                        }).join('')}
+                                        <th class="py-3 px-4 text-center border-l border-gray-300 bg-blue-50 font-bold sticky right-0 shadow-[-2px_0_5px_-2px_rgba(0,0,0,0.1)] z-30 text-blue-800">Tổng (km)</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="text-gray-600 text-sm font-light">
+                                    ${staffList.length === 0 ? '<tr><td colspan="' + (daysInMonth + 4) + '" class="py-8 text-center text-gray-400 font-medium">Chưa có nhân viên nào.</td></tr>' : ''}
+                                    ${staffList.map((staff, index) => {
+                                        let totalMonthDistance = 0;
+                                        let inRowHtml = '';
+                                        let outRowHtml = '';
+                                        let kmRowHtml = '';
+
+                                        for (let i = 0; i < daysInMonth; i++) {
+                                            const day = i + 1;
+                                            const dateStr = new Date(tkYear, tkMonth - 1, day).toLocaleDateString();
+                                            const dateObj = new Date(tkYear, tkMonth - 1, day);
+                                            const isWeekend = dateObj.getDay() === 0 || dateObj.getDay() === 6;
+                                            const dayLogs = checkins.filter(c => c.userId === staff.id && new Date(c.timestamp).toLocaleDateString() === dateStr);
+                                            
+                                            const dayDistance = dayLogs.reduce((sum, log) => sum + (log.distance || 0), 0);
+                                            totalMonthDistance += dayDistance;
+
+                                            const inLog = dayLogs.find(l => l.type === 'in');
+                                            const outLog = dayLogs.slice().reverse().find(l => l.type === 'out');
+
+                                            const inTime = inLog ? new Date(inLog.timestamp).toLocaleTimeString('vi-VN', {hour: '2-digit', minute:'2-digit'}) : '-';
+                                            const outTime = outLog ? new Date(outLog.timestamp).toLocaleTimeString('vi-VN', {hour: '2-digit', minute:'2-digit'}) : '-';
+                                            const distStr = dayDistance > 0 ? dayDistance.toFixed(1) : '-';
+
+                                            inRowHtml += `<td class="py-1 px-1 text-center border-r border-gray-200 text-[10px] font-medium ${inLog ? 'text-green-600 bg-green-50/30' : (isWeekend ? 'bg-red-50/10 text-gray-300' : 'text-gray-300')}">${inTime}</td>`;
+                                            outRowHtml += `<td class="py-1 px-1 text-center border-r border-gray-200 text-[10px] font-medium ${outLog ? 'text-red-600 bg-red-50/30' : (isWeekend ? 'bg-red-50/10 text-gray-300' : 'text-gray-300')}">${outTime}</td>`;
+                                            kmRowHtml += `<td class="py-1 px-1 text-center border-r border-gray-200 text-[10px] font-bold ${dayDistance > 0 ? 'text-blue-600 bg-blue-50/50' : (isWeekend ? 'bg-red-50/10 text-gray-300' : 'text-gray-300')}">${distStr}</td>`;
+                                        }
+
+                                        return `
+                                        <tr class="border-t-[3px] border-gray-300">
+                                            <td rowspan="3" class="py-2 px-1 bg-white sticky left-0 z-20 border-r border-gray-300 align-top pt-4 text-center font-bold text-gray-500">
+                                                ${index + 1}
+                                            </td>
+                                            <td rowspan="3" class="py-2 px-4 bg-white sticky left-12 z-20 border-r border-gray-300 align-top pt-4">
+                                                <div class="flex items-center gap-3">
+                                                    <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-500 to-blue-300 text-white flex items-center justify-center text-xs uppercase border border-gray-200 shadow-sm shrink-0">
+                                                        ${staff.photoURL ? `<img src="${staff.photoURL}" class="w-full h-full object-cover rounded-full">` : staff.name.charAt(0)}
+                                                    </div>
+                                                    <span class="truncate w-32 font-bold text-gray-800" title="${staff.name}">${staff.name}</span>
+                                                </div>
+                                            </td>
+                                            <td class="py-1.5 px-1 bg-white sticky left-60 z-20 border-r border-gray-300 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)] text-center text-[10px] font-bold text-green-600">VÀO</td>
+                                            ${inRowHtml}
+                                            <td rowspan="3" class="py-2 px-4 text-center font-black text-blue-700 bg-blue-50 sticky right-0 shadow-[-2px_0_5px_-2px_rgba(0,0,0,0.1)] z-20 text-base border-l border-gray-300">${totalMonthDistance > 0 ? totalMonthDistance.toFixed(1) : 0}</td>
+                                        </tr>
+                                        <tr class="border-t border-gray-100">
+                                            <td class="py-1.5 px-1 bg-white sticky left-60 z-20 border-r border-gray-300 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)] text-center text-[10px] font-bold text-red-600">RA</td>
+                                            ${outRowHtml}
+                                        </tr>
+                                        <tr class="border-t border-gray-100">
+                                            <td class="py-1.5 px-1 bg-white sticky left-60 z-20 border-r border-gray-300 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)] text-center text-[10px] font-bold text-blue-600">KM</td>
+                                            ${kmRowHtml}
+                                        </tr>`;
+                                    }).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                `;
+            }
+
+            let logHtml = '';
+            if (timekeepingView === 'log') {
+                logHtml = `
                     <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                         <div class="overflow-x-auto">
                             <table class="w-full text-left border-collapse">
@@ -712,7 +999,7 @@
                                             <td class="py-3 px-6 text-center">
                                                 <span class="px-3 py-1 rounded-full text-xs font-bold
                                                     ${item.type === 'in' ? 'bg-green-100 text-green-700 border border-green-200' : item.type === 'out' ? 'bg-red-100 text-red-700 border border-red-200' : 'bg-blue-100 text-blue-700 border border-blue-200'}">
-                                                    ${item.type === 'in' ? 'Giờ Vào' : item.type === 'out' ? 'Giờ Ra' : 'Cập Nhật Vị Trí'}
+                                                    ${item.type === 'in' ? 'Giờ Vào' : item.type === 'out' ? 'Giờ Ra' : item.type === 'auto' ? 'Định Vị Tự Động' : 'Cập Nhật Vị Trí'}
                                                 </span>
                                             </td>
                                             <td class="py-3 px-6 text-right font-bold text-blue-600">${item.distance > 0 ? '+' + item.distance.toFixed(2) + ' km' : '-'}</td>
@@ -725,6 +1012,35 @@
                             </table>
                         </div>
                     </div>
+                `;
+            }
+
+            return `
+                <div class="p-4 md:p-6 h-full overflow-y-auto w-full max-w-[1400px] mx-auto">
+                    <div class="flex flex-col xl:flex-row justify-between items-start xl:items-center mb-6 gap-4">
+                        <h2 class="text-2xl font-bold text-gray-800 shrink-0"><i class="fas fa-calendar-check text-blue-600 mr-2"></i>Quản Lý Chấm Công</h2>
+                        
+                        <div class="flex flex-col sm:flex-row items-center gap-3 w-full xl:w-auto">
+                            <div class="flex items-center bg-gray-100 p-1.5 rounded-xl border border-gray-200 w-full sm:w-auto shadow-inner overflow-x-auto">
+                                <button onclick="setTimekeepingView('monthly')" class="shrink-0 flex-1 sm:flex-none px-4 py-2 rounded-lg text-sm font-bold transition-all duration-200 ${timekeepingView === 'monthly' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}">
+                                    <i class="fas fa-table mr-1"></i> Chấm Công
+                                </button>
+                                <button onclick="setTimekeepingView('distance')" class="shrink-0 flex-1 sm:flex-none px-4 py-2 rounded-lg text-sm font-bold transition-all duration-200 ${timekeepingView === 'distance' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}">
+                                    <i class="fas fa-route mr-1"></i> Cự Ly (km)
+                                </button>
+                                <button onclick="setTimekeepingView('log')" class="shrink-0 flex-1 sm:flex-none px-4 py-2 rounded-lg text-sm font-bold transition-all duration-200 ${timekeepingView === 'log' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}">
+                                    <i class="fas fa-list mr-1"></i> Nhật Ký
+                                </button>
+                            </div>
+                            
+                            <!-- Nút Xuất Excel Mới -->
+                            <button onclick="exportExcel()" class="bg-green-600 text-white px-5 py-2 rounded-xl shadow-md hover:bg-green-700 transition font-bold text-sm shrink-0 w-full sm:w-auto flex justify-center items-center gap-2">
+                                <i class="fas fa-file-excel text-lg"></i> Xuất Excel
+                            </button>
+                        </div>
+                    </div>
+                    
+                    ${timekeepingView === 'monthly' ? timesheetHtml : timekeepingView === 'distance' ? distanceHtml : logHtml}
                 </div>
             `;
         };
@@ -856,7 +1172,6 @@
             `;
         };
 
-        // --- MAP LOGIC CHO ADMIN ---
         const initMap = () => {
             if (map) { map.remove(); }
             map = L.map('map').setView([10.762622, 106.660172], 12); 
@@ -875,49 +1190,97 @@
             markers = [];
 
             const todayStr = new Date().toLocaleDateString();
-            let data = checkins.filter(c => new Date(c.timestamp).toLocaleDateString() === todayStr);
-            if (userId) data = data.filter(c => c.userId === userId);
+            let allTodayData = checkins.filter(c => new Date(c.timestamp).toLocaleDateString() === todayStr);
+            let displayData = [];
 
-            if (data.length === 0) return;
+            if (userId) {
+                displayData = allTodayData.filter(c => c.userId === userId);
+            } else {
+                const latestLogs = {};
+                allTodayData.forEach(log => {
+                    if (!latestLogs[log.userId] || new Date(log.timestamp) > new Date(latestLogs[log.userId].timestamp)) {
+                        latestLogs[log.userId] = log;
+                    }
+                });
+                displayData = Object.values(latestLogs);
+            }
+
+            if (displayData.length === 0) return;
 
             const bounds = [];
             
-            data.forEach((point) => {
-                let color = point.type === 'in' ? 'green' : point.type === 'out' ? 'red' : '#3b82f6';
+            displayData.forEach((point) => {
+                let color = point.type === 'in' ? '#10b981' : point.type === 'out' ? '#ef4444' : '#3b82f6';
+                let statusText = point.type === 'in' ? 'Check-in ca làm' : point.type === 'out' ? 'Check-out ra ca' : point.type === 'auto' ? 'Khai báo vị trí tự động' : 'Cập nhật Vị trí';
+                
+                const user = users.find(u => u.id === point.userId);
+                let avatarHtml = '';
+                
+                if (user && user.photoURL) {
+                    avatarHtml = `<img src="${user.photoURL}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">`;
+                } else {
+                    const initial = point.userName ? point.userName.charAt(0).toUpperCase() : '?';
+                    avatarHtml = `<div style="width: 100%; height: 100%; border-radius: 50%; background-color: #e2e8f0; color: #475569; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 16px;">${initial}</div>`;
+                }
                 
                 const markerHtmlStyles = `
-                    background-color: ${color};
-                    width: 20px;
-                    height: 20px;
-                    display: block;
-                    border-radius: 50%;
-                    border: 2px solid white;
-                    box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+                    width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;
+                    border-radius: 50%; border: 3px solid ${color}; box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+                    background-color: white; overflow: hidden;
                 `;
                 const customIcon = L.divIcon({
-                    className: "custom-pin",
-                    iconAnchor: [10, 10],
-                    html: `<span style="${markerHtmlStyles}" />`
+                    className: "custom-pin", iconAnchor: [20, 20], popupAnchor: [0, -20],
+                    html: `<div style="${markerHtmlStyles}">${avatarHtml}</div>`
                 });
 
                 const marker = L.marker([point.lat, point.lng], {icon: customIcon}).addTo(map);
                 
+                const timeAgoStr = window.getTimeAgo(point.timestamp);
+                const timeStr = new Date(point.timestamp).toLocaleTimeString('vi-VN', {hour: '2-digit', minute:'2-digit', hour12: true});
+                
                 const popupContent = `
-                    <div style="text-align:center; min-width:120px;">
-                        <b style="font-size:14px">${point.userName}</b><br>
-                        <span style="color: ${color}; font-weight:bold;">${point.type === 'in' ? 'Giờ Vào' : point.type === 'out' ? 'Giờ Ra' : 'Vị trí'}</span><br>
-                        ${new Date(point.timestamp).toLocaleTimeString('vi-VN')}<br>
-                        ${point.photo ? `<img src="${point.photo}" style="width:100%; max-height:120px; object-fit:cover; margin-top:8px; border-radius:4px; box-shadow: 0 1px 3px rgba(0,0,0,0.2);">` : ''}
+                    <div style="width: 260px; font-family: sans-serif;">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+                            <div style="flex: 1; padding-right: 10px;">
+                                <h3 style="margin: 0 0 8px 0; font-size: 15px; color: #333; text-transform: uppercase;">${point.userName}</h3>
+                                <div style="display: flex; align-items: center; font-size: 13px; color: #009688; margin-bottom: 6px;">
+                                    <i class="far fa-calendar-alt" style="width: 20px; text-align:center;"></i> ${timeAgoStr} - ${timeStr}
+                                </div>
+                                <div style="display: flex; align-items: flex-start; font-size: 13px; color: #009688; margin-bottom: 6px;">
+                                    <i class="fas fa-map-marker-alt" style="width: 20px; text-align:center; margin-top:2px;"></i> <span style="line-height:1.2;">Tọa độ: ${point.lat.toFixed(5)}, ${point.lng.toFixed(5)}</span>
+                                </div>
+                                <div style="display: flex; align-items: center; font-size: 13px; color: #009688; margin-bottom: 6px;">
+                                    <i class="fas fa-comment" style="width: 20px; text-align:center;"></i> ${statusText}
+                                </div>
+                                ${point.photo ? `
+                                <div style="display: flex; align-items: center; font-size: 13px; color: #009688; margin-bottom: 6px; cursor: pointer;" onclick="window.open('${point.photo}')">
+                                    <i class="fas fa-camera-retro" style="width: 20px; text-align:center;"></i> 1 ảnh <i class="fas fa-search" style="margin-left:4px; font-size:11px;"></i>
+                                </div>` : ''}
+                            </div>
+                            <div style="width: 70px; height: 70px; border: 1px solid #ccc; padding: 2px; background: white; flex-shrink:0;">
+                                ${user && user.photoURL ? `<img src="${user.photoURL}" style="width: 100%; height: 100%; object-fit: cover;">` : `<div style="width:100%; height:100%; background:#e2e8f0; display:flex; align-items:center; justify-content:center; color:#64748b; font-weight:bold; font-size:24px;">${point.userName.charAt(0)}</div>`}
+                            </div>
+                        </div>
+                        <hr style="border: 0; border-top: 1px solid #eee; margin: 12px 0;">
+                        <div style="display: flex; justify-content: space-around;">
+                            <button style="border:none; background:transparent; color:#10b981; font-size:13px; font-weight:bold; cursor:pointer; display:flex; align-items:center; gap:5px;" onclick="alert('Đã gửi thông báo nhắc nhở đến thiết bị của nhân viên.')">
+                                <i class="fas fa-bell"></i> Nhắc nhở
+                            </button>
+                            <button style="border:none; background:transparent; color:#0ea5e9; font-size:13px; font-weight:bold; cursor:pointer; display:flex; align-items:center; gap:5px;" onclick="window.showStaffPath(${point.userId})">
+                                <i class="fas fa-history"></i> Lịch sử
+                            </button>
+                        </div>
                     </div>
                 `;
-                marker.bindPopup(popupContent);
+                marker.bindPopup(popupContent, { minWidth: 260, maxWidth: 300 });
                 markers.push(marker);
                 bounds.push([point.lat, point.lng]);
             });
 
-            if (userId && data.length > 1) {
-                const latlngs = data.map(p => [p.lat, p.lng]);
-                const polyline = L.polyline(latlngs, {color: '#3b82f6', weight: 3, dashArray: '5, 10'}).addTo(map);
+            if (userId && displayData.length > 1) {
+                displayData.sort((a,b) => new Date(a.timestamp) - new Date(b.timestamp));
+                const latlngs = displayData.map(p => [p.lat, p.lng]);
+                const polyline = L.polyline(latlngs, {color: '#3b82f6', weight: 3, dashArray: '5, 8'}).addTo(map);
                 markers.push(polyline);
             }
 
@@ -926,13 +1289,13 @@
             }
         };
 
-        // --- CORE ROUTER & INITIALIZATION ---
         const renderApp = () => {
             if (!currentUser) {
                 appDiv.innerHTML = TPL_LOGIN;
             } else if (currentUser.role === 'staff') {
                 appDiv.innerHTML = renderStaffDashboard();
                 window.startCamera(); 
+                window.startAutoTracking(); // Bật tính năng chạy ngầm tự động định vị
             } else if (currentUser.role === 'admin') {
                 appDiv.innerHTML = renderAdminDashboard();
                 if (adminCurrentTab === 'map') {
@@ -941,11 +1304,9 @@
             }
         };
 
-        // Cấu hình Listener lắng nghe sự thay đổi Database Real-time
         const setupFirestoreListener = () => {
             if (!firebaseUser || !db) return;
             
-            // 1. Đồng bộ Check-ins
             const checkinsRef = collection(db, 'artifacts', appId, 'public', 'data', 'checkins');
             unsubscribeCheckins = onSnapshot(checkinsRef, (snapshot) => {
                 const data = [];
@@ -956,10 +1317,8 @@
                 if (currentUser) renderApp();
             }, (error) => console.error("Lỗi đồng bộ Checkins:", error));
 
-            // 2. Đồng bộ Tài khoản Users
             const usersRef = collection(db, 'artifacts', appId, 'public', 'data', 'users');
             
-            // Kiểm tra và khởi tạo người dùng mặc định nếu DB trống
             getDocs(usersRef).then(snapshot => {
                 if (snapshot.empty) {
                     const defaultUsers = [
@@ -976,16 +1335,14 @@
                 snapshot.forEach((doc) => {
                     data.push({ docId: doc.id, ...doc.data() });
                 });
-                // Sắp xếp theo ID để hiển thị ổn định
                 users = data.sort((a, b) => a.id - b.id);
                 if (currentUser) renderApp();
             }, (error) => console.error("Lỗi đồng bộ Users:", error));
         };
 
-        // Xác thực người dùng (Ẩn - Hệ thống tự cấp ID)
         const initAuth = async () => {
             if (!auth) {
-                renderApp(); // Render nếu lỗi firebase config
+                renderApp();
                 return;
             }
             try {
@@ -993,7 +1350,7 @@
                     try {
                         await signInWithCustomToken(auth, __initial_auth_token);
                     } catch (customTokenError) {
-                        console.warn("Lỗi xác thực custom token (thường do môi trường khác Firebase project), tự động chuyển sang đăng nhập ẩn danh...", customTokenError);
+                        console.warn("Lỗi xác thực custom token, tự động chuyển sang đăng nhập ẩn danh...", customTokenError);
                         await signInAnonymously(auth);
                     }
                 } else {
@@ -1004,7 +1361,6 @@
             }
         };
 
-        // Lắng nghe sự kiện đăng nhập vào Database
         onAuthStateChanged(auth, (user) => {
             firebaseUser = user;
             if (user) {
@@ -1013,11 +1369,9 @@
                 if (unsubscribeCheckins) unsubscribeCheckins();
                 if (unsubscribeUsers) unsubscribeUsers();
             }
-            // Nếu chưa có ai đăng nhập form UI, tự kích hoạt render màn hình login
             if(!currentUser) renderApp();
         });
 
-        // Bắt đầu ứng dụng
         window.onload = initAuth;
 
     </script>
